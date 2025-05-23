@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decision-Making Experiment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Decision-Making Experiment</h1>
+        <p>
+            This study investigates how people make decisions in different scenarios. 
+            The experiment consists of four tasks and will take approximately 30-40 minutes to complete. 
+            You can take breaks and return later if needed.
+        </p>
+        <div class="buttons">
+            <a href="{{ url_for('register') }}" class="button">I want to help</a>
+            <a href="{{ url_for('login') }}" class="button">I want to continue</a>
+        </div>
+    </div>
+</body>
+</html>

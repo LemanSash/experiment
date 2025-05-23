@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impulsivity Questionnaire</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Impulsivity Questionnaire</h1>
+        <form method="POST">
+            <p>1. I often act on impulse.</p>
+            <label><input type="radio" name="q1" value="1"> Strongly Disagree</label>
+            <label><input type="radio" name="q1" value="2"> Disagree</label>
+            <label><input type="radio" name="q1" value="3"> Neutral</label>
+            <label><input type="radio" name="q1" value="4"> Agree</label>
+            <label><input type="radio" name="q1" value="5"> Strongly Agree</label>
+
+            <p>2. I make decisions without thinking.</p>
+            <label><input type="radio" name="q2" value="1"> Strongly Disagree</label>
+            <label><input type="radio" name="q2" value="2"> Disagree</label>
+            <label><input type="radio" name="q2" value="3"> Neutral</label>
+            <label><input type="radio" name="q2" value="4"> Agree</label>
+            <label><input type="radio" name="q2" value="5"> Strongly Agree</label>
+
+            <p>3. I am restless and fidgety.</p>
+            <label><input type="radio" name="q3" value="1"> Strongly Disagree</label>
+            <label><input type="radio" name="q3" value="2"> Disagree</label>
+            <label><input type="radio" name="q3" value="3"> Neutral</label>
+            <label><input type="radio" name="q3" value="4"> Agree</label>
+            <label><input type="radio" name="q3" value="5"> Strongly Agree</label>
+
+            <button type="submit" class="button">Submit</button>
+        </form>
+    </div>
+</body>
+</html>
