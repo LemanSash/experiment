@@ -1,23 +1,161 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Decision-Making Experiment</title>
+    <title>Decision-Making Research • Lobashova Alina</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome to the Decision-Making Experiment</h1>
-        <p>
-            This study investigates how people make decisions in different scenarios. 
-            The experiment consists of four tasks and will take approximately 30-40 minutes to complete. 
-            You can take breaks and return later if needed.
-        </p>
-        <div class="buttons">
-            <a href="{{ url_for('register') }}" class="button">I want to help</a>
-            <a href="{{ url_for('login') }}" class="button">I want to continue</a>
+    <!-- Navigation -->
+    <nav class="navbar">
+            <div class="nav-container">
+                <a href="#" class="logo">LA Research</a>
+                <button class="burger" id="burger" aria-label="Меню">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+                <div class="nav-links" id="nav-links">
+                    <a href="#about" class="btn-primary">Об авторе</a>
+                    <a href="#experiment" class="btn-primary">Эксперимент</a>
+                    <a href="#participate" class="btn-primary">Участие</a>
+                    {% if 'user_id' in session %}
+                        <a href="{{ url_for('dashboard') }}" class="btn-primary">
+                            <i class="fas fa-user-circle"></i> Личный кабинет
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn-primary">Войти</a>
+                        <a href="{{ url_for('register') }}" class="btn-primary">Принять участие</a>
+                    {% endif %}
+                        </div>
+            </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+
+            <div class="hero-content">
+                <h1>Исследование о принятии решений</h1>
+                <p class="lead">Департамент психологии НИУ ВШЭ приглашает вас принять участие в эксперименте, направленном на изучение принятия решений в условиях риска.
+                Всё, что от вас потребуется, - сыграть в четыре игры и ответить на несколько вопросов о вашем поведении.</p>
+                <div class="cta-group">
+                    <a href="{{ url_for('register') }}" class="btn-outline">Присоединиться к исследованию</a>
+                </div>
+            </div>
+
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section">
+        <div class="container">
+            <h2>Об авторе</h2>
+            <div class="profile-card">
+                <img src="static/images/researcher.jpg" alt="Researcher Photo" class="profile-img">
+                <div class="profile-info">
+                    <h3>Алина Лобашова, НИУ ВШЭ</h3>
+                    <p>Департамент психологии</p>
+                    <p>Под руководством старшего преподавателя Департамента психологии Козлова Д.Д.</p>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
+
+    <!-- Experiment Details -->
+    <section id="experiment" class="section bg-light">
+        <div class="container">
+            <h2>Подробнее об эксперименте</h2>
+            <div class="grid">
+                <div class="detail">
+                    <i class="fas fa-clock"></i>
+                    <h3>Продолжительность</h3>
+                    <p>30-40 минут (можно взять перерыв)</p>
+                </div>
+                <div class="detail">
+                    <i class="fas fa-tasks"></i>
+                    <h3>4 поведенческие задачи</h3>
+                    <p>Интерактивные методики, направленные на изучение различных аспектов принятия рискованных решений</p>
+                </div>
+                <div class="detail">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Опросник</h3>
+                    <p>Вопросы о поведении • Анонимно</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section id="participate" class="section">
+        <div class="container">
+            <h2>Станьте частью исследования</h2>
+            <div class="participation-card">
+                <div class="participation-content">
+
+                    <div class="benefits-grid">
+                        <div class="benefit-item">
+                            <i class="fas fa-chart-line"></i>
+                            <h3>Персональный отчет</h3>
+                            <p>Получите обратную связь по пройденным методикам, а также результаты исследования после его завершения.
+                            Для этого нужно связаться с организатором любым удобным способом - контакты указаны ниже.</p>
+                        </div>
+                        <div class="benefit-item">
+                            <i class="fas fa-clock"></i>
+                            <h3>Гибкое участие</h3>
+                            <p>Возможность пройти эксперимент в несколько этапов.</p>
+                        </div>
+                        <div class="benefit-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>Конфиденциальность</h3>
+                            <p>Все данные анонимизируются перед анализом.</p>
+                        </div>
+                    </div>
+
+                    <div class="cta-box">
+                        <h3>Начните прямо сейчас</h3>
+                        <a href="{{ url_for('register') }}" class="btn-gradient">
+                            <i class="fas fa-rocket"></i> Присоединиться к исследованию
+                        </a>
+                    </div>
+
+                    <div class="contact-card">
+                        <h4>Контакты организатора</h4>
+                        <div class="contact-grid">
+                            <a href="mailto:leman.sash@yandex.ru" class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>leman.sash@yandex.ru</span>
+                            </a>
+                            <a href="tg://resolve?phone=+79274072184" class="contact-item">
+                                <i class="fab fa-telegram"></i>
+                                <span>Telegram-чат</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const burger = document.getElementById('burger');
+            const navLinks = document.getElementById('nav-links');
+
+            if (burger && navLinks) {
+                console.log('i found them');
+                burger.addEventListener('click', () => {
+                    console.log('you clicked');
+                    navLinks.classList.toggle('show');
+                });
+
+                // Автозакрытие меню при клике на ссылку (по желанию)
+                navLinks.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        navLinks.classList.remove('show');
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>
