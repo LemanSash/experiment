@@ -10,39 +10,72 @@ def init_db():
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
-    # Create users table
-    # cursor.execute('''
-    #     CREATE TABLE IF NOT EXISTS users (
-    #         user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    #         username TEXT UNIQUE NOT NULL,
-    #         password_hash TEXT NOT NULL,
-    #         age INTEGER,
-    #         gender TEXT,
-    #         education TEXT
-    #     )
-    # ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS cct_hot_results (
+            result_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            trial_number INTEGER NOT NULL,
+            trial_type TEXT NOT NULL,
+            decision INTEGER NOT NULL,          
+            result TEXT,                        
+            flip_number INTEGER NOT NULL,       
+            current_points INTEGER NOT NULL,    
+            points INTEGER NOT NULL,            
+            reaction_time INTEGER,              
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            loss_cards INTEGER NOT NULL,
+            gain_amount INTEGER NOT NULL,
+            loss_amount INTEGER NOT NULL
+    )
+    ''')
 
-    # # Create sequences table
-    # cursor.execute('''
-    #     CREATE TABLE IF NOT EXISTS sequences (
-    #         sequence_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    #         task1 TEXT NOT NULL,
-    #         task2 TEXT NOT NULL,
-    #         task3 TEXT NOT NULL,
-    #         task4 TEXT NOT NULL,
-    #         assigned_count INTEGER DEFAULT 0
-    #     )
-    # ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS bart_results (
+            result_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            trial_number INTEGER NOT NULL,
+            pump_number INTEGER NOT NULL,
+            break_point INTEGER NOT NULL,
+            popped BOOLEAN NOT NULL,
+            points_earned INTEGER NOT NULL,
+            total_points INTEGER NOT NULL,
+            reaction_time INTEGER NOT NULL
+        )
+        '''
+    )
+    #Create users table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            age INTEGER,
+            gender TEXT,
+            education TEXT
+        )
+    ''')
 
-    # cursor.execute('''
-    #     CREATE TABLE IF NOT EXISTS user_progress (
-    #         user_id INTEGER NOT NULL,
-    #         task_name TEXT NOT NULL,
-    #         completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    #         PRIMARY KEY (user_id, task_name),
-    #         FOREIGN KEY (user_id) REFERENCES users(user_id)
-    #     )
-    # ''')
+    # Create sequences table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS sequences (
+            sequence_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task1 TEXT NOT NULL,
+            task2 TEXT NOT NULL,
+            task3 TEXT NOT NULL,
+            task4 TEXT NOT NULL,
+            assigned_count INTEGER DEFAULT 0
+        )
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS user_progress (
+            user_id INTEGER NOT NULL,
+            task_name TEXT NOT NULL,
+            completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (user_id, task_name),
+            FOREIGN KEY (user_id) REFERENCES users(user_id)
+        )
+    ''')
 
     # Populate sequences table
     methods = ["igt", "bart", "cct_hot", "cct_cold"]  # Use endpoint names
@@ -280,33 +313,6 @@ def start_experiment():
     if not user_id:
         return redirect(url_for('login'))
 
-    # # Get the next sequence in round-robin order
-    # conn = sqlite3.connect('database.db')
-    # cursor = conn.cursor()
-    # cursor.execute('SELECT * FROM sequences ORDER BY assigned_count ASC, sequence_id ASC LIMIT 1')
-    # sequence = cursor.fetchone()
-
-    # if not sequence:
-    #     conn.close()
-    #     flash('No sequences available. Please contact the administrator.')
-    #     return redirect(url_for('dashboard'))
-
-    # # Assign the sequence to the user
-    # cursor.execute('''
-    #     INSERT INTO user_sequences (user_id, task1, task2, task3, task4)
-    #     VALUES (?, ?, ?, ?, ?)
-    # ''', (user_id, sequence[1], sequence[2], sequence[3], sequence[4]))
-
-    # # Increment the assigned count for the sequence
-    # cursor.execute('UPDATE sequences SET assigned_count = assigned_count + 1 WHERE sequence_id = ?', (sequence[0],))
-    # conn.commit()
-    # conn.close()
-
-    # # Store the sequence in the session
-    # session['sequence'] = [
-    #     task.lower().replace(' ', '_').replace('-', '_')
-    #     for task in [sequence[1], sequence[2], sequence[3], sequence[4]]
-    # ]
     return redirect(url_for('questionnaire'))
 
 @app.route('/questionnaire', methods=['GET', 'POST'])
@@ -377,9 +383,35 @@ def questionnaire():
 # Experimental design parameters
 FACTORS = {
     'loss_cards': [1, 2, 3],
-    'gain_amount': [10, 20, 30],
-    'loss_amount': [250, 500, 750]
+    'gain_amount': [10, 30],
+    'loss_amount': [250, 750]
 }
+
+IGT_PAYOUTS = {
+    'A': 100,
+    'B': 100,
+    'C': 50,
+    'D': 50
+}
+
+IGT_PENALTY_SCHEMES = {
+    'A': [-250]*5 + [0]*5,     # 50%
+    'B': [-625]*2 + [0]*8,     # 20%
+    'C': [-50]*5 + [0]*5,      # 50%
+    'D': [-125]*2 + [0]*8      # 20%
+}
+
+def init_igt_decks():
+    decks = {}
+    for deck, scheme in IGT_PENALTY_SCHEMES.items():
+        block = scheme.copy()
+        random.shuffle(block)
+        decks[deck] = {
+            'block': block,
+            'index': 0
+        }
+    return decks
+
 
 def generate_trials(task="cct_hot"):
     if task == "cct_hot":
@@ -393,23 +425,13 @@ def generate_trials(task="cct_hot"):
                         'loss_cards': lc,
                         'gain_amount': ga,
                         'loss_amount': la,
-                        'trial_type': 'experimental'  # экспериментальный трейл
+                        'trial_type': 'random_loss'  # экспериментальный трейл
                     }
                     trials.append(trial)
         # 27 уникальных комбинаций; умножив на 2, получим 54 экспериментальных трейла
-        experimental_trials = trials * 2
-
-        # Генерируем 9 дополнительных случайных loss-трейлов
-        random_loss_trials = []
-        for _ in range(9):
-            trial = random.choice(trials).copy()
-            trial['trial_type'] = 'random_loss'  # маркируем как случайный loss трейл
-            random_loss_trials.append(trial)
-
-        # Объединяем экспериментальные и случайные трейлы (54 + 9 = 63)
-        all_trials = experimental_trials + random_loss_trials
-        random.shuffle(all_trials)
-        return all_trials
+        experimental_trials = trials * 4
+        random.shuffle(experimental_trials)
+        return experimental_trials
     else:
         # Для cct_cold старая логика: 54 случайных трейла
         trials = []
@@ -424,16 +446,10 @@ def generate_trials(task="cct_hot"):
                     }
                     trials.append(trial)
         # Предположим, что умножение на 2 даёт 54 уникальных трейла (так было раньше)
-        trials = trials * 2
+        trials = trials * 4
         random.shuffle(trials)
         return trials
 
-
-# def generate_balloon_sequence(max_pumps):
-#     # Generate a sequence of numbers from 1 to max_pumps
-#     sequence = list(range(1, max_pumps + 1))
-#     random.shuffle(sequence)
-#     return sequence
 
 def mark_task_completed(user_id, task_name):
     device = get_device_type()
@@ -527,20 +543,12 @@ def task(task_name):
                 session.pop('bart_current', None)
                 session.pop('bart_total_points', None)
                 session.pop('bart_trials', None)
-                session.pop('bart_balloon_types', None)
-                session.pop('bart_balloon_sequences', None)
                 session.pop(f'{task_name}_instructions_viewed', None)
                 # Инициализация заново
-                session['bart_trials'] = 90  # число раундов
+                session['bart_trials'] = 50  # число раундов
                 session['bart_current'] = 0
                 session['bart_total_points'] = 0
-                session['bart_balloon_types'] = ['blue', 'yellow', 'orange'] * 30
-                random.shuffle(session['bart_balloon_types'])
-                # session['bart_balloon_sequences'] = {
-                #     'blue': generate_balloon_sequence(128),
-                #     'yellow': generate_balloon_sequence(32),
-                #     'orange': generate_balloon_sequence(8)
-                # }
+
         elif task_name == 'igt':
             igt_url = url_for('task', task_name='igt')
             if not (request.referrer and request.referrer.endswith(igt_url)):
@@ -553,7 +561,7 @@ def task(task_name):
                     conn.close()
                 # Сброс session-переменных (если требуется)
                 session.pop(f'{task_name}_instructions_viewed', None)
-                session['igt_trials'] = 100
+                session['igt_trials'] = 150
                 session['igt_current'] = 0
                 session['igt_total_points'] = 2000
         elif task_name in ['cct_hot', 'cct_cold']:
@@ -612,7 +620,7 @@ def task(task_name):
         return render_template(
             'igt.html',
             current_trial=current_trial + 1,  # Display next trial number
-            total_trials=100,
+            total_trials=150,
             total_points=total_points,
             instruction_title=instructions[task_name]['title'],
             instruction_content=instructions[task_name]['content'],
@@ -623,20 +631,17 @@ def task(task_name):
     if task_name == 'bart':
         # Initialize session variables if they don't exist
         if 'bart_trials' not in session:
-            session['bart_trials'] = 90  # 30 trials per balloon type × 3 types
+            session['bart_trials'] = 50 
         if 'bart_current' not in session:
             session['bart_current'] = 0
         if 'bart_total_points' not in session:
             session['bart_total_points'] = 0
-        if 'bart_balloon_types' not in session:
-            session['bart_balloon_types'] = ['blue', 'yellow', 'orange'] * 30
-            random.shuffle(session['bart_balloon_types'])
-        # if 'bart_balloon_sequences' not in session:
-        #     session['bart_balloon_sequences'] = {
-        #         'blue': generate_balloon_sequence(128),
-        #         'yellow': generate_balloon_sequence(32),
-        #         'orange': generate_balloon_sequence(8)
-        #     }
+        # при старте BART
+        points = list(range(1, 65))   # 1..64
+        random.shuffle(points)
+        if 'bart_break_points' not in session:
+            session['bart_break_points'] = points[:50]  # ровно 50 trial
+
 
         # After committing the insert
         conn = get_db()
@@ -674,31 +679,9 @@ def task(task_name):
             except (ValueError, IndexError):
                 return redirect(url_for('dashboard'))
 
-        # Ensure session variables are initialized
-        if 'bart_balloon_types' not in session:
-            session['bart_balloon_types'] = ['blue', 'yellow', 'orange'] * 30  # 30 trials per color
-            random.shuffle(session['bart_balloon_types'])  # Randomize balloon order
-            # session['bart_balloon_sequences'] = {
-            #     'blue': generate_balloon_sequence(128),  # Average break point: 64
-            #     'yellow': generate_balloon_sequence(32),  # Average break point: 16
-            #     'orange': generate_balloon_sequence(8)    # Average break point: 4
-            # }
+        explosion_point = session['bart_break_points'][session['bart_current']]
+        session['bart_break_point'] = explosion_point
 
-        # Get the current balloon type and sequence
-        balloon_type = session['bart_balloon_types'][session['bart_current']]
-        #balloon_sequence = session['bart_balloon_sequences'][balloon_type]
-
-        if balloon_type == 'blue':
-            max_pumps = 128
-        elif balloon_type == 'yellow':
-            max_pumps = 32
-        elif balloon_type == 'orange':
-            max_pumps = 8
-        else:
-            max_pumps = 128  # Значение по умолчанию
-
-        # Генерируем точку взрыва для текущего раунда (trial)
-        explosion_point = random.randint(1, max_pumps)
 
         # Check if instructions need to be shown
         instruction_key = f'{task_name}_instructions_viewed'
@@ -710,8 +693,6 @@ def task(task_name):
             trial_number=session['bart_current'] + 1,
             total_trials=session['bart_trials'],
             total_points=session['bart_total_points'],
-            balloon_type=balloon_type,
-            #balloon_sequence=balloon_sequence,
             explosion_point=explosion_point,
             instruction_title=instructions[task_name]['title'],
             instruction_content=instructions[task_name]['content'],
@@ -756,59 +737,80 @@ def task(task_name):
 def save_cct_hot():
     data = request.get_json()
     user_id = session.get('user_id')
-    task_name = 'cct_hot'
 
-     # Initialize if missing
-    if f'{task_name}_current' not in session:
-        session[f'{task_name}_current'] = 0
-    if f'{task_name}_trials' not in session:
-        session[f'{task_name}_trials'] = generate_trials(task=task_name)
-
-    # Save results to database
-    #conn = get_db()
-
-    # conn.execute('''
-    #     INSERT INTO cct_hot_results (user_id, points, trial_number)
-    #     VALUES (?, ?, ?)
-    # ''', (user_id, data['points'], data['trialNumber']))
-    # conn.commit()
-    # conn.close()
-
-    # Get the current trial data
     current_trial = session['cct_hot_trials'][session['cct_hot_current']]
+
+    trial_number = data['trialNumber']
+    trial_type = current_trial.get('trial_type', 'experimental')
+
+    decision = data['decision']
+    result = data.get('result')          # win / loss / None
+    flip_number = data['flip_number']
+
+    current_points = data['current_points']
+
     loss_cards = current_trial['loss_cards']
     gain_amount = current_trial['gain_amount']
     loss_amount = current_trial['loss_amount']
-    num_cards = data['flipped_cards']
-    reaction_times_json = json.dumps(data.get('reaction_time', []))
+
+    # Итоговые очки за trial фиксируем ТОЛЬКО при stop или loss
+    if decision == 0 or result == 'loss':
+        points = current_points
+    else:
+        points = 0   # временно, будет обновлено позже
 
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
+
     cursor.execute('''
-        INSERT INTO cct_hot_results (user_id, points, trial_number, reaction_time, flipped_cards, loss_cards, gain_amount, loss_amount, trial_type)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (user_id, data['points'], data['trialNumber'], reaction_times_json, num_cards, loss_cards, gain_amount, loss_amount, current_trial.get('trial_type', 'experimental')))
+        INSERT INTO cct_hot_results (
+            user_id,
+            trial_number,
+            trial_type,
+            decision,
+            result,
+            flip_number,
+            current_points,
+            points,
+            reaction_time,
+            loss_cards,
+            gain_amount,
+            loss_amount
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        user_id,
+        trial_number,
+        trial_type,
+        decision,
+        result,
+        flip_number,
+        current_points,
+        points,
+        data.get('reaction_time'),
+        loss_cards,
+        gain_amount,
+        loss_amount
+    ))
+
     conn.commit()
     conn.close()
 
-    # Update trial counter
-    session['cct_hot_current'] += 1
+    # Переход к следующему trial
+    if decision == 0 or result == 'loss':
+        session['cct_hot_current'] += 1
 
-    # Check if final trial
     is_final_trial = session['cct_hot_current'] >= len(session['cct_hot_trials'])
 
-        # После сохранения данных
     if is_final_trial:
         mark_task_completed(user_id, 'cct_hot')
-        if 'completed_tasks' not in session:
-            session['completed_tasks'] = []
-        if 'cct_hot' not in session['completed_tasks']:
-            session['completed_tasks'].append('cct_hot')
+        session.setdefault('completed_tasks', []).append('cct_hot')
 
     return jsonify({
         'status': 'completed' if is_final_trial else 'success',
         'redirect_url': url_for('intermediate', task_name='cct_hot') if is_final_trial else None
     })
+
 
 @app.route('/save_cct_cold', methods=['POST'])
 def save_cct_cold():
@@ -880,23 +882,11 @@ def save_igt():
     task_name = 'igt'
 
     #Initialize session variables
-    session.setdefault('igt_trials', 100)
+    session.setdefault('igt_trials', 150)
     session.setdefault('igt_current', 0)
     session.setdefault('igt_total_points', 2000)
-
-    # Define deck payouts and penalties
-    deck_payouts = {
-        'A': 100,
-        'B': 100,
-        'C': 50,
-        'D': 50
-    }
-    deck_penalties = {
-        'A': 250,
-        'B': 250,
-        'C': 50,
-        'D': 50
-    }
+    if 'igt_decks' not in session:
+        session['igt_decks'] = init_igt_decks()
 
      # Initialize if missing
     if f'{task_name}_current' not in session:
@@ -907,9 +897,23 @@ def save_igt():
     # Get selected deck from client
     selected_deck = data['deck']
 
-    payout = deck_payouts[selected_deck]
-    penalty = deck_penalties[selected_deck] if random.random() < 0.5 else 0
-    points_earned = payout - penalty
+    payout = IGT_PAYOUTS[selected_deck]
+
+    deck_state = session['igt_decks'][selected_deck]
+
+    # Берём штраф из текущего блока
+    penalty = deck_state['block'][deck_state['index']]
+    points_earned = payout + penalty  # penalty уже отрицательный
+
+    # Сдвигаем индекс
+    deck_state['index'] += 1
+
+    # Если блок закончился — создаём новый
+    if deck_state['index'] >= 10:
+        new_block = IGT_PENALTY_SCHEMES[selected_deck].copy()
+        random.shuffle(new_block)
+        deck_state['block'] = new_block
+        deck_state['index'] = 0
 
     # Update session variables
     session['igt_total_points'] += points_earned
@@ -970,17 +974,6 @@ def next_trial(task_name):
 
     # Handle IGT
     elif task_name == 'igt':
-        # Check if task is already completed
-        # conn = get_db()
-        # cursor = conn.cursor()
-        # cursor.execute('SELECT 1 FROM user_progress WHERE user_id = ? AND task_name = ?',
-        #               (session['user_id'], 'igt'))
-        # if cursor.fetchone():
-        #     conn.close()
-        #     return redirect(url_for('dashboard'))
-        # conn.close()
-
-        # Update trial counter
 
         session.modified = True
 
@@ -1007,55 +1000,50 @@ def next_trial(task_name):
 @app.route('/save_bart', methods=['POST'])
 def save_bart():
     data = request.get_json()
-    user_id = session.get('user_id')
-    task_name = 'bart'
+    user_id = session['user_id']
 
-     # Initialize if missing
-    if f'{task_name}_current' not in session:
-        session[f'{task_name}_current'] = 0
-    if f'{task_name}_trials' not in session:
-        session[f'{task_name}_trials'] = generate_trials()
+    trial_number = data['trialNumber']
+    pump_number = data['pumpNumber']
+    break_point = data['breakPoint']
+    reaction_time = data['reaction_time']
 
-     # Get data from request
-    popped = data.get('popped', False)
-    points_earned = 0 if popped else data.get('pointsEarned', 0)
-    pumps = data.get('pumps', 0)
-    balloon_type = data.get('balloonType', 'unknown')
+    popped = pump_number == break_point
 
-    # Calculate actual points earned
-    if not popped:
-        session['bart_total_points'] = session.get('bart_total_points', 0) + points_earned
+    # points внутри trial
+    if popped:
+        points_earned = 0
+        trial_points = 0
+    else:
+        trial_points = pump_number * 5
+        points_earned = trial_points
 
-    # Save results to database
+    # total_points обновляется ТОЛЬКО после завершения trial
+    total_points = session.get('bart_total_points', 0)
+
+    if data.get('trialEnded', False):
+        if not popped:
+            total_points += trial_points
+        session['bart_total_points'] = total_points
+        session['bart_current'] += 1
+
     conn = get_db()
     conn.execute('''
-        INSERT INTO bart_results (user_id, trial_number, balloon_type, pumps, popped, points_earned, reaction_time)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    ''', (user_id, data['trialNumber'], balloon_type, pumps, popped, points_earned, data['reaction_time']))
+        INSERT INTO bart_results (
+            user_id, trial_number, pump_number,
+            break_point, popped,
+            points_earned, total_points, reaction_time
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        user_id, trial_number, pump_number,
+        break_point, popped,
+        points_earned, total_points, reaction_time
+    ))
     conn.commit()
     conn.close()
 
-    # Update session variables
+    return jsonify({'status': 'ok'})
 
-    session['bart_current'] += 1
-
-    # Check if final trial
-    is_final_trial = session['bart_current'] >= session['bart_trials']
-
-    # После сохранения данных
-    if is_final_trial:
-        mark_task_completed(user_id, 'bart')
-        if 'completed_tasks' not in session:
-            session['completed_tasks'] = []
-        if 'bart' not in session['completed_tasks']:
-            session['completed_tasks'].append('bart')
-
-    return jsonify({
-        'new_total_points': session['bart_total_points'],
-        'status': 'completed' if is_final_trial else 'success',
-        'redirect_url': url_for('intermediate', task_name='bart') if is_final_trial else None,
-        'points_earned':points_earned
-    })
 
 @app.route('/intermediate/<task_name>')
 def intermediate(task_name):

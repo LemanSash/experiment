@@ -17,13 +17,6 @@
     <section class="section">
         <div class="container">
             <div class="task-card">
-                <!--<div class="task-header">-->
-                <!--    <h1><i class="fas fa-clone"></i> Iowa Gambling Task</h1>-->
-                <!--    <button onclick="showInstructions()" class="btn-icon">-->
-                <!--        <i class="fas fa-info-circle"></i> Инструкция-->
-                <!--    </button>-->
-                <!--</div>-->
-
                 <div class="progress-bar">
                     <div class="progress-fill" style="width: {{ (current_trial/total_trials)*100 }}%"></div>
                 </div>
@@ -100,14 +93,6 @@
     <script>
 
         document.addEventListener('DOMContentLoaded', () => {
-            // {% if show_instructions %}
-            //     showInstructions();
-            //     // Disable game interactions
-            //     document.querySelectorAll('.deck-card').forEach(deck => {
-            //         deck.style.pointerEvents = 'none';
-            //     });
-            // {% endif %}
-
             const decks = document.querySelectorAll('.deck-card');
             decks.forEach(deck => {
                 deck.style.pointerEvents = 'none';
@@ -140,28 +125,6 @@
             });
         });
 
-        // Обработчик ухода со страницы — если игра не завершена, вызываем сброс состояния
-        // window.addEventListener('beforeunload', function (event) {
-        //     console.log("beforeunload сработал"); // добавьте лог
-        //     const trialText = document.getElementById('trial-number').textContent; // формат: "X/Y"
-        //     const [currentTrial, totalTrials] = trialText.split('/').map(Number);
-        //     console.log("Текущая попытка:", currentTrial, "из", totalTrials);
-        //     if (currentTrial < totalTrials) {
-        //         console.log("Отправляем navigator.sendBeacon на /reset_game/igt");
-        //         navigator.sendBeacon('/reset_igt');
-        //     }
-        // });
-
-        // window.addEventListener('unload', function (event) {
-        //     console.log("unload сработал");
-        //     const trialText = document.getElementById('trial-number').textContent;
-        //     const [currentTrial, totalTrials] = trialText.split('/').map(Number);
-        //     if (currentTrial < totalTrials) {
-        //         console.log("Отправляем navigator.sendBeacon на /reset_game/igt (unload)");
-        //         navigator.sendBeacon('/reset_igt');
-        //     }
-        // });
-
         function closeInstructions() {
             document.getElementById('instruction-modal').style.display = 'none';
             // Enable game interactions
@@ -186,46 +149,17 @@
 
 
         let trialNumber = parseInt(document.getElementById('trial-number').textContent);
-        // Define deck payouts and penalties
-        const deckPayouts = {
-            'A': 100,
-            'B': 100,
-            'C': 50,
-            'D': 50
-        };
-        const deckPenalties = {
-            'A': 250,
-            'B': 250,
-            'C': 50,
-            'D': 50
-        };
-
         let reactionStartTime;
 
         function selectDeck(deck) {
             const reactionTime = Date.now() - reactionStartTime;
             // Get initial trial number from server-side template
             const trialNumberElement = document.getElementById('trial-number');
-            // Calculate payout and penalty
-            const payout = deckPayouts[deck];
-            let penalty = 0;
-            if (Math.random() < 0.5) {  // 50% chance of penalty
-                penalty = deckPenalties[deck];
-            }
-
-
-            // Calculate points earned
-            const pointsEarned = payout - penalty;
-
             trialNumber = parseInt(trialNumberElement.textContent.split('/')[0]);
 
             // Prepare data for server
             const requestData = {
                 trialNumber: trialNumber,
-                deck: deck,
-                payout: payout,
-                penalty: penalty,
-                pointsEarned: pointsEarned
             };
 
             // Send results to the server

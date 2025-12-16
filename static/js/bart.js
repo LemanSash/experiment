@@ -1,5 +1,4 @@
 // bart.js
-// Instruction functions
 function showInstructions() {
     document.getElementById('instructionModal').style.display = 'block';
     disableGameControls(true);
@@ -43,6 +42,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let popped = false;
     let pointsEarned = 0;
     let previousEarned = 0;
+    let pumpNumber = 0;
+    let breakPoint = explosionPoint;
+    let trialEnded = false;
+    let trialPoints = 0;
+
 
 
     // Initialize balloon
@@ -53,57 +57,39 @@ document.addEventListener('DOMContentLoaded', () => {
     pumpButton.addEventListener('click', handlePump);
     cashOutButton.addEventListener('click', handleCashOut);
 
-    // Обработчик событий на клавиатуру
-    // document.addEventListener('keydown', function(e) {
-    //     // Если фокус на каком-либо поле ввода, можно не реагировать
-    //     if (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA") {
-    //         return;
-    //     }
-    //     // Если отображается модальное окно с инструкцией, можно игнорировать нажатия
-    //     if (document.getElementById('instructionModal').style.display === 'block') {
-    //         return;
-    //     }
-    //     // Обработка нажатий
-    //     if (e.code === "Space") {   // Клавиша пробел
-    //         // Если кнопка Надуть доступна, симулируем нажатие
-    //         if (!pumpButton.disabled) {
-    //             e.preventDefault();  // Отключаем возможную прокрутку страницы
-    //             pumpButton.click();
-    //         }
-    //     } else if (e.code === "Enter") { // Клавиша Enter
-    //         if (!cashOutButton.disabled) {
-    //             e.preventDefault();
-    //             cashOutButton.click();
-    //         }
-    //     }
-    // });
-
     function handlePump() {
+        pumpNumber++;
         const rt = Date.now() - reactionStartTime;
-        reactionTimes.push(rt);
-        // перезапускаем таймер для следующего события
         reactionStartTime = Date.now();
+        let popped = pumpNumber === breakPoint;
         if (!popped) {
-            pumps++;
-             if (pumps === 1) {
-                cashOutButton.disabled = false;
-            }
-            balloon.classList.add('balloon-pumped');
-            setTimeout(() => balloon.classList.remove('balloon-pumped'), 300);
+            trialPoints = pumpNumber * 5;
             updateBalloonSize();
-            updateLastBalloonDisplay();
-            checkExplosion();
+        } else {
+            trialPoints = 0;
+            trialEnded = true;
+        }
+
+        fetch('/save_bart', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                trialNumber: parseInt(trialNumberDisplay.textContent),
+                pumpNumber: pumpNumber,
+                breakPoint: breakPoint,
+                reaction_time: rt,
+                trialEnded: popped
+            })
+        });
+
+        if (popped) {
+            balloon.style.backgroundColor = 'red';
+            setTimeout(() => window.location.reload(), 500);
         }
     }
 
-    // function handleCashOut() {
-
-    //     if (!popped) endTrial();
-    // }
 
     function updateBalloonSize() {
-        // balloon.style.width = `${100 + pumps * 10}px`;
-        // balloon.style.height = `${150 + pumps * 10}px`;
         const container = document.querySelector('.balloon-container');
         const maxSize = container.clientHeight;
         const initialSize = 100;
@@ -113,23 +99,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const newHeight = newWidth * 1.5;
         balloon.style.width = `${newWidth}px`;
         balloon.style.height = `${newHeight}px`;
-
-        // const size = Math.min(
-        //     100 + pumps * 15,  // Base size + pumps
-        //     maxSize  // Don't exceed container size
-        // );
-
-        // balloon.style.width = `${size}px`;
-        // balloon.style.height = `${size * 1.5}px`; // Maintain balloon proportion
     }
 
     function updateLastBalloonDisplay() {
         if (!popped) {
             pointsEarned = pumps * 5;
-            //lastBalloonDisplay.textContent = (pointsEarned / 100).toFixed(2);
-        } //else {
-           // lastBalloonDisplay.textContent = '0.00';
-       // }
+        } 
     }
 
     function checkExplosion() {
@@ -146,14 +121,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleCashOut() {
-        if (!popped) {
-            // RT нажатия "Забрать"
-            const rt = Date.now() - reactionStartTime;
-            reactionTimes.push(rt);
-            reactionStartTime = Date.now();
-            pointsEarned = pumps * 5;  // Only keep points if not popped
-            endTrial();
-        }
+        trialEnded = true;
+        fetch('/save_bart', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                trialNumber: parseInt(trialNumberDisplay.textContent),
+                pumpNumber: pumpNumber,
+                breakPoint: breakPoint,
+                reaction_time: Date.now() - reactionStartTime,
+                trialEnded: true
+            })
+        }).then(() => window.location.reload());
+
     }
 
     function endTrial() {

@@ -17,7 +17,7 @@
             max-height: min(80vh, 600px);
             width: 100px;
             height: 150px;
-            background-color: {{ balloon_color }};
+            background-color: #2f80ed;
             border-radius: 50% 50% 45% 45%;
             display: inline-block;
             transition: all 0.3s ease;
@@ -31,11 +31,6 @@
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="logo">LA Research</a>
-            <!--<div class="nav-links">-->
-            <!--    <a href="{{ url_for('dashboard') }}" class="btn-outline">-->
-            <!--        <i class="fas fa-arrow-left"></i> Назад-->
-            <!--    </a>-->
-            <!--</div>-->
         </div>
     </nav>
 
@@ -45,16 +40,6 @@
                     <div class="progress-fill" style="width: {{ (trial_number/total_trials)*100 }}%"></div>
             </div>
             <div class="task-card">
-
-                <!--<div class="task-header">-->
-                <!--    <h1><i class="fas fa-bullseye"></i> Balloon Analogue Risk Task</h1>-->
-                <!--    <button onclick="showInstructions()" class="btn-icon">-->
-                <!--        <i class="fas fa-info-circle"></i> Инструкция-->
-                <!--    </button>-->
-                <!--</div>-->
-
-
-
                 <div class="task-info-grid">
                     <div class="info-item">
                         <i class="fas fa-sync-alt"></i>
@@ -74,7 +59,7 @@
                 </div>
 
                 <div class="balloon-container">
-                    <div id="balloon" class="{{ balloon_type }}"></div>
+                    <div id="balloon" class="blue"></div>
                 </div>
 
                 <div class="action-buttons">
@@ -107,10 +92,7 @@
 
     <script>
         const explosionPoint = {{ explosion_point | tojson }};
-        const balloonType = {{ balloon_type | tojson }};
         const showInstructionsFlag = {{ 'true' if show_instructions else 'false' }};
-
-        // Initialization code remains the same
     </script>
     <script src="{{ url_for('static', filename='js/bart.js') }}"></script>
 </body>

@@ -19,7 +19,8 @@ function showInstructions() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-
+    let flipNumber = 0;
+    let trialFinished = false;
     let reactionTimes = [];
     let reactionStartTime = Date.now();
     // Check if instructions should be shown
@@ -90,6 +91,13 @@ document.addEventListener('DOMContentLoaded', () => {
             reactionStartTime = Date.now();
 
             selectedCardsCount++;
+            flipNumber++;
+            const isLoss =
+                (trialType === "experimental" && selectedCardsCount === safeThreshold + 1) ||
+                (trialType === "random_loss" && lossCardIndices.includes(index));
+
+            const currentResult = isLoss ? "loss" : "win";
+
             endTurnButton.disabled = false; // Enable when at least one card is flipped
 
             if (trialType === "experimental") {
@@ -116,6 +124,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 // (Assume you have code to preassign loss indices in this branch)
                 if (lossCardIndices.includes(index)) {
                     points = 0 - lossAmount;
+                    fetch('/save_cct_hot', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: "flip",
+                            trialNumber: trialNumber,
+                            flip_number: flipNumber,
+                            decision: 1,
+                            result: currentResult,
+                            current_points: points,
+                            reaction_time: rt
+                        })
+                    });
                     card.innerHTML = `<p style="color: red;">-${lossAmount}</p>`;
                     pointsDisplay.textContent = points;
                     cards.forEach(card => {
@@ -130,6 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             pointsDisplay.textContent = points;
+
         }
     });
 });
@@ -137,24 +159,33 @@ document.addEventListener('DOMContentLoaded', () => {
     endTurnButton.addEventListener('click', endTurn);
 
     function endTurn() {
+        if (trialFinished) return;
+        trialFinished = true;
+
         const rt = Date.now() - reactionStartTime;
-        reactionTimes.push(rt);
-        // Send the results to the server
+
         fetch('/save_cct_hot', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ points, trialNumber, reaction_time: reactionTimes , flipped_cards: selectedCardsCount }),
-        }).then(response => response.json())
-            .then(data => {
-                if (data.redirect_url) {
-                    window.location.href = data.redirect_url;
-                } else {
-                    window.location.href = '/next_trial/cct_hot';
-                }
-            });
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: "stop",
+                trialNumber: trialNumber,
+                flip_number: flipNumber + 1,
+                decision: 0,
+                current_points: points,
+                reaction_time: rt
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.redirect_url) {
+                window.location.href = data.redirect_url;
+            } else {
+                window.location.href = '/next_trial/cct_hot';
+            }
+        });
     }
+
 
 
 });
