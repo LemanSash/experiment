@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выбор N карт последовательно • Исследование о принятии решений</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="cct-hot-page">
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">LA Research</a>
+            <!--<div class="nav-links">-->
+            <!--    <a href="{{ url_for('dashboard') }}" class="btn-outline">-->
+            <!--        <i class="fas fa-arrow-left"></i> Назад-->
+            <!--    </a>-->
+            <!--</div>-->
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <div class="task-card">
+                <!--<div class="task-header">-->
+                <!--    <h1><i class="fas fa-fire"></i> Columbia Card Task (Hot)</h1>-->
+                <!--    <button onclick="showInstructions()" class="btn-icon">-->
+                <!--        <i class="fas fa-info-circle"></i> Инструкция-->
+                <!--    </button>-->
+                <!--</div>-->
+
+
+                <div class="task-info-grid">
+                    <div class="info-item">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Карты проигрыша:</span>
+                        <strong id="loss-cards">{{ loss_cards }}</strong>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-coins"></i>
+                        <span>Награда за карту:</span>
+                        <strong id="gain-amount">{{ gain_amount }}</strong>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-hand-holding-usd"></i>
+                        <span>Размер проигрыша:</span>
+                        <strong id="loss-amount">{{ loss_amount }}</strong>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-list-ol"></i>
+                        <span>Попытка:</span>
+                        <strong id="trial-number">{{ trial_number }}</strong>
+                    </div>
+                </div>
+
+                <div class="cards-grid">
+                    {% for i in range(32) %}
+                    <div class="cct-card hot-card">
+                        <img src="{{ url_for('static', filename='images/card_back.png') }}" alt="Card">
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="task-controls">
+                    <div class="points-display">
+                        <i class="fas fa-star"></i>
+                        <span>Баллы:</span>
+                        <strong id="points">0</strong>
+                    </div>
+                    <button id="end-turn" class="btn-primary">
+                        <i class="fas fa-stop-circle"></i> Закончить попытку
+                    </button>
+                    <p>Или нажмите ПРОБЕЛ</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Instruction Modal -->
+    <div class="modal" id="instruction-modal">
+        <div class="modal-content">
+            <h2>{{ instruction_title }}</h2>
+            <div class="modal-body">
+                {{ instruction_content|safe }}
+                <p class="instruction-attention">Внимание! Не покидайте страницу во время прохождения игры, иначе ваши результаты обнулятся и игру нужно будет проходить заново.</p>
+            </div>
+            <button onclick="closeInstructions()" class="btn-primary">
+                <i class="fas fa-check"></i> Понятно
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const showInstructionsFlag = {{ 'true' if show_instructions else 'false' }};
+        var trialType = "{{ trial_type }}";
+    </script>
+    <script src="{{ url_for('static', filename='js/cct_hot.js') }}"></script>
+</body>
+</html>

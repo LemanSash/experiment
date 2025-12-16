@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Мои результаты</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    </head>
+    <body>
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="/" class="logo">LA Research</a>
+                <div class="nav-links">
+                    <a href="{{ url_for('dashboard') }}" class="btn-primary">Личный кабинет</a>
+                    <a href="/#about" class="btn-primary">Об авторе</a>
+                    <a href="/#experiment" class="btn-primary">Эксперимент</a>
+                    <a href="/#participate" class="btn-primary">Участие</a>
+                    {% if completed_tasks and completed_tasks|length >= 4 %}
+                        <a href="{{ url_for('results') }}" class="btn-primary">Мои результаты</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}" class="btn-outline">
+                        <i class="fas fa-sign-out-alt"></i> Выйти
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <section class="section">
+            <div class="container">
+                <h2>Простите, но страница пока находится в разработке!</h2>
+                <p>Мы усердно готовим для вас персональный отчёт. Совсем скоро вы сможете увидеть его на этой странице, а пока можно обратиться к организатору</p>
+            </div>
+            <div class="contact-reminder">
+                <div class="contact-badges">
+                    <a href="mailto:leman.sash@yandex.ru" class="contact-badge">
+                        <i class="fas fa-envelope"></i> Email
+                    </a>
+                    <a href="tg://resolve?phone=+79274072184" class="contact-badge">
+                        <i class="fab fa-telegram"></i> Telegram
+                    </a>
+                </div>
+            </div>
+        </section>
+    </body>
+</html>

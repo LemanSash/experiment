@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms and conditions • Decision-Making Study</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+                <a href="/" class="logo">LA Research</a>
+                <button class="burger" id="burger" aria-label="Меню">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+                <div class="nav-links" id="nav-links">
+                    <a href="/#about" class="btn-primary">Об авторе</a>
+                    <a href="/#experiment" class="btn-primary">Эксперимент</a>
+                    <a href="/#participate" class="btn-primary">Участие</a>
+                    <a href="{{ url_for('register') }}" class="btn-primary">Регистрация</a>
+                </div>
+            </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <div class="terms-content">
+
+                <h1>Условия участия в исследовании</h1>
+                <div class="terms-section">
+                    <p>Дорогие друзья!
+                    Департамент психологии НИУ ВШЭ приглашает Вас принять участие в исследовании, направленном на изучение когнитивных моделей
+                    процесса принятия рискованных решений.</p>
+
+                    <p>Ваше участие является полностью добровольным. Вы можете отказаться от продолжения исследования в любой момент времени.</p>
+
+                    <p>Исследование является полностью анонимным, данные будут анализироваться только в обобщенном виде.
+                    Вы можете не указывать никакие персональные данные.</p>
+
+                    <p>Вам предлагается ответить на ряд вопросов о вашем эмоциональном состоянии, а также пройти несколько онлайн-игр на данной платформе.
+                    Участие в эксперименте в общей сложности займет около часа. Однако вы можете делать перерывы между прохождениями игр столько, сколько вам потребуется.
+                    Постарайтесь, чтобы во время прохождения игры Вас ничто не отвлекало.
+                    Ваше время реакции и принятия решения будет фиксироваться и важно для нас.
+                    Если вы по какой-то причине прервёте прохождение игры и покинете сайт, то при следующей попытке вам будет предложено пройти её заново.</p>
+
+                    <p>Пожалуйста, добросовестно соблюдайте все инструкции.
+                    При обнаружении недобросовестных ответов и несоблюдении инструкции Ваши результаты будут удалены.</p>
+
+                    <p>По всем вопросам, связанным с участием в исследовании, Вы можете обращаться к одному из его авторов – Алине Лобашовой –
+                    по электронной почте: leman.sash@ya.ru.</p>
+
+                    <p>Если Вы внимательно прочитали текст и согласны принять участие в исследовании, вернитесь на страницу регистрации и поставьте галочку в поле согласия.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>

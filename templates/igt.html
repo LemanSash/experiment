@@ -3,19 +3,268 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iowa Gambling Task</title>
+    <title>Выбор одной карты из четырёх • Исследование о принятии решений</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-    <div class="container">
-        <h1>Iowa Gambling Task</h1>
-        <p>Choose a deck (1, 2, 3, or 4):</p>
-        <form method="POST">
-            <button type="submit" name="deck" value="1">Deck 1</button>
-            <button type="submit" name="deck" value="2">Deck 2</button>
-            <button type="submit" name="deck" value="3">Deck 3</button>
-            <button type="submit" name="deck" value="4">Deck 4</button>
-        </form>
+<body class="igt-page">
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">LA Research</a>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <div class="task-card">
+                <!--<div class="task-header">-->
+                <!--    <h1><i class="fas fa-clone"></i> Iowa Gambling Task</h1>-->
+                <!--    <button onclick="showInstructions()" class="btn-icon">-->
+                <!--        <i class="fas fa-info-circle"></i> Инструкция-->
+                <!--    </button>-->
+                <!--</div>-->
+
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ (current_trial/total_trials)*100 }}%"></div>
+                </div>
+
+                <div class="task-progress">
+                    <div class="progress-task-item">
+                        <span>Попытка: </span>
+                        <span id="trial-number">{{ current_trial }}/{{ total_trials }}</span>
+                    </div>
+                    <div class="progress-task-item">
+                        <span>Баланс: </span>
+                        ₽<span id="total-points">{{ total_points }}</span>
+                    </div>
+                </div>
+
+                <div class="decks-grid">
+                    <div class="deck-card" onclick="selectDeck('A')">
+                        <div class="deck-label">A</div>
+                    </div>
+                    <div class="deck-card" onclick="selectDeck('B')">
+                        <div class="deck-label">B</div>
+                    </div>
+                    <div class="deck-card" onclick="selectDeck('C')">
+                        <div class="deck-label">C</div>
+                    </div>
+                    <div class="deck-card" onclick="selectDeck('D')">
+                        <div class="deck-label">D</div>
+                    </div>
+                    <!-- Repeat for decks B, C, D with appropriate stats -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feedback Modal -->
+    <div class="modal" id="feedback-modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-poll"></i> Результат попытки</h3>
+            <div class="modal-body">
+                <div class="result-item">
+                    <span>Выигрыш:</span>
+                    <span id="feedback-payout" class="text-success">+₽0</span>
+                </div>
+                <div class="result-item">
+                    <span>Штраф:</span>
+                    <span id="feedback-penalty" class="text-danger">-₽0</span>
+                </div>
+                <div class="result-item total">
+                    <span>Итого:</span>
+                    <span id="feedback-total">₽0</span>
+                </div>
+            </div>
+            <p>Чтобы закрыть окно, нажмите кнопку ниже или Пробел</p>
+            <button onclick="closeFeedback()" class="btn-primary btn-block">
+                Следующая попытка <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
     </div>
+
+    <!-- Instruction Modal -->
+    <div class="modal" id="instruction-modal">
+        <div class="modal-content">
+            <h2>{{ instruction_title }}</h2>
+            <div class="modal-body">
+                {{ instruction_content|safe }}
+                <p class="instruction-attention">Внимание! Не покидайте страницу во время прохождения игры, иначе ваши результаты обнулятся и игру нужно будет проходить заново.</p>
+            </div>
+            <button onclick="closeInstructions()" class="btn-primary">
+                <i class="fas fa-check"></i> Понятно
+            </button>
+        </div>
+    </div>
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // {% if show_instructions %}
+            //     showInstructions();
+            //     // Disable game interactions
+            //     document.querySelectorAll('.deck-card').forEach(deck => {
+            //         deck.style.pointerEvents = 'none';
+            //     });
+            // {% endif %}
+
+            const decks = document.querySelectorAll('.deck-card');
+            decks.forEach(deck => {
+                deck.style.pointerEvents = 'none';
+                deck.classList.add('disabled');
+            });
+            {% if show_instructions %}
+                showInstructions();
+            {% else %}
+                // Если инструкции не нужны - разблокируем после полной загрузки
+                window.onload = () => {
+                    decks.forEach(deck => {
+                        deck.style.pointerEvents = 'auto';
+                        deck.classList.remove('disabled');
+                    });
+                };
+            {% endif %}
+            reactionStartTime = Date.now();
+
+            document.addEventListener('keydown', function(event) {
+                if (event.code === "Space") {
+
+                    const modal = document.getElementById("feedback-modal");
+                    // Используем getComputedStyle вместо modal.style.display
+                    if (document.getElementById('feedback-modal').style.display === 'block') {
+                        console.log(1);
+                        event.preventDefault();
+                        closeFeedback();
+                    }
+                }
+            });
+        });
+
+        // Обработчик ухода со страницы — если игра не завершена, вызываем сброс состояния
+        // window.addEventListener('beforeunload', function (event) {
+        //     console.log("beforeunload сработал"); // добавьте лог
+        //     const trialText = document.getElementById('trial-number').textContent; // формат: "X/Y"
+        //     const [currentTrial, totalTrials] = trialText.split('/').map(Number);
+        //     console.log("Текущая попытка:", currentTrial, "из", totalTrials);
+        //     if (currentTrial < totalTrials) {
+        //         console.log("Отправляем navigator.sendBeacon на /reset_game/igt");
+        //         navigator.sendBeacon('/reset_igt');
+        //     }
+        // });
+
+        // window.addEventListener('unload', function (event) {
+        //     console.log("unload сработал");
+        //     const trialText = document.getElementById('trial-number').textContent;
+        //     const [currentTrial, totalTrials] = trialText.split('/').map(Number);
+        //     if (currentTrial < totalTrials) {
+        //         console.log("Отправляем navigator.sendBeacon на /reset_game/igt (unload)");
+        //         navigator.sendBeacon('/reset_igt');
+        //     }
+        // });
+
+        function closeInstructions() {
+            document.getElementById('instruction-modal').style.display = 'none';
+            // Enable game interactions
+            document.querySelectorAll('.deck-card').forEach(deck => {
+                deck.style.pointerEvents = 'auto';
+                deck.classList.remove('disabled');
+            });
+            // Mark instructions as viewed
+            fetch('/mark_instructions_viewed/igt', {
+                method: 'POST'
+            });
+        }
+
+        function showInstructions() {
+            document.getElementById('instruction-modal').style.display = 'block';
+            // Optionally disable game interactions again
+            document.querySelectorAll('.deck-card').forEach(deck => {
+                deck.style.pointerEvents = 'none';
+            });
+        }
+
+
+
+        let trialNumber = parseInt(document.getElementById('trial-number').textContent);
+        // Define deck payouts and penalties
+        const deckPayouts = {
+            'A': 100,
+            'B': 100,
+            'C': 50,
+            'D': 50
+        };
+        const deckPenalties = {
+            'A': 250,
+            'B': 250,
+            'C': 50,
+            'D': 50
+        };
+
+        let reactionStartTime;
+
+        function selectDeck(deck) {
+            const reactionTime = Date.now() - reactionStartTime;
+            // Get initial trial number from server-side template
+            const trialNumberElement = document.getElementById('trial-number');
+            // Calculate payout and penalty
+            const payout = deckPayouts[deck];
+            let penalty = 0;
+            if (Math.random() < 0.5) {  // 50% chance of penalty
+                penalty = deckPenalties[deck];
+            }
+
+
+            // Calculate points earned
+            const pointsEarned = payout - penalty;
+
+            trialNumber = parseInt(trialNumberElement.textContent.split('/')[0]);
+
+            // Prepare data for server
+            const requestData = {
+                trialNumber: trialNumber,
+                deck: deck,
+                payout: payout,
+                penalty: penalty,
+                pointsEarned: pointsEarned
+            };
+
+            // Send results to the server
+            fetch('/save_igt', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ deck: deck, reaction_time: reactionTime })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update feedback content
+                document.getElementById('feedback-payout').textContent = data.payout;
+                document.getElementById('feedback-penalty').textContent = data.penalty;
+                document.getElementById('feedback-total').textContent = data.points_earned;
+
+                // Show feedback overlay
+                document.getElementById('feedback-modal').style.display = 'block';
+            });
+        }
+        function closeFeedback() {
+            // Hide feedback overlay
+            document.getElementById('feedback-modal').style.display = 'none';
+            const decks = document.querySelectorAll('.deck-card');
+            decks.forEach(deck => {
+                deck.style.pointerEvents = 'none';
+                deck.classList.add('disabled');
+            });
+
+            // Automatically proceed to next trial or completion
+            fetch('/next_trial/igt')
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    }
+                });
+        }
+
+
+    </script>
+    </script>
 </body>
 </html>

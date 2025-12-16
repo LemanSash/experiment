@@ -3,36 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impulsivity Questionnaire</title>
+    <title>Impulsivity Questionnaire • Decision-Making Study</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Impulsivity Questionnaire</h1>
-        <form method="POST">
-            <p>1. I often act on impulse.</p>
-            <label><input type="radio" name="q1" value="1"> Strongly Disagree</label>
-            <label><input type="radio" name="q1" value="2"> Disagree</label>
-            <label><input type="radio" name="q1" value="3"> Neutral</label>
-            <label><input type="radio" name="q1" value="4"> Agree</label>
-            <label><input type="radio" name="q1" value="5"> Strongly Agree</label>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">LA Research</a>
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard') }}" class="btn-outline">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
+            </div>
+        </div>
+    </nav>
 
-            <p>2. I make decisions without thinking.</p>
-            <label><input type="radio" name="q2" value="1"> Strongly Disagree</label>
-            <label><input type="radio" name="q2" value="2"> Disagree</label>
-            <label><input type="radio" name="q2" value="3"> Neutral</label>
-            <label><input type="radio" name="q2" value="4"> Agree</label>
-            <label><input type="radio" name="q2" value="5"> Strongly Agree</label>
+    <section class="section">
+        <div class="container">
+            <div class="questionnaire-card">
+                <div class="questionnaire-header">
+                    <h1><i class="fas fa-clipboard-list"></i> В начале вам предстоит ответить на несколько вопросов о том, как вы себя ведёте в различных ситуациях.</h1>
+                    <p class="lead">Пожалуйста, оцените следующие утверждения по шкале от "Редко или никогда" до "Всегда или почти всегда".</p>
+                </div>
 
-            <p>3. I am restless and fidgety.</p>
-            <label><input type="radio" name="q3" value="1"> Strongly Disagree</label>
-            <label><input type="radio" name="q3" value="2"> Disagree</label>
-            <label><input type="radio" name="q3" value="3"> Neutral</label>
-            <label><input type="radio" name="q3" value="4"> Agree</label>
-            <label><input type="radio" name="q3" value="5"> Strongly Agree</label>
+                <form method="POST" class="questionnaire-form">
+                    {% for i in range(questions|length) %}
+                    <div class="question-item">
+                        <div class="question-text">
+                            <span class="question-number">{{ i + 1 }}.</span>
+                            {{ questions[i] }}
+                        </div>
+                        <div class="response-scale">
+                            <label class="radio-option">
+                                <input type="radio" name="q{{ i + 1 }}" value="1" required>
+                                <span class="radio-label">Редко или никогда</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="q{{ i + 1 }}" value="2">
+                                <span class="radio-label">Иногда</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="q{{ i + 1 }}" value="3">
+                                <span class="radio-label">Часто</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="q{{ i + 1 }}" value="4">
+                                <span class="radio-label">Всегда или почти всегда</span>
+                            </label>
+                        </div>
+                    </div>
+                    {% endfor %}
 
-            <button type="submit" class="button">Submit</button>
-        </form>
-    </div>
+                    <div class="form-footer">
+                        <button type="submit" class="btn-primary btn-block">
+                            <i class="fas fa-paper-plane"></i> Отправить ответы
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
 </body>
 </html>

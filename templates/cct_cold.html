@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выбор N карт одновременно • Исследование о принятии решений</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="cct-cold-page">
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">LA Research</a>
+            <!--<div class="nav-links">-->
+            <!--    <a href="{{ url_for('dashboard') }}" class="btn-outline">-->
+            <!--        <i class="fas fa-arrow-left"></i> Назад-->
+            <!--    </a>-->
+            <!--</div>-->
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <div class="task-card">
+                <!--<div class="task-header">-->
+                <!--    <h1><i class="fas fa-snowflake"></i> Columbia Card Task (Cold)</h1>-->
+                <!--    <button onclick="showInstructions()" class="btn-icon">-->
+                <!--        <i class="fas fa-info-circle"></i> Инструкция-->
+                <!--    </button>-->
+                <!--</div>-->
+
+
+                <div class="task-info-grid">
+                    <div class="info-item">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Карты проигрыша:</span>
+                        <strong id="loss-cards">{{ loss_cards }}</strong>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-coins"></i>
+                        <span>Выигрыш за карту:</span>
+                        <strong id="gain-amount">{{ gain_amount }}</strong>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-hand-holding-usd"></i>
+                        <span>Размер проигрыша:</span>
+                        <strong id="loss-amount">{{ loss_amount }}</strong>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-list-ol"></i>
+                        <span>Попытка:</span>
+                        <strong id="trial-number">{{ trial_number }}</strong>
+                    </div>
+                    <div class="feedback-message" id="feedback" style="display: none;">
+                        <i class="fas fa-sync fa-spin"></i>
+                        <span>Вы перевернули </span>
+                        <strong id="selected-cards-count">0</strong>
+                        <span> карт...</span>
+                    </div>
+                </div>
+
+                <div class="number-selector">
+                    {% for i in range(0, 33) %}
+                    <button class="number-card" onclick="selectCards({{ i }})">
+                        {{ i }}
+                    </button>
+                    {% endfor %}
+                </div>
+
+                <div class="cards-grid">
+                    {% for i in range(32) %}
+                    <div class="cct-card">
+                        <!--<span>?</span>-->
+                        <img src="{{ url_for('static', filename='images/card_back.png') }}" alt="Card">
+                    </div>
+                    {% endfor %}
+                </div>
+
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Instruction Modal -->
+    <div class="modal" id="instruction-modal">
+        <div class="modal-content">
+            <h2>{{ instruction_title }}</h2>
+            <div class="modal-body">
+                {{ instruction_content|safe }}
+                <p class="instruction-attention">Внимание! Не покидайте страницу во время прохождения игры, иначе ваши результаты обнулятся и игру нужно будет проходить заново.</p>
+            </div>
+            <button onclick="closeInstructions()" class="btn-primary">
+                <i class="fas fa-check"></i> Понятно
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let reactionStartTime;
+        document.addEventListener('DOMContentLoaded', () => {
+
+            reactionStartTime = Date.now();
+            {% if show_instructions %}
+                showInstructions();
+                document.querySelectorAll('.number-card, .cct-card').forEach(el => {
+                    el.style.pointerEvents = 'none';
+                });
+            {% endif %}
+        });
+
+        function showInstructions() {
+            document.getElementById('instruction-modal').style.display = 'block';
+            document.querySelectorAll('.number-card, .cct-card').forEach(el => {
+                el.style.pointerEvents = 'none';
+            });
+        }
+
+        function closeInstructions() {
+            document.getElementById('instruction-modal').style.display = 'none';
+            document.querySelectorAll('.number-card, .cct-card').forEach(el => {
+                el.style.pointerEvents = 'auto';
+            });
+            fetch('/mark_instructions_viewed/cct_cold', { method: 'POST' });
+        }
+
+
+        async function selectCards(numCards) {
+            const reactionTime = Date.now() - reactionStartTime;
+            // Show feedback immediately
+            const feedback = document.getElementById('feedback');
+            const countSpan = document.getElementById('selected-cards-count');
+            countSpan.textContent = numCards;
+            feedback.style.display = 'block';
+
+            // Disable all buttons
+            document.querySelectorAll('.number-card').forEach(btn => {
+                btn.style.pointerEvents = 'none';
+                btn.classList.add('disabled');
+            });
+
+            try {
+                const response = await fetch('/save_cct_cold', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        trialNumber: parseInt(document.getElementById('trial-number').textContent.split('/')[0]),
+                        numCards: numCards,
+                        reaction_time: reactionTime
+                    })
+                });
+
+                const data = await response.json();
+                if(data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    window.location.href = '/next_trial/cct_cold';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                feedback.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Ошибка соединения. Пожалуйста, подождите...`;
+                // Re-enable buttons after 2 seconds
+                setTimeout(() => {
+                    feedback.style.display = 'none';
+                    document.querySelectorAll('.number-card').forEach(btn => {
+                        btn.style.pointerEvents = 'auto';
+                        btn.classList.remove('disabled');
+                    });
+                }, 2000);
+            }
+        }
+    </script>
+</body>
+</html>

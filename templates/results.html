@@ -1,0 +1,406 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="ru">-->
+<!--    <head>-->
+<!--        <meta charset="UTF-8">-->
+<!--        <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--        <title>Мои результаты</title>-->
+<!--        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">-->
+<!--    </head>-->
+<!--    <body>-->
+<!--        <nav class="navbar">-->
+<!--            <div class="nav-container">-->
+<!--                <a href="/" class="logo">LA Research</a>-->
+<!--                <div class="nav-links">-->
+<!--                    <a href="{{ url_for('dashboard') }}" class="btn-primary">Личный кабинет</a>-->
+<!--                    <a href="/#about" class="btn-primary">Об авторе</a>-->
+<!--                    <a href="/#experiment" class="btn-primary">Эксперимент</a>-->
+<!--                    <a href="/#participate" class="btn-primary">Участие</a>-->
+<!--                    {% if completed_tasks and completed_tasks|length >= 4 %}-->
+<!--                        <a href="{{ url_for('results') }}" class="btn-primary">Мои результаты</a>-->
+<!--                    {% endif %}-->
+<!--                    <a href="{{ url_for('logout') }}" class="btn-outline">-->
+<!--                        <i class="fas fa-sign-out-alt"></i> Выйти-->
+<!--                    </a>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </nav>-->
+
+<!--        <section class="result-section" id="questionnaire">-->
+<!--        <h2>Опросник на импульсивность</h2>-->
+<!--        <p class="section-desc">-->
+<!--          Набор из 30 вопросов, измеряющий различные аспекты импульсивности.-->
+<!--          Чем выше сумма баллов, тем выше уровень импульсивности.-->
+<!--        </p>-->
+<!--        <div class="metrics-container">-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">Суммарный балл</div>-->
+<!--            <div class="metric-value">{{ questionnaire.total_score }}</div>-->
+<!--          </div>-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">Процентиль</div>-->
+<!--            <div class="metric-value">{{ questionnaire.percentile }}%</div>-->
+<!--          </div>-->
+          <!-- Добавьте подшкалы, если есть -->
+<!--        </div>-->
+<!--      </section>-->
+
+      <!-- BART -->
+<!--      <section class="result-section" id="bart">-->
+<!--        <h2>Balloon Analogue Risk Task (BART)</h2>-->
+<!--        <p class="section-desc">-->
+<!--          Игра, оценивающая склонность к риску через надувание виртуальных шариков.-->
+<!--          Баллы начисляются за каждую накачку, но шарик может лопнуть.-->
+<!--        </p>-->
+<!--        <div class="metrics-container">-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">Среднее накачек</div>-->
+<!--            <div class="metric-value">{{ bart.avg_pumps }}</div>-->
+<!--          </div>-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">Взорвалось</div>-->
+<!--            <div class="metric-value">{{ bart.explosion_rate }}%</div>-->
+<!--          </div>-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">Итого заработано</div>-->
+<!--            <div class="metric-value">₽{{ bart.total_earn }}</div>-->
+<!--          </div>-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">% vs среднее (накачки)</div>-->
+<!--            <div class="metric-value">{{ bart.pct_pumps }}%</div>-->
+<!--          </div>-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">% vs среднее (заработок)</div>-->
+<!--            <div class="metric-value">{{ bart.pct_earn }}%</div>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </section>-->
+
+      <!-- IGT -->
+<!--      <section class="result-section" id="igt">-->
+<!--        <h2>Iowa Gambling Task (IGT)</h2>-->
+<!--        <p class="section-desc">-->
+<!--          Задание, моделирующее реальные решения с выигрышами и штрафами.-->
+<!--          Оценивает способность выбирать оптимальные карты.-->
+<!--        </p>-->
+<!--        <div class="metrics-container">-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">Чистый выигрыш</div>-->
+<!--            <div class="metric-value">₽{{ igt.total_net }}</div>-->
+<!--          </div>-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">Средний per-trial</div>-->
+<!--            <div class="metric-value">₽{{ igt.avg_net }}</div>-->
+<!--          </div>-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">% выбора выгодных колод</div>-->
+<!--            <div class="metric-value">{{ igt.pct_good }}%</div>-->
+<!--          </div>-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">Процентиль выигрыш</div>-->
+<!--            <div class="metric-value">{{ igt.pct_net }}%</div>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </section>-->
+
+      <!-- CCT-hot -->
+<!--      <section class="result-section" id="cct-hot">-->
+<!--        <h2>Columbia Card Task (Hot)</h2>-->
+<!--        <p class="section-desc">-->
+<!--          «Горячая» версия задачи с быстрым обратным связыванием.-->
+<!--          Оценивает склонность к риску при непрерывном выборе.-->
+<!--        </p>-->
+<!--        <div class="metrics-container">-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">Среднее перевёрнуто</div>-->
+<!--            <div class="metric-value">{{ cct_hot.avg_flip }}</div>-->
+<!--          </div>-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">Средний заработок</div>-->
+<!--            <div class="metric-value">₽{{ cct_hot.avg_pts }}</div>-->
+<!--          </div>-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">% vs среднее (перевороты)</div>-->
+<!--            <div class="metric-value">{{ cct_hot.pct_flip }}%</div>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </section>-->
+
+      <!-- CCT-cold -->
+<!--      <section class="result-section" id="cct-cold">-->
+<!--        <h2>Columbia Card Task (Cold)</h2>-->
+<!--        <p class="section-desc">-->
+<!--          «Холодная» версия без обратной связи до конца раунда.-->
+<!--          Оценивает стратегическое планирование.-->
+<!--        </p>-->
+<!--        <div class="metrics-container">-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">Среднее перевёрнуто</div>-->
+<!--            <div class="metric-value">{{ cct_cold.avg_flip }}</div>-->
+<!--          </div>-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">Средний заработок</div>-->
+<!--            <div class="metric-value">₽{{ cct_cold.avg_pts }}</div>-->
+<!--          </div>-->
+<!--          <div class="metric-card">-->
+<!--            <div class="metric-title">% vs среднее (перевороты)</div>-->
+<!--            <div class="metric-value">{{ cct_cold.pct_flip }}%</div>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </section>-->
+
+      <!-- Назад в дашборд -->
+<!--      <div style="text-align:center; margin-top:2rem;">-->
+<!--        <a href="{{ url_for('dashboard') }}" class="btn-primary">-->
+<!--          ← Вернуться в личный кабинет-->
+<!--        </a>-->
+<!--      </div>-->
+<!--    </body>-->
+<!--</html>-->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Мои результаты</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <style>
+  /*  .result-section { margin: 2rem auto; max-width: 800px; }*/
+  /*  .result-section h2 { margin-bottom: .5rem; }*/
+  /*  .section-desc { font-size: .95rem; color: #555; margin-bottom: 1rem; }*/
+  /*  .metrics-container { display: flex; flex-wrap: wrap; gap: 1rem; }*/
+  /*  .metric-card {*/
+  /*    flex: 1 1 calc(50% - 1rem);*/
+  /*    background: #fff; padding: 1rem; border-radius: 6px;*/
+  /*    box-shadow: 0 2px 6px rgba(0,0,0,0.1);*/
+  /*  }*/
+  /*  .metric-title { font-weight: 600; margin-bottom: .5rem; }*/
+  /*  .metric-value { font-size: 1.5rem; color: var(--primary); }*/
+  /*  .metric-note { font-size: .85rem; color: #666; margin-top: .5rem; }*/
+
+    /* Специальная шкала риска */
+  /*  .risk-score .metric-scale {*/
+  /*    display: flex; align-items: center; gap: .5rem; font-size: .8rem; margin: .5rem 0;*/
+  /*  }*/
+  /*  .risk-score .scale-bar {*/
+  /*    flex: 1; height: 6px; background: #eee; border-radius: 3px; overflow: hidden;*/
+  /*  }*/
+  /*  .risk-score .scale-bar .fill {*/
+  /*    height: 100%; background: var(--secondary);*/
+  /*  }*/
+  /*  .risk-score .low { color: green; }*/
+  /*  .risk-score .high { color: red; }*/
+
+  /*  @media (max-width: 600px) {*/
+  /*    .metric-card { flex: 1 1 100%; }*/
+  /*  }*/
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="logo">LA Research</a>
+      <div class="nav-links">
+        <a href="{{ url_for('dashboard') }}" class="btn-primary">Личный кабинет</a>
+        {% if completed_tasks|length >=4 %}
+          <a href="{{ url_for('results') }}" class="btn-primary">Мои результаты</a>
+        {% endif %}
+        <a href="{{ url_for('logout') }}" class="btn-outline">Выйти</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Опросник -->
+  <section class="result-section" id="questionnaire">
+  <h2>Опросник на импульсивность (BIS-11)</h2>
+  <p class="section-desc">
+    Опросник из 30 утверждений, направленных на измерение уровня импульсивности —
+    насколько человек склонен действовать без раздумий, быстро менять интересы или планы.
+  </p>
+
+  <div class="metrics-container">
+    <div class="metric-card risk-score" style="flex: 1 1 100%;">
+      <div class="metric-title">Ваш балл: {{ questionnaire.total_score }} из 120</div>
+
+      <div class="metric-scale">
+        <span class="low">30</span>
+        <div class="scale-bar">
+          <div
+            class="fill"
+            style="width: {{ ((questionnaire.total_score - 30) / 90) * 100 }}%;"
+          ></div>
+        </div>
+        <span class="high">120</span>
+      </div>
+      <div class="metric-note">
+        Более высокие баллы указывают на более выраженную импульсивность.
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-title">Ваш процентиль</div>
+      <div class="metric-value">{{ questionnaire.percentile }}%</div>
+      <div class="metric-note">
+        Этот показатель показывает, сколько участников получили меньший результат.
+        Например, {{ questionnaire.percentile }}% означает, что вы набрали больше баллов, чем {{ questionnaire.percentile }}% людей.
+      </div>
+    </div>
+  </div>
+</section>
+
+
+  <!-- BART -->
+  <section class="result-section" id="bart">
+    <h2>Balloon Analogue Risk Task (BART)</h2>
+    <p class="section-desc">
+      Это интерактивная игра, в которой вы надуваете виртуальный шарик, зарабатывая очки за каждое «надув» (pump).
+      Однако в любой момент шарик может «лопнуть», и вы потеряете накопленный в этой попытке выигрыш.</p>
+    <p class="section-desc"><b>Зачем:</b> BART измеряет вашу склонность к умеренному риску: сколько «надувов» вы готовы сделать, прежде чем остановиться. Чем больше средний показатель, тем выше ваша готовность рисковать ради вознаграждения.
+    </p>
+    <div class="metrics-container">
+      <!-- Риск-баллы -->
+      <div class="metric-card risk-score">
+        <div class="metric-title">Риск-баллы</div>
+        <div class="metric-value">{{ bart.avg_pumps|round(1) }}</div>
+        <div class="metric-scale">
+          <span class="low">низкий</span>
+          <div class="scale-bar">
+            <div class="fill" style="width:{{ (bart.avg_pumps/128)*100 }}%"></div>
+          </div>
+          <span class="high">высокий</span>
+        </div>
+        <div class="metric-note">
+          Вы на {{ bart.pct_pumps }}% {{ 'выше' if bart.pct_pumps>0 else 'ниже' }} среднего
+        </div>
+      </div>
+      <!-- Частота взрывов -->
+      <div class="metric-card">
+        <div class="metric-title">Вероятность взрыва</div>
+        <div class="metric-value">{{ bart.explosion_rate }}%</div>
+        <div class="metric-note">
+          Чем меньше – тем безопаснее вы играете
+        </div>
+      </div>
+      <!-- Итоговый банк -->
+      <div class="metric-card">
+        <div class="metric-title">Ваш итоговый банк</div>
+        <div class="metric-value">₽{{ bart.total_earn }}</div>
+        <div class="metric-note">
+          Сумма заработка за все шарики
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IGT -->
+  <section class="result-section" id="igt">
+    <h2>Iowa Gambling Task (IGT)</h2>
+    <p class="section-desc">
+      В этой задаче вам последовательно предлагают выбирать карты из четырёх колод.
+      Две колоды приносят небольшие, но надёжные выигрыши, две другие — большие выигрыши, но с высокой вероятностью крупного штрафа.
+    </p>
+    <p class="section-desc">
+        <b>Зачем:</b> IGT показывает, насколько хорошо вы умеете балансировать между «безопасными» и «рискованными» решениями, учитывая долгосрочные выгоды.
+        Это симулирует реальные финансовые или жизненные ситуации, где нужно выбирать между стабильностью и высоким, но ненадёжным, доходом.
+    </p>
+    <div class="metrics-container">
+      <div class="metric-card">
+        <div class="metric-title">Чистый выигрыш</div>
+        <div class="metric-value">₽{{ igt.total_net }}</div>
+        <div class="metric-note">
+          Ваш суммарный результат
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Умение выбирать</div>
+        <div class="metric-value">{{ igt.pct_good }}%</div>
+        <div class="metric-note">
+          Доля выгодных карт (C/D)
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Ваш процентиль</div>
+        <div class="metric-value">{{ igt.pct_net }}%</div>
+        <div class="metric-note">
+          Вы заработали на {{ igt.pct_net }}% больше других участников
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CCT-Hot -->
+  <section class="result-section" id="cct-hot">
+    <h2>Columbia Card Task (Hot)</h2>
+    <p class="section-desc">
+      «Горячая» версия Columbia Card Task — это быстрая игра, где вы переворачиваете карты одну за другой и мгновенно получаете либо бонус,
+      либо штраф. Всего 32 карты в колоде, заранее известно, сколько «плохих» карт, но вы не знаете их расположения.
+    </p>
+    <p class="section-desc">
+        <b>Зачем:</b> Задача измеряет вашу реакцию и склонность рисковать в режиме реального времени, когда каждая новая карта либо добавляет выигрыш,
+        либо обнуляет его. Она отражает ситуации, когда решения нужно принимать «на ходу», без долгого обдумывания.
+    </p>
+    <div class="metrics-container">
+      <div class="metric-card">
+        <div class="metric-title">Средние перевороты</div>
+        <div class="metric-value">{{ cct_hot.avg_flip }}</div>
+        <div class="metric-note">
+          Сколько карт обычно открываете, прежде чем попасть на штраф
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Средний выигрыш</div>
+        <div class="metric-value">₽{{ cct_hot.avg_pts }}</div>
+        <div class="metric-note">
+          Сколько в среднем зарабатываете за раунд
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Сравнение со средним</div>
+        <div class="metric-value">{{ cct_hot.pct_flip }}%</div>
+        <div class="metric-note">
+          Вы принимаете на {{ cct_hot.pct_flip|abs }}% {{ 'более' if cct_hot.pct_flip>0 else 'менее' }} рискованные решения, чем остальные участники
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CCT-Cold -->
+  <section class="result-section" id="cct-cold">
+    <h2>Columbia Card Task (Cold)</h2>
+    <p class="section-desc">
+      «Холодная» версия похожа на «горячую», но без мгновенной обратной связи — вы сразу выбираете, сколько карт из 32 готовы перевернуть.
+      Информация о выигрыше и штрафе появляется только после того, как вы перевернёте все выбранные карты.
+    </p>
+    <p class="section-desc">
+        <b>Зачем:</b> CCT-cold показывает вашу стратегию долгосрочного планирования: сколько карт вы осознанно решаете открыть, когда нет
+        моментальных подсказок. Это похоже на ситуации, где нужно рассчитать риски заранее и действовать по заранее выбранной стратегии.
+    </p>
+    <div class="metrics-container">
+      <div class="metric-card">
+        <div class="metric-title">Средние перевороты</div>
+        <div class="metric-value">{{ cct_cold.avg_num }}</div>
+        <div class="metric-note">
+          Сколько карт в среднем решаетесь открыть
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Средний выигрыш</div>
+        <div class="metric-value">₽{{ cct_cold.avg_pts }}</div>
+        <div class="metric-note">
+          Ваш средний заработок за раунд
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Сравнение со средним</div>
+        <div class="metric-value">{{ cct_cold.pct_num }}%</div>
+        <div class="metric-note">
+          Вы принимаете на {{ cct_cold.pct_num|abs }}% {{ 'более' if cct_cold.pct_num>0 else 'менее' }} рискованные решения, чем остальные участники
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div style="text-align:center; margin:3rem 0;">
+    <a href="{{ url_for('dashboard') }}" class="btn-primary">← Вернуться в личный кабинет</a>
+  </div>
+</body>
+</html>

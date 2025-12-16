@@ -3,22 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login • Decision-Making Study</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Login</h1>
-        <form method="POST">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
-            
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-            
-            <button type="submit" class="button">Login</button>
-        </form>
-        <a href="{{ url_for('register') }}" class="button">Don't have an account? Register</a>
-    </div>
+    <nav class="navbar">
+            <div class="nav-container">
+                <a href="/" class="logo">LA Research</a>
+                <button class="burger" id="burger" aria-label="Меню">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+                <div class="nav-links" id="nav-links">
+                    <a href="/#about" class="btn-primary">Об авторе</a>
+                    <a href="/#experiment" class="btn-primary">Эксперимент</a>
+                    <a href="/#participate" class="btn-primary">Участие</a>
+                    <a href="{{ url_for('register') }}" class="btn-primary">Регистрация</a>
+                </div>
+            </div>
+    </nav>
+
+    <section class="section auth-section">
+        <div class="container">
+            <div class="auth-card">
+                <h1>Добро пожаловать</h1>
+                <p class="lead">Войди, чтобы принять участие в эксперименте</p>
+
+                <form method="POST" class="auth-form">
+                    <div class="form-group">
+                        <label for="username">Логин</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Пароль</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block">Войти</button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрируйся</a></p>
+
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 </body>
 </html>
