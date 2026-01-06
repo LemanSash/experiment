@@ -1,32 +1,76 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 import sqlite3, random, json
 from itertools import permutations
+import psycopg2
+import psycopg2.extras
 
 app = Flask(__name__)
 app.secret_key = '#'
 
 # Initialize database and create tables
 def init_db():
-    conn = sqlite3.connect('database.db')
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS cct_hot_results (
-            result_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
+            result_id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(user_id),
             trial_number INTEGER NOT NULL,
             trial_type TEXT NOT NULL,
-            decision INTEGER NOT NULL,          
-            result TEXT,                        
-            flip_number INTEGER NOT NULL,       
-            current_points INTEGER NOT NULL,    
-            points INTEGER NOT NULL,            
-            reaction_time INTEGER,              
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-            loss_cards INTEGER NOT NULL,
-            gain_amount INTEGER NOT NULL,
-            loss_amount INTEGER NOT NULL
-    )
+            decision INTEGER NOT NULL,
+            result TEXT,
+            flip_number INTEGER,
+            current_points INTEGER,
+            points INTEGER,
+            reaction_time INTEGER,
+            loss_cards INTEGER,
+            gain_amount INTEGER,
+            loss_amount INTEGER,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS cct_cold_results (
+            result_id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(user_id),
+            trial_number INTEGER,
+            num_cards INTEGER,
+            loss_encountered BOOLEAN,
+            points_earned INTEGER,
+            reaction_time INTEGER,
+            loss_cards INTEGER,
+            gain_amount INTEGER,
+            loss_amount INTEGER
+        );
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS igt_results (
+            result_id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(user_id),
+            trial_number INTEGER,
+            deck TEXT,
+            payout INTEGER,
+            penalty INTEGER,
+            points_earned INTEGER,
+            reaction_time INTEGER
+        );
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS bart_results (
+            result_id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(user_id),
+            trial_number INTEGER,
+            pump_number INTEGER,
+            break_point INTEGER,
+            popped BOOLEAN,
+            points_earned INTEGER,
+            total_points INTEGER,
+            reaction_time INTEGER
+        );
     ''')
 
     cursor.execute('''
@@ -46,45 +90,70 @@ def init_db():
     #Create users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
-            user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id SERIAL PRIMARY KEY,
             username TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
             age INTEGER,
             gender TEXT,
             education TEXT
-        )
+        );
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS questionnaire_responses (
+            response_id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(user_id),
+            question_number INTEGER NOT NULL,
+            response TEXT NOT NULL
+        );
     ''')
 
     # Create sequences table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS sequences (
-            sequence_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sequence_id SERIAL PRIMARY KEY,
             task1 TEXT NOT NULL,
             task2 TEXT NOT NULL,
             task3 TEXT NOT NULL,
             task4 TEXT NOT NULL,
             assigned_count INTEGER DEFAULT 0
-        )
+        );
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS user_sequences (
+            user_id INTEGER REFERENCES users(user_id),
+            task1 TEXT,
+            task2 TEXT,
+            task3 TEXT,
+            task4 TEXT
+        );
     ''')
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS user_progress (
-            user_id INTEGER NOT NULL,
+            user_id INTEGER REFERENCES users(user_id),
             task_name TEXT NOT NULL,
+            device_type TEXT,
             completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (user_id, task_name),
-            FOREIGN KEY (user_id) REFERENCES users(user_id)
-        )
+            PRIMARY KEY (user_id, task_name)
+        );
+    ''')
+
+    cursor.execute('''
+        CREATE UNIQUE INDEX IF NOT EXISTS sequences_unique
+            ON sequences (task1, task2, task3, task4);
     ''')
 
     # Populate sequences table
     methods = ["igt", "bart", "cct_hot", "cct_cold"]  # Use endpoint names
     all_sequences = list({p for p in permutations(methods)})  # Get unique permutations
     for seq in all_sequences[:16]:  # Use first 16 unique sequences
-        cursor.execute('''
-            INSERT OR IGNORE INTO sequences (task1, task2, task3, task4)
-            VALUES (?, ?, ?, ?)
-        ''', seq)
+        cursor.execute("""
+            INSERT INTO sequences (task1, task2, task3, task4)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (task1, task2, task3, task4) DO NOTHING
+        """, seq)
 
     conn.commit()
     conn.close()
@@ -102,8 +171,13 @@ def check_session():
 
 # Helper function to get database connection
 def get_db():
-    conn = sqlite3.connect('database.db')
-    conn.row_factory = sqlite3.Row
+    conn = psycopg2.connect(
+        dbname="experiment_db",
+        user="admin",
+        password="ng57&ik#2",
+        host="localhost",
+        port=5432
+    )
     return conn
 
 def get_device_type():
@@ -136,21 +210,25 @@ def register():
         education = request.form['education']
         # Hash the password (use a library like bcrypt in production)
         password_hash = password  # Replace with actual hashing
-        conn = sqlite3.connect('database.db')
+        conn = get_db()
         cursor = conn.cursor()
         try:
-            cursor.execute('''
+            cursor.execute("""
                 INSERT INTO users (username, password_hash, age, gender, education)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (username, password_hash, age, gender, education))
+                VALUES (%s, %s, %s, %s, %s)
+            """, (
+                request.form['username'],
+                request.form['password'],  # TODO: hash
+                request.form['age'],
+                request.form['gender'],
+                request.form['education']
+            ))
             conn.commit()
-            flash('Registration successful! Please log in.')
-            print('Success!')
-            return redirect(url_for('login'))
-        except sqlite3.IntegrityError:
-            flash('Username already exists. Please choose another.')
-            print('Username already exists.')
+        except psycopg2.errors.UniqueViolation:
+            conn.rollback()
+            flash("Username already exists")
         finally:
+            cursor.close()
             conn.close()
     print('Oops.')
     return render_template('register.html')
@@ -164,24 +242,31 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        conn = sqlite3.connect('database.db')
+        conn = get_db()
         cursor = conn.cursor()
-        cursor.execute('SELECT user_id, password_hash FROM users WHERE username = ?', (username,))
+        cursor.execute("""
+            SELECT user_id, password_hash
+            FROM users
+            WHERE username = %s
+        """, (username,))
         user = cursor.fetchone()
-        conn.close()
         if user and user[1] == password: #here should be password verification
             session['user_id'] = user[0]
-            # Load completed tasks from database
-            conn = get_db()
-            cursor = conn.cursor()
-            cursor.execute('SELECT task_name FROM user_progress WHERE user_id = ?', (user[0],))
+            cursor.execute("""
+                SELECT task_name
+                FROM user_progress
+                WHERE user_id = %s
+            """, (user[0],))
             completed_tasks = [row[0] for row in cursor.fetchall()]
             session['completed_tasks'] = completed_tasks
+            cursor.close()
             conn.close()
             flash('Login successfull!')
             return redirect(url_for('dashboard'))
         else:
             flash('Invalid username of password.')
+        cursor.close()
+        conn.close()
     return render_template('login.html')
 
 @app.route('/dashboard')
@@ -190,8 +275,6 @@ def dashboard():
     if not user_id:
         return redirect(url_for('login'))
 
-    # Get user's progress data
-    completed_tasks = []
     task_names = {
         'igt': 'Выбор одной карты из четырёх',
         'bart': 'Надуть шарик',
@@ -199,113 +282,105 @@ def dashboard():
         'cct_cold': 'Выбрать N карт одновременно'
     }
 
-    # Get the next sequence in round-robin order
-    conn = sqlite3.connect('database.db')
+    conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM user_sequences WHERE user_id = ?', (user_id,))
-    existing_sequence = cursor.fetchone()
 
-    if not existing_sequence:
-        cursor.execute('SELECT * FROM sequences ORDER BY assigned_count ASC, sequence_id ASC LIMIT 1')
+    # 1. Получаем или назначаем последовательность заданий
+    cursor.execute("""
+        SELECT task1, task2, task3, task4
+        FROM user_sequences
+        WHERE user_id = %s
+    """, (user_id,))
+    seq_row = cursor.fetchone()
+
+    if not seq_row:
+        cursor.execute("""
+            SELECT sequence_id, task1, task2, task3, task4
+            FROM sequences
+            ORDER BY assigned_count ASC, sequence_id ASC
+            LIMIT 1
+        """)
         sequence = cursor.fetchone()
 
         if not sequence:
+            cursor.close()
             conn.close()
-            flash('No sequences available. Please contact the administrator.')
-            return redirect(url_for('dashboard'))
+            flash('Нет доступных последовательностей')
+            return redirect(url_for('login'))
 
-        # Assign the sequence to the user
-        cursor.execute('''
+        cursor.execute("""
             INSERT INTO user_sequences (user_id, task1, task2, task3, task4)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (user_id, sequence[1], sequence[2], sequence[3], sequence[4]))
+            VALUES (%s, %s, %s, %s, %s)
+        """, (user_id, sequence[1], sequence[2], sequence[3], sequence[4]))
 
-        # Increment the assigned count for the sequence
-        cursor.execute('UPDATE sequences SET assigned_count = assigned_count + 1 WHERE sequence_id = ?', (sequence[0],))
+        cursor.execute("""
+            UPDATE sequences
+            SET assigned_count = assigned_count + 1
+            WHERE sequence_id = %s
+        """, (sequence[0],))
+
         conn.commit()
-
-        # Теперь получаем вновь вставленную запись, чтобы использовать её далее
-        cursor.execute('SELECT task1, task2, task3, task4 FROM user_sequences WHERE user_id = ?', (user_id,))
-        seq_row = cursor.fetchone()
+        sequence = [sequence[1], sequence[2], sequence[3], sequence[4]]
     else:
-        seq_row = (existing_sequence[1], existing_sequence[2], existing_sequence[3], existing_sequence[4])
-    conn.close()
+        sequence = list(seq_row)
 
-    # Приводим последовательность к нужному формату
-    if seq_row:
-        sequence = [task.lower().replace(' ', '_').replace('-', '_') for task in seq_row]
-        session['sequence'] = sequence
-    else:
-        sequence = session.get('sequence')
+    session['sequence'] = sequence
 
-    # Check if questionnaire completed
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT 1 FROM questionnaire_responses WHERE user_id = ? LIMIT 1', (user_id,))
+    # 2. Проверяем, заполнена ли анкета
+    cursor.execute("""
+        SELECT 1
+        FROM questionnaire_responses
+        WHERE user_id = %s
+        LIMIT 1
+    """, (user_id,))
     has_questionnaire = cursor.fetchone() is not None
 
-    cursor.execute('SELECT task1, task2, task3, task4 FROM user_sequences WHERE user_id = ?', (user_id,))
-    seq_row = cursor.fetchone()
-    if seq_row:
-        sequence = [task.lower().replace(' ', '_').replace('-', '_') for task in seq_row]
-        session['sequence'] = sequence  # This line was missing
-    else:
-        sequence = session['sequence']
-
-    # Load completed tasks from database
-    cursor.execute('SELECT task_name FROM user_progress WHERE user_id = ?', (user_id,))
-    db_completed = [row[0] for row in cursor.fetchall()]
-    session_completed = session.get('completed_tasks', [])
-    completed_tasks = list(set(db_completed + session_completed))
+    # 3. Загружаем завершённые задания
+    cursor.execute("""
+        SELECT task_name
+        FROM user_progress
+        WHERE user_id = %s
+    """, (user_id,))
+    completed_tasks = [row[0] for row in cursor.fetchall()]
     session['completed_tasks'] = completed_tasks
 
-    cursor.execute('''
+    # 4. Последняя активность
+    cursor.execute("""
         SELECT MAX(completed_at)
         FROM user_progress
-        WHERE user_id = ?
-    ''', (user_id,))
+        WHERE user_id = %s
+    """, (user_id,))
     last_active = cursor.fetchone()[0] or "Нет активности"
 
+    cursor.close()
     conn.close()
 
-    # Пример: загружаем информацию о завершённых заданиях
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT task_name FROM user_progress WHERE user_id = ?', (user_id,))
-    completed_tasks = [row[0] for row in cursor.fetchall()]
-    conn.close()
-
-    # Если хотя бы одна игра завершена, вычисляем результаты
-    results_dict = {}
-    total = 0
-    if completed_tasks:
-        results_dict, total = get_user_results(user_id)
-
-    # Determine next task
+    # 5. Определяем следующее задание
     next_task = None
-    if has_questionnaire and sequence:
-        # Get completed tasks from session or initialize
-        completed_tasks = session.get('completed_tasks', [])
-        # Debug: Print completed tasks and sequence
-        print(f"Completed Tasks: {completed_tasks}")
-        print(f"Sequence: {sequence}")
-
-        # Find first incomplete task
+    if has_questionnaire:
         for task in sequence:
             if task not in completed_tasks:
                 next_task = task
                 break
 
+    # 6. Результаты (если есть)
+    results_dict = {}
+    total = 0
+    if completed_tasks:
+        results_dict, total = get_user_results(user_id)
 
-    return render_template('dashboard.html',
-                         has_questionnaire=has_questionnaire,
-                         next_task=next_task,
-                         completed_tasks=completed_tasks,
-                         sequence=sequence,
-                         last_active=last_active,
-                         task_names=task_names,
-                         results=results_dict,
-                         total=total)
+    return render_template(
+        'dashboard.html',
+        has_questionnaire=has_questionnaire,
+        next_task=next_task,
+        completed_tasks=completed_tasks,
+        sequence=sequence,
+        last_active=last_active,
+        task_names=task_names,
+        results=results_dict,
+        total=total
+    )
+
 
 @app.route('/start_experiment', methods=['POST'])
 def start_experiment():
@@ -358,7 +433,7 @@ def questionnaire():
     if request.method == 'POST':
         # Save the score to the database
         user_id = session.get('user_id')
-        conn = sqlite3.connect('database.db')
+        conn = get_db()
         cursor = conn.cursor()
 
         # Save questionnaire responses
@@ -367,12 +442,13 @@ def questionnaire():
             response = request.form.get(question_key)
             if response:
                 # Save the response to the database
-                cursor.execute('''
+                cursor.execute("""
                     INSERT INTO questionnaire_responses (user_id, question_number, response)
-                    VALUES (?, ?, ?)
-                ''', (user_id, i, int(response)))
+                    VALUES (%s, %s, %s)
+                """, (user_id, i, int(response)))
 
         conn.commit()
+        cursor.close()
         conn.close()
 
         # Redirect to the first task
@@ -454,13 +530,16 @@ def generate_trials(task="cct_hot"):
 def mark_task_completed(user_id, task_name):
     device = get_device_type()
     conn = get_db()
+    cursor = conn.cursor()
     try:
-        conn.execute('''
-            INSERT OR IGNORE INTO user_progress (user_id, task_name, device_type)
-            VALUES (?, ?, ?)
-        ''', (user_id, task_name, device))
+        cursor.execute("""
+            INSERT INTO user_progress (user_id, task_name, device_type)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (user_id, task_name) DO NOTHING
+        """, (user_id, task_name, device))
         conn.commit()
     finally:
+        cursor.close()
         conn.close()
 
 
@@ -535,10 +614,11 @@ def task(task_name):
                 user_id = session.get('user_id')
                 if user_id:
                     conn = get_db()
+                    cursor = conn.cursor()
                     # Удаляем все записи для IGT данного пользователя
-                    conn.execute('DELETE FROM bart_results WHERE user_id = ?', (user_id,))
-                    conn.commit()
-                    conn.close()
+                    cursor.execute('DELETE FROM bart_results WHERE user_id = %s', (user_id,))
+                    cursor.commit()
+                    cursor.close()
                 # Сброс переменных игры BART
                 session.pop('bart_current', None)
                 session.pop('bart_total_points', None)
@@ -555,10 +635,11 @@ def task(task_name):
                 user_id = session.get('user_id')
                 if user_id:
                     conn = get_db()
+                    cursor = conn.cursor()
                     # Удаляем все записи для IGT данного пользователя
-                    conn.execute('DELETE FROM igt_results WHERE user_id = ?', (user_id,))
-                    conn.commit()
-                    conn.close()
+                    cursor.execute('DELETE FROM igt_results WHERE user_id = %s', (user_id,))
+                    cursor.commit()
+                    cursor.close()
                 # Сброс session-переменных (если требуется)
                 session.pop(f'{task_name}_instructions_viewed', None)
                 session['igt_trials'] = 150
@@ -570,10 +651,11 @@ def task(task_name):
                 user_id = session.get('user_id')
                 if user_id:
                     conn = get_db()
+                    cursor = conn.cursor()
                     # Удаляем все записи для IGT данного пользователя
-                    conn.execute(f'DELETE FROM {task_name}_results WHERE user_id = ?', (user_id,))
-                    conn.commit()
-                    conn.close()
+                    cursor.execute(f'DELETE FROM {task_name}_results WHERE user_id = %s', (user_id,))
+                    cursor.commit()
+                    cursor.close()
                 session.pop(f'{task_name}_current', None)
                 session.pop(f'{task_name}_trials', None)
                 session.pop(f'{task_name}_instructions_viewed', None)
@@ -583,19 +665,18 @@ def task(task_name):
     if task_name not in session.get('sequence', []):
         return redirect(url_for('dashboard'))
 
-    # NEW: Database completion check (insert here)
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
         SELECT 1 FROM user_progress
-        WHERE user_id = ? AND task_name = ?
+        WHERE user_id = %s AND task_name = %s
     ''', (session['user_id'], task_name))
     if cursor.fetchone():
+        cursor.close()
         conn.close()
         return redirect(url_for('dashboard'))
+    cursor.close()
     conn.close()
-
-
 
     # Handle IGT task
     if task_name == 'igt':
@@ -604,13 +685,14 @@ def task(task_name):
         cursor = conn.cursor()
 
         # Get current trial number
-        cursor.execute('SELECT COUNT(*) FROM igt_results WHERE user_id = ?', (session['user_id'],))
+        cursor.execute('SELECT COUNT(*) FROM igt_results WHERE user_id = %s', (session['user_id'],))
         current_trial = cursor.fetchone()[0]
 
         # Get total points
-        cursor.execute('SELECT SUM(points_earned) FROM igt_results WHERE user_id = ?', (session['user_id'],))
+        cursor.execute('SELECT SUM(points_earned) FROM igt_results WHERE user_id = %s', (session['user_id'],))
         total_points = 2000 + (cursor.fetchone()[0] or 0)
 
+        cursor.close()
         conn.close()
 
         # Check if instructions need to be shown
@@ -642,14 +724,13 @@ def task(task_name):
         if 'bart_break_points' not in session:
             session['bart_break_points'] = points[:50]  # ровно 50 trial
 
-
         # After committing the insert
         conn = get_db()
         cursor = conn.cursor()
         cursor.execute('''
             SELECT points_earned
             FROM bart_results
-            WHERE user_id = ?
+            WHERE user_id = %s
             ORDER BY rowid DESC
             LIMIT 1
         ''', (session['user_id'],))
@@ -660,6 +741,7 @@ def task(task_name):
         else:
             last_points_earned = 0  # Default value if no records found
 
+        cursor.close()
         conn.close()
 
         # Check if all trials are completed
@@ -759,7 +841,7 @@ def save_cct_hot():
     else:
         points = 0   # временно, будет обновлено позже
 
-    conn = sqlite3.connect('database.db')
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute('''
@@ -777,7 +859,7 @@ def save_cct_hot():
             gain_amount,
             loss_amount
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     ''', (
         user_id,
         trial_number,
@@ -794,6 +876,7 @@ def save_cct_hot():
     ))
 
     conn.commit()
+    cursor.close()
     conn.close()
 
     # Переход к следующему trial
@@ -849,11 +932,13 @@ def save_cct_cold():
 
     # Save results to database
     conn = get_db()
-    conn.execute('''
+    cursor = conn.cursor()
+    cursor.execute('''
         INSERT INTO cct_cold_results (user_id, trial_number, num_cards, loss_encountered, points_earned, reaction_time, loss_cards, gain_amount, loss_amount)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
     ''', (user_id, data['trialNumber'], num_cards, loss_encountered, points_earned, data['reaction_time'], loss_cards, gain_amount, loss_amount))
     conn.commit()
+    cursor.close()
     conn.close()
 
     # Update trial counter
@@ -922,11 +1007,13 @@ def save_igt():
 
     # Save results to database
     conn = get_db()
-    conn.execute('''
+    cursor = conn.cursor()
+    cursor.execute('''
         INSERT INTO igt_results (user_id, trial_number, deck, payout, penalty, points_earned, reaction_time)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     ''', (user_id, session['igt_current'], selected_deck, payout, penalty, points_earned, data['reaction_time']))
     conn.commit()
+    cursor.close()
     conn.close()
 
     # Check if final trial
@@ -1027,19 +1114,21 @@ def save_bart():
         session['bart_current'] += 1
 
     conn = get_db()
-    conn.execute('''
+    cursor = conn.cursor()
+    cursor.execute('''
         INSERT INTO bart_results (
             user_id, trial_number, pump_number,
             break_point, popped,
             points_earned, total_points, reaction_time
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     ''', (
         user_id, trial_number, pump_number,
         break_point, popped,
         points_earned, total_points, reaction_time
     ))
     conn.commit()
+    cursor.close()
     conn.close()
 
     return jsonify({'status': 'ok'})
@@ -1088,12 +1177,13 @@ def intermediate(task_name):
         conn = get_db()
         cursor = conn.cursor()
         if task_name == "cct_hot":
-            cursor.execute(f'SELECT SUM(points) FROM {task_name}_results WHERE user_id = ?',
+            cursor.execute(f'SELECT SUM(points) FROM {task_name}_results WHERE user_id = %s',
                           (session['user_id'],))
         elif task_name == "cct_cold":
-            cursor.execute(f'SELECT SUM(points_earned) FROM {task_name}_results WHERE user_id = ?',
+            cursor.execute(f'SELECT SUM(points_earned) FROM {task_name}_results WHERE user_id = %s',
                           (session['user_id'],))
         total_money = cursor.fetchone()[0] or 0
+        cursor.close()
         conn.close()
 
     return render_template('intermediate.html',
@@ -1108,29 +1198,30 @@ def get_user_results(user_id):
     total_earnings = 0
 
     # Пример для IGT
-    cursor.execute('SELECT SUM(points_earned) FROM igt_results WHERE user_id = ?', (user_id,))
+    cursor.execute('SELECT SUM(points_earned) FROM igt_results WHERE user_id = %s', (user_id,))
     igt_total = cursor.fetchone()[0] or 0
     results['Выбор одной карты из четырёх'] = igt_total
     total_earnings += igt_total
 
     # Пример для BART
-    cursor.execute('SELECT SUM(points_earned) FROM bart_results WHERE user_id = ?', (user_id,))
+    cursor.execute('SELECT SUM(points_earned) FROM bart_results WHERE user_id = %s', (user_id,))
     bart_total = cursor.fetchone()[0] or 0
     results['Надуть шарик'] = bart_total
     total_earnings += bart_total
 
     # Пример для CCT-hot
-    cursor.execute('SELECT SUM(points) FROM cct_hot_results WHERE user_id = ?', (user_id,))
+    cursor.execute('SELECT SUM(points) FROM cct_hot_results WHERE user_id = %s', (user_id,))
     cct_hot_total = cursor.fetchone()[0] or 0
     results['Выбрать N карт последовательно'] = cct_hot_total
     total_earnings += cct_hot_total
 
     # Пример для CCT-cold
-    cursor.execute('SELECT SUM(points_earned) FROM cct_cold_results WHERE user_id = ?', (user_id,))
+    cursor.execute('SELECT SUM(points_earned) FROM cct_cold_results WHERE user_id = %s', (user_id,))
     cct_cold_total = cursor.fetchone()[0] or 0
     results['Выбрать N карт одновременно'] = cct_cold_total
     total_earnings += cct_cold_total
 
+    cursor.close()
     conn.close()
     return results, total_earnings
 
@@ -1143,9 +1234,10 @@ def results():
 
     # Проверяем, хотя бы одну игру закончили?
     conn = get_db()
-    cur = conn.cursor()
-    cur.execute('SELECT COUNT(*) FROM user_progress WHERE user_id = ?', (user_id,))
-    completed = cur.fetchone()[0]
+    cursor = conn.cursor()
+    cursor.execute('SELECT COUNT(*) FROM user_progress WHERE user_id = %s', (user_id,))
+    completed = cursor.fetchone()[0]
+    cursor.close()
     conn.close()
     if completed == 0:
         flash("Результаты появятся после завершения хотя бы одной игры.", "info")
@@ -1185,11 +1277,11 @@ def logout():
 
 def get_questionnaire_results(user_id):
     conn = get_db()
-    cur = conn.cursor()
+    cursor = conn.cursor()
 
     # Получаем все ответы
-    cur.execute('SELECT question_number, response FROM questionnaire_responses WHERE user_id = ?', (user_id,))
-    responses = cur.fetchall()
+    cursor.execute('SELECT question_number, response FROM questionnaire_responses WHERE user_id = %s', (user_id,))
+    responses = cursor.fetchall()
 
     # Вопросы, требующие обратного кодирования
     reverse_scored = {4, 5, 13, 14, 15, 16, 17, 19, 20, 21, 26}
@@ -1202,13 +1294,13 @@ def get_questionnaire_results(user_id):
         total_score += response
 
     # Процентиль среди всех участников
-    cur.execute('SELECT user_id FROM questionnaire_responses GROUP BY user_id')
-    all_user_ids = [row['user_id'] for row in cur.fetchall()]
+    cursor.execute('SELECT user_id FROM questionnaire_responses GROUP BY user_id')
+    all_user_ids = [row['user_id'] for row in cursor.fetchall()]
 
     scores = []
     for uid in all_user_ids:
-        cur.execute('SELECT question_number, response FROM questionnaire_responses WHERE user_id = ?', (uid,))
-        user_responses = cur.fetchall()
+        cursor.execute('SELECT question_number, response FROM questionnaire_responses WHERE user_id = %s', (uid,))
+        user_responses = cursor.fetchall()
         user_score = 0
         for row in user_responses:
             qnum, response = row['question_number'], row['response']
@@ -1223,7 +1315,7 @@ def get_questionnaire_results(user_id):
         percentile = round(100 * rank / len(scores), 1)
     else:
         percentile = 0.0
-
+    cursor.close()
     conn.close()
     return {
         'total_score': total_score,
@@ -1236,29 +1328,30 @@ def get_questionnaire_results(user_id):
 #
 def get_bart_metrics(user_id):
     conn = get_db()
-    cur = conn.cursor()
+    cursor = conn.cursor()
     # Пользовательские
-    cur.execute('''
+    cursor.execute('''
         SELECT
             AVG(pumps) AS avg_pumps,
             AVG(CASE WHEN popped = 1 THEN 1.0 ELSE 0 END) AS explosion_rate,
             SUM(points_earned) AS total_earn
         FROM bart_results
-        WHERE user_id = ?
+        WHERE user_id = %s
     ''', (user_id,))
-    row = cur.fetchone()
+    row = cursor.fetchone()
     avg_pumps = row['avg_pumps'] or 0.0
     explosion_rate = row['explosion_rate'] or 0.0
     total_earn = row['total_earn'] or 0
 
     # Групповые средние
-    cur.execute('SELECT AVG(pumps) FROM bart_results')
-    grp_avg_pumps = cur.fetchone()[0] or 0.0
-    cur.execute('SELECT AVG(CASE WHEN popped = 1 THEN 1.0 ELSE 0 END) FROM bart_results')
-    grp_explosion = cur.fetchone()[0] or 0.0
-    cur.execute('SELECT AVG(points_earned) FROM bart_results')
-    grp_avg_earn = cur.fetchone()[0] or 0.0
+    cursor.execute('SELECT AVG(pumps) FROM bart_results')
+    grp_avg_pumps = cursor.fetchone()[0] or 0.0
+    cursor.execute('SELECT AVG(CASE WHEN popped = 1 THEN 1.0 ELSE 0 END) FROM bart_results')
+    grp_explosion = cursor.fetchone()[0] or 0.0
+    cursor.execute('SELECT AVG(points_earned) FROM bart_results')
+    grp_avg_earn = cursor.fetchone()[0] or 0.0
 
+    cursor.close()
     conn.close()
 
     # Относительные отклонения от среднего (в %)
@@ -1280,43 +1373,44 @@ def get_bart_metrics(user_id):
 #
 def get_igt_metrics(user_id):
     conn = get_db()
-    cur = conn.cursor()
+    cursor = conn.cursor()
 
     # Сумма и среднее
-    cur.execute('''
+    cursor.execute('''
         SELECT
             SUM(points_earned)  AS total_net,
             AVG(points_earned)  AS avg_net
         FROM igt_results
-        WHERE user_id = ?
+        WHERE user_id = %s
     ''', (user_id,))
-    row = cur.fetchone()
+    row = cursor.fetchone()
     total_net = row['total_net'] or 0
     avg_net   = row['avg_net']   or 0.0
 
     # Доля выгодных выборов (колоды C или D)
-    cur.execute('''
+    cursor.execute('''
         SELECT COUNT(*) * 1.0 / (
-            SELECT COUNT(*) FROM igt_results WHERE user_id = ?
+            SELECT COUNT(*) FROM igt_results WHERE user_id = %s
         ) AS pct_good
         FROM igt_results
-        WHERE user_id = ? AND deck IN ('C','D')
+        WHERE user_id = %s AND deck IN ('C','D')
     ''', (user_id, user_id))
-    pct_good = round(100 * (cur.fetchone()[0] or 0.0), 1)
+    pct_good = round(100 * (cursor.fetchone()[0] or 0.0), 1)
 
     # Процентиль по total_net
-    cur.execute('''
+    cursor.execute('''
         SELECT SUM(points_earned) AS sum_net
         FROM igt_results
         GROUP BY user_id
     ''')
-    all_nets = sorted([r['sum_net'] for r in cur.fetchall()])
+    all_nets = sorted([r['sum_net'] for r in cursor.fetchall()])
     if all_nets:
         rank = all_nets.index(total_net) + 1
         pct_net = round(100 * rank / len(all_nets), 1)
     else:
         pct_net = 0.0
 
+    cursor.close()
     conn.close()
     return {
         'total_net': total_net,
@@ -1331,32 +1425,32 @@ def get_igt_metrics(user_id):
 def get_cct_hot_metrics(user_id):
     """Метрики для CCT-hot: flipped_cards и points"""
     conn = get_db()
-    cur = conn.cursor()
+    cursor = conn.cursor()
 
     # Пользовательские метрики (только experimental trials)
-    cur.execute('''
+    cursor.execute('''
         SELECT
             AVG(flipped_cards)    AS avg_flip,
             AVG(points)           AS avg_pts
         FROM cct_hot_results
-        WHERE user_id = ? AND trial_type = 'experimental'
+        WHERE user_id = %s AND trial_type = 'experimental'
     ''', (user_id,))
-    row = cur.fetchone()
+    row = cursor.fetchone()
     avg_flip = row['avg_flip'] or 0.0
     avg_pts  = row['avg_pts']  or 0.0
 
     # Групповые средние
-    cur.execute('''
+    cursor.execute('''
         SELECT
             AVG(flipped_cards),
             AVG(points)
         FROM cct_hot_results
         WHERE trial_type = 'experimental'
     ''')
-    grp = cur.fetchone()
+    grp = cursor.fetchone()
     grp_flip = grp[0] or 1.0
     grp_pts  = grp[1] or 1.0
-
+    cursor.close()
     conn.close()
 
     return {
@@ -1370,31 +1464,31 @@ def get_cct_hot_metrics(user_id):
 def get_cct_cold_metrics(user_id):
     """Метрики для CCT-cold: num_cards и points_earned"""
     conn = get_db()
-    cur = conn.cursor()
+    cursor = conn.cursor()
 
     # Пользовательские метрики (всех trials)
-    cur.execute('''
+    cursor.execute('''
         SELECT
             AVG(num_cards)        AS avg_num,
             AVG(points_earned)    AS avg_pts
         FROM cct_cold_results
-        WHERE user_id = ?
+        WHERE user_id = %s
     ''', (user_id,))
-    row = cur.fetchone()
+    row = cursor.fetchone()
     avg_num = row['avg_num'] or 0.0
     avg_pts = row['avg_pts'] or 0.0
 
     # Групповые средние
-    cur.execute('''
+    cursor.execute('''
         SELECT
             AVG(num_cards),
             AVG(points_earned)
         FROM cct_cold_results
     ''')
-    grp = cur.fetchone()
+    grp = cursor.fetchone()
     grp_num = grp[0] or 1.0
     grp_pts = grp[1] or 1.0
-
+    cursor.close()
     conn.close()
 
     return {
