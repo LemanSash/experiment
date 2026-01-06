@@ -14,9 +14,9 @@ jobs:
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v0.1.4
         with:
-          host: ${{ secrets.VPS_HOST }} # IP-адрес вашего VPS
-          username: ${{ secrets.VPS_USER }} # Имя пользователя для VPS
-          key: ${{ secrets.VPS_SSH_KEY }} # Секрет с приватным SSH-ключом
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd /var/www/experiment
             git pull origin main
