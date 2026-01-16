@@ -9,11 +9,11 @@ from logging.handlers import RotatingFileHandler
 app = Flask(__name__)
 app.secret_key = '#'
 
-handler = RotatingFileHandler('flask_app.log', maxBytes=10000, backupCount=1)
-logger = logging.getLogger('werkzeug')
-logger.setLevel(logging.ERROR)
-logger.addHandler(handler)
-app.logger.addHandler(handler)
+# handler = RotatingFileHandler('flask_app.log', maxBytes=10000, backupCount=1)
+# logger = logging.getLogger('werkzeug')
+# logger.setLevel(logging.ERROR)
+# logger.addHandler(handler)
+# app.logger.addHandler(handler)
 
 # Initialize database and create tables
 def init_db():
@@ -67,19 +67,19 @@ def init_db():
         );
     ''')
 
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS bart_results (
-            result_id SERIAL PRIMARY KEY,
-            user_id INTEGER REFERENCES users(user_id),
-            trial_number INTEGER,
-            pump_number INTEGER,
-            break_point INTEGER,
-            popped BOOLEAN,
-            points_earned INTEGER,
-            total_points INTEGER,
-            reaction_time INTEGER
-        );
-    ''')
+    # cursor.execute('''
+    #     CREATE TABLE IF NOT EXISTS bart_results (
+    #         result_id SERIAL PRIMARY KEY,
+    #         user_id INTEGER REFERENCES users(user_id),
+    #         trial_number INTEGER,
+    #         pump_number INTEGER,
+    #         break_point INTEGER,
+    #         popped BOOLEAN,
+    #         points_earned INTEGER,
+    #         total_points INTEGER,
+    #         reaction_time INTEGER
+    #     );
+    # ''')
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS bart_results (
