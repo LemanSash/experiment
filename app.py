@@ -39,7 +39,7 @@ def handle_exception(e):
 @app.before_request
 def before_request():
     # Разрешите пропуск проверок для маршрутов авторизации и регистрации
-    allowed_routes = ['login', 'register', 'logout']
+    allowed_routes = ['login', 'register', 'logout', 'home']
     if request.endpoint not in allowed_routes and 'user_id' not in session:
         flash('Session lost. Please log in again.')
         return redirect(url_for('login'))
