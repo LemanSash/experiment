@@ -9,11 +9,11 @@ from logging.handlers import RotatingFileHandler
 app = Flask(__name__)
 app.secret_key = '#'
 
-# handler = RotatingFileHandler('flask_app.log', maxBytes=10000, backupCount=1)
-# logger = logging.getLogger('werkzeug')
-# logger.setLevel(logging.ERROR)
-# logger.addHandler(handler)
-# app.logger.addHandler(handler)
+handler = RotatingFileHandler('/var/www/experiment/logs/flask_app.log', maxBytes=10000, backupCount=1)
+logger = logging.getLogger('werkzeug')
+logger.setLevel(logging.INFO)
+logger.addHandler(handler)
+app.logger.addHandler(handler)
 
 # Initialize database and create tables
 def init_db():
