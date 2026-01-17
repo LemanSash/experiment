@@ -113,34 +113,34 @@ def init_db():
         );
     ''')
 
-    # cursor.execute('''
-    #     CREATE TABLE IF NOT EXISTS bart_results (
-    #         result_id SERIAL PRIMARY KEY,
-    #         user_id INTEGER REFERENCES users(user_id),
-    #         trial_number INTEGER,
-    #         pump_number INTEGER,
-    #         break_point INTEGER,
-    #         popped BOOLEAN,
-    #         points_earned INTEGER,
-    #         total_points INTEGER,
-    #         reaction_time INTEGER
-    #     );
-    # ''')
-
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS bart_results (
-            result_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            trial_number INTEGER NOT NULL,
-            pump_number INTEGER NOT NULL,
-            break_point INTEGER NOT NULL,
-            popped BOOLEAN NOT NULL,
-            points_earned INTEGER NOT NULL,
-            total_points INTEGER NOT NULL,
-            reaction_time INTEGER NOT NULL
-        )
-        '''
-    )
+            result_id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(user_id),
+            trial_number INTEGER,
+            pump_number INTEGER,
+            break_point INTEGER,
+            popped BOOLEAN,
+            points_earned INTEGER,
+            total_points INTEGER,
+            reaction_time INTEGER
+        );
+    ''')
+
+    # cursor.execute('''
+    #     CREATE TABLE IF NOT EXISTS bart_results (
+    #         result_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    #         user_id INTEGER NOT NULL,
+    #         trial_number INTEGER NOT NULL,
+    #         pump_number INTEGER NOT NULL,
+    #         break_point INTEGER NOT NULL,
+    #         popped BOOLEAN NOT NULL,
+    #         points_earned INTEGER NOT NULL,
+    #         total_points INTEGER NOT NULL,
+    #         reaction_time INTEGER NOT NULL
+    #     )
+    #     '''
+    # )
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS questionnaire_responses (
