@@ -200,10 +200,19 @@ def init_db():
 
 init_db()
 
+# @app.before_request
+# def check_session():
+#     if 'user_id' not in session:
+#         session['user_id'] = None
+#     if 'completed_tasks' not in session:
+#         session['completed_tasks'] = []
+#     if 'sequence' not in session:
+#         session['sequence'] = []
+
 @app.before_request
 def check_session():
-    if 'user_id' not in session:
-        session['user_id'] = None
+    if 'user_id' not in session or session['user_id'] is None:
+        session.pop('user_id', None)  # Полностью удалить ключ
     if 'completed_tasks' not in session:
         session['completed_tasks'] = []
     if 'sequence' not in session:
