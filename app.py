@@ -1292,17 +1292,6 @@ def results():
 def test():
     return render_template("test.html")
 
-@app.route('/logout')
-def logout():
-    # Clear all instruction flags
-    for key in list(session.keys()):
-        if key.endswith('_instructions_viewed'):
-            session.pop(key)
-    # Clear the session data
-    session.clear()
-
-    # Redirect to the main page (home)
-    return redirect(url_for('home'))
 
 def get_questionnaire_results(user_id):
     conn = get_db()
@@ -1529,9 +1518,15 @@ def get_cct_cold_metrics(user_id):
 
 @app.route('/logout')
 def logout():
-    session.clear()  # Очищаем все данные сессии
-    flash('Вы вышли из системы.', 'info')
-    return redirect(url_for('index'))  # Возвращаемся на главную страницу
+    # Clear all instruction flags
+    for key in list(session.keys()):
+        if key.endswith('_instructions_viewed'):
+            session.pop(key)
+    # Clear the session data
+    session.clear()
+
+    # Redirect to the main page (home)
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     app.run(debug=True)
