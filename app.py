@@ -9,14 +9,29 @@ from logging.handlers import RotatingFileHandler
 app = Flask(__name__)
 app.secret_key = '#'
 
-# Создаем общий логгер
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+# # Создаем общий логгер
+# logger = logging.getLogger()
+# logger.setLevel(logging.INFO)
 
-# Ваш существующий код
-handler = RotatingFileHandler('/var/www/experiment/logs/flask_app.log', maxBytes=10000, backupCount=1)
-logger.addHandler(handler)
-app.logger.addHandler(handler)
+# # Ваш существующий код
+# handler = RotatingFileHandler('/var/www/experiment/logs/flask_app.log', maxBytes=10000, backupCount=1)
+# logger.addHandler(handler)
+# app.logger.addHandler(handler)
+
+from werkzeug.serving import run_simple
+
+# Если используешь Gunicorn, интегрируй его логгер
+if __name__ != "__main__":
+    g_logger = logging.getLogger("gunicorn.error")
+    handler = RotatingFileHandler('/var/www/experiment/logs/flask_app.log', maxBytes=10000, backupCount=1)
+    g_logger.addHandler(handler)
+    g_logger.setLevel(logging.INFO)
+else:
+    handler = RotatingFileHandler('/var/www/experiment/logs/flask_app.log', maxBytes=10000, backupCount=1)
+    logger = logging.getLogger('werkzeug')
+    logger.setLevel(logging.INFO)
+    logger.addHandler(handler)
+    app.logger.addHandler(handler)
 
 @app.errorhandler(Exception)
 def handle_exception(e):
