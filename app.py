@@ -246,13 +246,13 @@ def before_request():
         flash('Session lost. Please log in again.')
         return redirect(url_for('login'))
 
-    # Проверка и коррекция состояния сессии
-    if 'user_id' not in session or session['user_id'] is None:
-        session.pop('user_id', None)  # Полностью удаляем ключ, если он недействителен
-    if 'completed_tasks' not in session:
-        session['completed_tasks'] = []  # Инициализируем список выполненных задач
-    if 'sequence' not in session:
-        session['sequence'] = []  # Инициализируем последовательность заданий
+    # # Проверка и коррекция состояния сессии
+    # if 'user_id' not in session or session['user_id'] is None:
+    #     session.pop('user_id', None)  # Полностью удаляем ключ, если он недействителен
+    # if 'completed_tasks' not in session:
+    #     session['completed_tasks'] = []  # Инициализируем список выполненных задач
+    # if 'sequence' not in session:
+    #     session['sequence'] = []  # Инициализируем последовательность заданий
 
 def get_device_type():
     ua = request.user_agent
