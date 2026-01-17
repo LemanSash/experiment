@@ -54,6 +54,18 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
 
+    #Create users table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            user_id SERIAL PRIMARY KEY,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            age INTEGER,
+            gender TEXT,
+            education TEXT
+        );
+    ''')
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS cct_hot_results (
             result_id SERIAL PRIMARY KEY,
@@ -129,17 +141,6 @@ def init_db():
         )
         '''
     )
-    #Create users table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            user_id SERIAL PRIMARY KEY,
-            username TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            age INTEGER,
-            gender TEXT,
-            education TEXT
-        );
-    ''')
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS questionnaire_responses (
