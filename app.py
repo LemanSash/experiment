@@ -227,32 +227,28 @@ init_db()
 #     if 'sequence' not in session:
 #         session['sequence'] = []
 
-# @app.before_request
-# def check_session():
-#     if 'user_id' not in session or session['user_id'] is None:
-#         session.pop('user_id', None)  # Полностью удалить ключ
-#     if 'completed_tasks' not in session:
-#         session['completed_tasks'] = []
-#     if 'sequence' not in session:
-#         session['sequence'] = []
+@app.before_request
+def check_session():
+    if 'user_id' not in session or session['user_id'] is None:
+        session.pop('user_id', None)  # Полностью удалить ключ
+    if 'completed_tasks' not in session:
+        session['completed_tasks'] = []
+    if 'sequence' not in session:
+        session['sequence'] = []
 
 @app.before_request
 def before_request():
-    # Разрешаем пропуск проверок для маршрутов авторизации и регистрации
-    allowed_routes = ['login', 'register', 'logout', 'home', '/static']
+    # Пропускаем проверку для запросов к статическим файлам
+    if request.path.startswith('/static/'):
+        return
+
+    # Разрешить пропуска проверок для маршрутов авторизации и регистрации
+    allowed_routes = ['login', 'register', 'logout', 'home']
 
     # Если текущий запрос не входит в разрешённые маршруты и пользователь не залогинен
     if request.endpoint not in allowed_routes and 'user_id' not in session:
         flash('Session lost. Please log in again.')
         return redirect(url_for('login'))
-
-    # Проверка и коррекция состояния сессии
-    if 'user_id' not in session or session['user_id'] is None:
-        session.pop('user_id', None)  # Полностью удаляем ключ, если он недействителен
-    if 'completed_tasks' not in session:
-        session['completed_tasks'] = []  # Инициализируем список выполненных задач
-    if 'sequence' not in session:
-        session['sequence'] = []  # Инициализируем последовательность заданий
 
 def get_device_type():
     ua = request.user_agent
