@@ -17,6 +17,7 @@ app.config.update({
     'PERMANENT_SESSION_LIFETIME': timedelta(minutes=0)  # Сессия заканчивается при закрытии браузера
 })
 
+
 # Если используешь Gunicorn, интегрируй его логгер
 if __name__ != "__main__":
     g_logger = logging.getLogger("gunicorn.error")
@@ -34,6 +35,12 @@ else:
 def handle_exception(e):
     app.logger.exception(str(e))  # Это гарантирует сохранение полной трассировки стека
     return "Internal Server Error", 500
+
+@app.before_request
+def before_request():
+    if 'user_id' not in session:
+        flash('Session lost. Please log in again.')
+        return redirect(url_for('login'))
 
 # Helper function to get database connection
 def get_db():
@@ -432,6 +439,7 @@ def dashboard():
 @app.route('/start_experiment', methods=['POST'])
 def start_experiment():
     user_id = session.get('user_id')
+    print(f"Current user_id in session: {user_id}")  # Добавлено для дебага
     if not user_id:
         return redirect(url_for('login'))
 
