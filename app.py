@@ -5,20 +5,17 @@ import psycopg2
 import psycopg2.extras
 import logging
 from logging.handlers import RotatingFileHandler
+from werkzeug.serving import run_simple
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = '#'
 
-# # Создаем общий логгер
-# logger = logging.getLogger()
-# logger.setLevel(logging.INFO)
-
-# # Ваш существующий код
-# handler = RotatingFileHandler('/var/www/experiment/logs/flask_app.log', maxBytes=10000, backupCount=1)
-# logger.addHandler(handler)
-# app.logger.addHandler(handler)
-
-from werkzeug.serving import run_simple
+app.config.update({
+    'SESSION_COOKIE_SECURE': True,  # Безопасность сессий (SSL/TLS обязателен!)
+    'SESSION_COOKIE_HTTPONLY': True,  # Доступ к куки возможен только через HTTP
+    'PERMANENT_SESSION_LIFETIME': timedelta(minutes=0)  # Сессия заканчивается при закрытии браузера
+})
 
 # Если используешь Gunicorn, интегрируй его логгер
 if __name__ != "__main__":
@@ -1529,6 +1526,12 @@ def get_cct_cold_metrics(user_id):
         'pct_num': round(100*(avg_num/grp_num - 1),1),
         'pct_pts': round(100*(avg_pts/grp_pts - 1),1)
     }
+
+@app.route('/logout')
+def logout():
+    session.clear()  # Очищаем все данные сессии
+    flash('Вы вышли из системы.', 'info')
+    return redirect(url_for('index'))  # Возвращаемся на главную страницу
 
 if __name__ == '__main__':
     app.run(debug=True)
