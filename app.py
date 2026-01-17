@@ -523,7 +523,8 @@ def questionnaire():
         conn.close()
 
         # Redirect to the first task
-        return redirect(url_for('task', task_name=session['sequence'][0]))
+        #return redirect(url_for('task', task_name=session['sequence'][0]))
+        return redirect(url_for('second_questionnaire'))
 
     return render_template('questionnaire.html', questions=QUESTIONS)
 
