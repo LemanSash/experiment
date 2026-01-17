@@ -14,7 +14,7 @@ app.secret_key = '#'
 app.config.update({
     'SESSION_COOKIE_SECURE': True,  # Безопасность сессий (SSL/TLS обязателен!)
     'SESSION_COOKIE_HTTPONLY': True,  # Доступ к куки возможен только через HTTP
-    'PERMANENT_SESSION_LIFETIME': timedelta(minutes=0)  # Сессия заканчивается при закрытии браузера
+    'PERMANENT_SESSION_LIFETIME': timedelta(hours=1)  # Сессия заканчивается при закрытии браузера
 })
 
 
