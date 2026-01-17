@@ -38,6 +38,17 @@ def handle_exception(e):
     app.logger.exception(str(e))  # Это гарантирует сохранение полной трассировки стека
     return "Internal Server Error", 500
 
+# Helper function to get database connection
+def get_db():
+    conn = psycopg2.connect(
+        dbname="experiment_db",
+        user="admin",
+        password="ng57&ik#2",
+        host="localhost",
+        port=5432
+    )
+    return conn
+
 # Initialize database and create tables
 def init_db():
     conn = get_db()
@@ -199,17 +210,6 @@ def check_session():
         session['completed_tasks'] = []
     if 'sequence' not in session:
         session['sequence'] = []
-
-# Helper function to get database connection
-def get_db():
-    conn = psycopg2.connect(
-        dbname="experiment_db",
-        user="admin",
-        password="ng57&ik#2",
-        host="localhost",
-        port=5432
-    )
-    return conn
 
 def get_device_type():
     ua = request.user_agent
