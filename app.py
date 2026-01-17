@@ -239,20 +239,20 @@ init_db()
 @app.before_request
 def before_request():
     # Разрешаем пропуск проверок для маршрутов авторизации и регистрации
-    allowed_routes = ['login', 'register', 'logout', 'home']
+    allowed_routes = ['login', 'register', 'logout', 'home', '/static']
 
     # Если текущий запрос не входит в разрешённые маршруты и пользователь не залогинен
     if request.endpoint not in allowed_routes and 'user_id' not in session:
         flash('Session lost. Please log in again.')
         return redirect(url_for('login'))
 
-    # # Проверка и коррекция состояния сессии
-    # if 'user_id' not in session or session['user_id'] is None:
-    #     session.pop('user_id', None)  # Полностью удаляем ключ, если он недействителен
-    # if 'completed_tasks' not in session:
-    #     session['completed_tasks'] = []  # Инициализируем список выполненных задач
-    # if 'sequence' not in session:
-    #     session['sequence'] = []  # Инициализируем последовательность заданий
+    # Проверка и коррекция состояния сессии
+    if 'user_id' not in session or session['user_id'] is None:
+        session.pop('user_id', None)  # Полностью удаляем ключ, если он недействителен
+    if 'completed_tasks' not in session:
+        session['completed_tasks'] = []  # Инициализируем список выполненных задач
+    if 'sequence' not in session:
+        session['sequence'] = []  # Инициализируем последовательность заданий
 
 def get_device_type():
     ua = request.user_agent
