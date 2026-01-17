@@ -9,11 +9,19 @@ from logging.handlers import RotatingFileHandler
 app = Flask(__name__)
 app.secret_key = '#'
 
-handler = RotatingFileHandler('/var/www/experiment/logs/flask_app.log', maxBytes=10000, backupCount=1)
-logger = logging.getLogger('werkzeug')
+# Создаем общий логгер
+logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+# Ваш существующий код
+handler = RotatingFileHandler('/var/www/experiment/logs/flask_app.log', maxBytes=10000, backupCount=1)
 logger.addHandler(handler)
 app.logger.addHandler(handler)
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    app.logger.exception(str(e))  # Это гарантирует сохранение полной трассировки стека
+    return "Internal Server Error", 500
 
 # Initialize database and create tables
 def init_db():
