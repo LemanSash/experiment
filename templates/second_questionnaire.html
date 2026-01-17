@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Aversion Questionnaire • Decision-Making Study</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">LA Research</a>
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard') }}" class="btn-outline">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <div class="questionnaire-card">
+                <div class="questionnaire-header">
+                    <h1><i class="fas fa-clipboard-list"></i> Оцените степень своей склонности к риску в различных ситуациях.</h1>
+                    <p class="lead">Оцените каждое утверждение по шкале от "Категорически не согласен" до "Абсолютно согласен".</p>
+                </div>
+
+                <form method="POST" class="questionnaire-form">
+                    {% for i in range(second_questions|length) %}
+                    <div class="question-item">
+                        <div class="question-text">
+                            <span class="question-number">{{ i + 1 }}.</span>
+                            {{ second_questions[i] }}
+                        </div>
+                        <div class="response-scale">
+                            <label class="radio-option">
+                                <input type="radio" name="sq{{ i + 1 }}" value="1" required>
+                                <span class="radio-label">Категорически не согласен</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="sq{{ i + 1 }}" value="2">
+                                <span class="radio-label">Скорее не согласен</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="sq{{ i + 1 }}" value="3">
+                                <span class="radio-label">Скорее согласен</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="sq{{ i + 1 }}" value="4">
+                                <span class="radio-label">Абсолютно согласен</span>
+                            </label>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="form-footer">
+                        <button type="submit" class="btn-primary btn-block">
+                            <i class="fas fa-paper-plane"></i> Отправить ответы
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

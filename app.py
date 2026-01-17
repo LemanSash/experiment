@@ -185,6 +185,15 @@ def init_db():
             ON sequences (task1, task2, task3, task4);
     ''')
 
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS risk_aversion_responses (
+            response_id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(user_id),
+            question_number INTEGER NOT NULL,
+            response INTEGER NOT NULL
+        );
+    ''')
+
     # Populate sequences table
     methods = ["igt", "bart", "cct_hot", "cct_cold"]  # Use endpoint names
     all_sequences = list({p for p in permutations(methods)})  # Get unique permutations
@@ -494,6 +503,64 @@ def questionnaire():
 
     return render_template('questionnaire.html', questions=QUESTIONS)
 
+SECOND_QUESTIONS = [
+    "Я предпочитаю инвестиции с низким риском и низкой доходностью.",
+    "Я чувствую дискомфорт, принимая финансовые риски.",
+    "Я бы инвестировал большую сумму денег в высокодоходные акции.",
+    "Я считаю разумным брать кредиты для покупки недвижимости.",
+    "Я принимаю быстрые решения, не задумываясь о последствиях.",
+    "Я стараюсь минимизировать потери, даже если это снижает прибыль.",
+    "Я избегаю азартных игр и лотерей.",
+    "Я доверяю интуиции больше, чем расчетам.",
+    "Я готов идти на большие риски ради высоких доходов.",
+    "Я консервативен в финансовых делах."
+]
+
+@app.route('/second_questionnaire', methods=['GET', 'POST'])
+def second_questionnaire():
+    if 'sequence' not in session:
+        flash('Please start the experiment again.')
+        return redirect(url_for('dashboard'))
+
+    SECOND_QUESTIONS = [
+        "Я предпочитаю инвестиции с низким риском и низкой доходностью.",
+        "Я чувствую дискомфорт, принимая финансовые риски.",
+        "Я бы инвестировал большую сумму денег в высокодоходные акции.",
+        "Я считаю разумным брать кредиты для покупки недвижимости.",
+        "Я принимаю быстрые решения, не задумываясь о последствиях.",
+        "Я стараюсь минимизировать потери, даже если это снижает прибыль.",
+        "Я избегаю азартных игр и лотерей.",
+        "Я доверяю интуиции больше, чем расчетам.",
+        "Я готов идти на большие риски ради высоких доходов.",
+        "Я консервативен в финансовых делах."
+    ]
+
+    if request.method == 'POST':
+        # Получаем идентификатор пользователя
+        user_id = session.get('user_id')
+        conn = get_db()
+        cursor = conn.cursor()
+
+        # Сохраняем ответы на вопросы второго опросника
+        for i in range(len(SECOND_QUESTIONS)):
+            question_key = f'sq{i + 1}'  # sq1, sq2 и т.д.
+            response = request.form.get(question_key)
+            if response:
+                # Сохраняем ответ в базу данных
+                cursor.execute("""
+                    INSERT INTO risk_aversion_responses (user_id, question_number, response)
+                    VALUES (%s, %s, %s)
+                """, (user_id, i + 1, int(response)))  # Преобразование ответа в целое число
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        # Далее переходим к первому заданию эксперимента
+        return redirect(url_for('task', task_name=session['sequence'][0]))
+
+    return render_template('second_questionnaire.html', second_questions=SECOND_QUESTIONS)
+
 # Experimental design parameters
 FACTORS = {
     'loss_cards': [1, 2, 3],
@@ -514,6 +581,7 @@ IGT_PENALTY_SCHEMES = {
     'C': [-50]*5 + [0]*5,      # 50%
     'D': [-125]*2 + [0]*8      # 20%
 }
+
 
 def init_igt_decks():
     decks = {}
