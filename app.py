@@ -208,17 +208,17 @@ def init_db():
     methods = ["igt", "bart", "cct_hot", "cct_cold"]  # Use endpoint names
     all_sequences = list({p for p in permutations(methods)})  # Get unique permutations
     for seq in all_sequences[:16]:  # Use first 16 unique sequences
-        # cursor.execute("""
-        #     INSERT INTO sequences (task1, task2, task3, task4)
-        #     VALUES (%s, %s, %s, %s)
-        #     ON CONFLICT (task1, task2, task3, task4) DO NOTHING
-        # """, seq)
-        with conn.transaction(isolation_level='serializable'):
-            cursor.execute("""
-                INSERT INTO sequences (task1, task2, task3, task4)
-                VALUES (%s, %s, %s, %s)
-                ON CONFLICT (task1, task2, task3, task4) DO NOTHING
-            """, seq)
+        cursor.execute("""
+            INSERT INTO sequences (task1, task2, task3, task4)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (task1, task2, task3, task4) DO NOTHING
+        """, seq)
+        # with conn.transaction(isolation_level='serializable'):
+        #     cursor.execute("""
+        #         INSERT INTO sequences (task1, task2, task3, task4)
+        #         VALUES (%s, %s, %s, %s)
+        #         ON CONFLICT (task1, task2, task3, task4) DO NOTHING
+        #     """, seq)
 
     conn.commit()
     conn.close()
