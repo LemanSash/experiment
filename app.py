@@ -757,7 +757,7 @@ def task(task_name):
                     cursor = conn.cursor()
                     # Удаляем все записи для IGT данного пользователя
                     cursor.execute('DELETE FROM bart_results WHERE user_id = %s', (user_id,))
-                    cursor.commit()
+                    conn.commit()
                     cursor.close()
                 # Сброс переменных игры BART
                 session.pop('bart_current', None)
@@ -778,7 +778,7 @@ def task(task_name):
                     cursor = conn.cursor()
                     # Удаляем все записи для IGT данного пользователя
                     cursor.execute('DELETE FROM igt_results WHERE user_id = %s', (user_id,))
-                    cursor.commit()
+                    conn.commit()
                     cursor.close()
                 # Сброс session-переменных (если требуется)
                 session.pop(f'{task_name}_instructions_viewed', None)
@@ -794,7 +794,7 @@ def task(task_name):
                     cursor = conn.cursor()
                     # Удаляем все записи для IGT данного пользователя
                     cursor.execute(f'DELETE FROM {task_name}_results WHERE user_id = %s', (user_id,))
-                    cursor.commit()
+                    conn.commit()
                     cursor.close()
                 session.pop(f'{task_name}_current', None)
                 session.pop(f'{task_name}_trials', None)
