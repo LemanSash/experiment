@@ -893,7 +893,7 @@ def task(task_name):
             SELECT points_earned
             FROM bart_results
             WHERE user_id = %s
-            ORDER BY rowid DESC
+            ORDER BY result_id DESC
             LIMIT 1
         ''', (session['user_id'],))
 
