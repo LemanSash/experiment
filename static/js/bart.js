@@ -57,7 +57,43 @@ document.addEventListener('DOMContentLoaded', () => {
     pumpButton.addEventListener('click', handlePump);
     cashOutButton.addEventListener('click', handleCashOut);
 
+    // function handlePump() {
+    //     pumpNumber++;
+    //     const rt = Date.now() - reactionStartTime;
+    //     reactionStartTime = Date.now();
+    //     let popped = pumpNumber === breakPoint;
+    //     if (!popped) {
+    //         trialPoints = pumpNumber * 5;
+    //         updateBalloonSize();
+    //     } else {
+    //         trialPoints = 0;
+    //         trialEnded = true;
+    //     }
+
+    //     fetch('/save_bart', {
+    //         method: 'POST',
+    //         headers: {'Content-Type': 'application/json'},
+    //         body: JSON.stringify({
+    //             trialNumber: parseInt(trialNumberDisplay.textContent),
+    //             pumpNumber: pumpNumber,
+    //             breakPoint: breakPoint,
+    //             reaction_time: rt,
+    //             trialEnded: popped
+    //         })
+    //     });
+
+    //     if (popped) {
+    //         balloon.style.backgroundColor = 'red';
+    //         setTimeout(() => window.location.reload(), 500);
+    //     }
+    // }
+
+    let fetching = false;
+
     function handlePump() {
+        if (fetching) return; // Заблокировать дополнительные запросы
+        fetching = true;
+
         pumpNumber++;
         const rt = Date.now() - reactionStartTime;
         reactionStartTime = Date.now();
@@ -80,6 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 reaction_time: rt,
                 trialEnded: popped
             })
+        }).then(() => {
+            fetching = false;
         });
 
         if (popped) {
