@@ -1204,9 +1204,21 @@ def save_igt():
     user_id = session.get('user_id')
     task_name = 'igt'
 
+    #Initialize session variables
+    session.setdefault('igt_trials', 150)
+    session.setdefault('igt_current', 0)
+    session.setdefault('igt_total_points', 2000)
+
     # Получить данные о колодах из сессии
     if 'igt_decks' not in session:
         session['igt_decks'] = init_igt_decks()
+
+    # Initialize if missing
+    if f'{task_name}_current' not in session:
+        session[f'{task_name}_current'] = 0
+    if f'{task_name}_trials' not in session:
+        session[f'{task_name}_trials'] = generate_trials()
+
 
     # Данные о выбранной карте
     selected_deck = data['deck']
