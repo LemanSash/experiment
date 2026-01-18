@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetching = true;
 
         pumpNumber++;
+        pumps++;
         const rt = Date.now() - reactionStartTime;
         reactionStartTime = Date.now();
         let popped = pumpNumber === breakPoint;
