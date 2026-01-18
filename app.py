@@ -609,45 +609,45 @@ IGT_PAYOUTS = {
     'D': 50
 }
 
-# IGT_PENALTY_SCHEMES = {
-#     'A': [-250]*5 + [0]*5,     # 50%
-#     'B': [-625]*2 + [0]*8,     # 20%
-#     'C': [-50]*5 + [0]*5,      # 50%
-#     'D': [-125]*2 + [0]*8      # 20%
-# }
-
-
-# def init_igt_decks():
-#     decks = {}
-#     for deck, scheme in IGT_PENALTY_SCHEMES.items():
-#         block = scheme.copy()
-#         random.shuffle(block)
-#         decks[deck] = {
-#             'block': block,
-#             'index': 0
-#         }
-#     return decks
-
-# Генерируем длинные блоки штрафов для каждой колоды (всего 150 выборов)
 IGT_PENALTY_SCHEMES = {
-    'A': ([0]*75 + [-250]*75),  # 50% штрафов (-250)
-    'B': ([0]*120 + [-625]*30),  # 20% штрафов (-625)
-    'C': ([0]*75 + [-50]*75),    # 50% штрафов (-50)
-    'D': ([0]*120 + [-125]*30)   # 20% штрафов (-125)
+    'A': [-250]*5 + [0]*5,     # 50%
+    'B': [-625]*2 + [0]*8,     # 20%
+    'C': [-50]*5 + [0]*5,      # 50%
+    'D': [-125]*2 + [0]*8      # 20%
 }
 
-# Перемешиваем наказания, чтобы распределение стало равномерным
-for deck in IGT_PENALTY_SCHEMES.values():
-    random.shuffle(deck)
 
 def init_igt_decks():
     decks = {}
-    for deck, penalties in IGT_PENALTY_SCHEMES.items():
+    for deck, scheme in IGT_PENALTY_SCHEMES.items():
+        block = scheme.copy()
+        random.shuffle(block)
         decks[deck] = {
-            'penalties': penalties,
+            'block': block,
             'index': 0
         }
     return decks
+
+# # Генерируем длинные блоки штрафов для каждой колоды (всего 150 выборов)
+# IGT_PENALTY_SCHEMES = {
+#     'A': ([0]*75 + [-250]*75),  # 50% штрафов (-250)
+#     'B': ([0]*120 + [-625]*30),  # 20% штрафов (-625)
+#     'C': ([0]*75 + [-50]*75),    # 50% штрафов (-50)
+#     'D': ([0]*120 + [-125]*30)   # 20% штрафов (-125)
+# }
+
+# # Перемешиваем наказания, чтобы распределение стало равномерным
+# for deck in IGT_PENALTY_SCHEMES.values():
+#     random.shuffle(deck)
+
+# def init_igt_decks():
+#     decks = {}
+#     for deck, penalties in IGT_PENALTY_SCHEMES.items():
+#         decks[deck] = {
+#             'penalties': penalties,
+#             'index': 0
+#         }
+#     return decks
 
 
 def generate_trials(task="cct_hot"):
@@ -806,7 +806,7 @@ def task(task_name):
                 session['igt_trials'] = 150
                 session['igt_current'] = 0
                 session['igt_total_points'] = 2000
-                session['igt_decks'] = init_igt_decks()
+                #session['igt_decks'] = init_igt_decks()
         elif task_name in ['cct_hot', 'cct_cold']:
             cct_url = url_for('task', task_name=task_name)
             if not (request.referrer and request.referrer.endswith(cct_url)):
@@ -1122,83 +1122,6 @@ def save_cct_cold():
         'redirect_url': url_for('intermediate', task_name='cct_cold') if is_final_trial else None
     })
 
-# @app.route('/save_igt', methods=['POST'])
-# def save_igt():
-#     data = request.get_json()
-#     user_id = session.get('user_id')
-#     task_name = 'igt'
-
-#     #Initialize session variables
-#     session.setdefault('igt_trials', 150)
-#     session.setdefault('igt_current', 0)
-#     session.setdefault('igt_total_points', 2000)
-#     if 'igt_decks' not in session:
-#         session['igt_decks'] = init_igt_decks()
-
-#      # Initialize if missing
-#     if f'{task_name}_current' not in session:
-#         session[f'{task_name}_current'] = 0
-#     if f'{task_name}_trials' not in session:
-#         session[f'{task_name}_trials'] = generate_trials()
-
-#     # Get selected deck from client
-#     selected_deck = data['deck']
-
-#     payout = IGT_PAYOUTS[selected_deck]
-
-#     deck_state = session['igt_decks'][selected_deck]
-
-#     # Берём штраф из текущего блока
-#     penalty = deck_state['block'][deck_state['index']]
-#     points_earned = payout + penalty  # penalty уже отрицательный
-
-#     # Сдвигаем индекс
-#     deck_state['index'] += 1
-
-#     # Если блок закончился — создаём новый
-#     if deck_state['index'] >= 10:
-#         new_block = IGT_PENALTY_SCHEMES[selected_deck].copy()
-#         random.shuffle(new_block)
-#         deck_state['block'] = new_block
-#         deck_state['index'] = 0
-
-#     # Update session variables
-#     session['igt_total_points'] += points_earned
-#     session['igt_current'] += 1
-#     session.modified = True
-
-#     # Save results to database
-#     conn = get_db()
-#     cursor = conn.cursor()
-#     cursor.execute('''
-#         INSERT INTO igt_results (user_id, trial_number, deck, payout, penalty, points_earned, reaction_time)
-#         VALUES (%s, %s, %s, %s, %s, %s, %s)
-#     ''', (user_id, session['igt_current'], selected_deck, payout, penalty, points_earned, data['reaction_time']))
-#     conn.commit()
-#     cursor.close()
-#     conn.close()
-
-#     # Check if final trial
-#     is_final_trial = session['igt_current'] >= session['igt_trials']
-
-#         # После сохранения данных
-#     if is_final_trial:
-#         mark_task_completed(user_id, 'igt')
-#         if 'completed_tasks' not in session:
-#             session['completed_tasks'] = []
-#         if 'igt' not in session['completed_tasks']:
-#             session['completed_tasks'].append('igt')
-
-#     return jsonify({
-#         'status': 'completed' if is_final_trial else 'success',
-#         'payout': payout,
-#         'penalty': penalty,
-#         'points_earned': points_earned,
-#         'new_total_points': session['igt_total_points'],
-#         'new_trial_number': session['igt_current'],
-#         'redirect_url': url_for('intermediate', task_name='igt') if is_final_trial else None
-#     })
-
 @app.route('/save_igt', methods=['POST'])
 def save_igt():
     data = request.get_json()
@@ -1209,36 +1132,43 @@ def save_igt():
     session.setdefault('igt_trials', 150)
     session.setdefault('igt_current', 0)
     session.setdefault('igt_total_points', 2000)
-
-    # Получить данные о колодах из сессии
     if 'igt_decks' not in session:
         session['igt_decks'] = init_igt_decks()
 
-    # Initialize if missing
+     # Initialize if missing
     if f'{task_name}_current' not in session:
         session[f'{task_name}_current'] = 0
     if f'{task_name}_trials' not in session:
         session[f'{task_name}_trials'] = generate_trials()
 
-
-    # Данные о выбранной карте
+    # Get selected deck from client
     selected_deck = data['deck']
+
     payout = IGT_PAYOUTS[selected_deck]
 
-    # Получаем текущий штраф из долговременного массива
     deck_state = session['igt_decks'][selected_deck]
-    penalty = deck_state['penalties'][deck_state['index']]  # получаем штраф из большого массива
-    points_earned = payout + penalty
 
-    # Переходим к следующему элементу массива
+    # Берём штраф из текущего блока
+    penalty = deck_state['block'][deck_state['index']]
+    points_earned = payout + penalty  # penalty уже отрицательный
+
+    # Сдвигаем индекс
     deck_state['index'] += 1
 
-    # Обновляем счёт игрока
+    # Если блок закончился — создаём новый
+    if deck_state['index'] >= 10:
+        # new_block = IGT_PENALTY_SCHEMES[selected_deck].copy()
+        # random.shuffle(new_block)
+        # deck_state['block'] = new_block
+        # deck_state['index'] = 0
+        session['igt_decks'] = init_igt_decks()
+
+    # Update session variables
     session['igt_total_points'] += points_earned
     session['igt_current'] += 1
     session.modified = True
 
-    # Сохраняем результат в базу данных
+    # Save results to database
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
@@ -1249,9 +1179,10 @@ def save_igt():
     cursor.close()
     conn.close()
 
-    # Проверка финальной попытки
+    # Check if final trial
     is_final_trial = session['igt_current'] >= session['igt_trials']
 
+        # После сохранения данных
     if is_final_trial:
         mark_task_completed(user_id, 'igt')
         if 'completed_tasks' not in session:
@@ -1268,6 +1199,76 @@ def save_igt():
         'new_trial_number': session['igt_current'],
         'redirect_url': url_for('intermediate', task_name='igt') if is_final_trial else None
     })
+
+# @app.route('/save_igt', methods=['POST'])
+# def save_igt():
+#     data = request.get_json()
+#     user_id = session.get('user_id')
+#     task_name = 'igt'
+
+#     #Initialize session variables
+#     session.setdefault('igt_trials', 150)
+#     session.setdefault('igt_current', 0)
+#     session.setdefault('igt_total_points', 2000)
+
+#     # Получить данные о колодах из сессии
+#     if 'igt_decks' not in session:
+#         session['igt_decks'] = init_igt_decks()
+
+#     # Initialize if missing
+#     if f'{task_name}_current' not in session:
+#         session[f'{task_name}_current'] = 0
+#     if f'{task_name}_trials' not in session:
+#         session[f'{task_name}_trials'] = generate_trials()
+
+
+#     # Данные о выбранной карте
+#     selected_deck = data['deck']
+#     payout = IGT_PAYOUTS[selected_deck]
+
+#     # Получаем текущий штраф из долговременного массива
+#     deck_state = session['igt_decks'][selected_deck]
+#     penalty = deck_state['penalties'][deck_state['index']]  # получаем штраф из большого массива
+#     points_earned = payout + penalty
+
+#     # Переходим к следующему элементу массива
+#     deck_state['index'] += 1
+
+#     # Обновляем счёт игрока
+#     session['igt_total_points'] += points_earned
+#     session['igt_current'] += 1
+#     session.modified = True
+
+#     # Сохраняем результат в базу данных
+#     conn = get_db()
+#     cursor = conn.cursor()
+#     cursor.execute('''
+#         INSERT INTO igt_results (user_id, trial_number, deck, payout, penalty, points_earned, reaction_time)
+#         VALUES (%s, %s, %s, %s, %s, %s, %s)
+#     ''', (user_id, session['igt_current'], selected_deck, payout, penalty, points_earned, data['reaction_time']))
+#     conn.commit()
+#     cursor.close()
+#     conn.close()
+
+#     # Проверка финальной попытки
+#     is_final_trial = session['igt_current'] >= session['igt_trials']
+
+#     if is_final_trial:
+#         mark_task_completed(user_id, 'igt')
+#         if 'completed_tasks' not in session:
+#             session['completed_tasks'] = []
+#         if 'igt' not in session['completed_tasks']:
+#             session['completed_tasks'].append('igt')
+
+#     return jsonify({
+#         'status': 'completed' if is_final_trial else 'success',
+#         'payout': payout,
+#         'penalty': penalty,
+#         'points_earned': points_earned,
+#         'new_total_points': session['igt_total_points'],
+#         'new_trial_number': session['igt_current'],
+#         'redirect_url': url_for('intermediate', task_name='igt') if is_final_trial else None
+#     })
 
 @app.route('/next_trial/<task_name>')
 def next_trial(task_name):
