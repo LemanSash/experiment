@@ -159,6 +159,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // function handleCashOut() {
+    //     trialEnded = true;
+    //     fetch('/save_bart', {
+    //         method: 'POST',
+    //         headers: {'Content-Type': 'application/json'},
+    //         body: JSON.stringify({
+    //             trialNumber: parseInt(trialNumberDisplay.textContent),
+    //             pumpNumber: pumpNumber,
+    //             breakPoint: breakPoint,
+    //             reaction_time: Date.now() - reactionStartTime,
+    //             trialEnded: true
+    //         })
+    //     }).then(() => window.location.reload());
+
+    // }
+
     function handleCashOut() {
         trialEnded = true;
         fetch('/save_bart', {
@@ -171,9 +187,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 reaction_time: Date.now() - reactionStartTime,
                 trialEnded: true
             })
-        }).then(() => window.location.reload());
-
+        }).then(() => {
+            endTrial();  // Завершаем испытание
+        });
     }
+
+    // function endTrial() {
+    //     // вычислим среднее время реакции
+    //     const sum = reactionTimes.reduce((a, b) => a + b, 0);
+    //     const avgReactionTime = reactionTimes.length ? Math.round(sum / reactionTimes.length) : 0;
+    //     // Ensure we send 0 points if popped
+    //     const finalPoints = popped ? 0 : pumps * 5;
+    //     previousEarned = finalPoints;
+
+    //     fetch('/save_bart', {
+    //         method: 'POST',
+    //         headers: {'Content-Type': 'application/json'},
+    //         body: JSON.stringify({
+    //             trialNumber: parseInt(trialNumberDisplay.textContent.split('/')[0]),
+    //             pumps,
+    //             popped,
+    //             pointsEarned: finalPoints,
+    //             reaction_time: avgReactionTime
+    //         }),
+    //     })
+    //     .then(response => response.json())
+    //     .then(handleResponse);
+    // }
 
     function endTrial() {
         // вычислим среднее время реакции
@@ -199,12 +239,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    // function handleResponse(data) {
+    //     if (data.redirect_url) {
+    //         window.location.href = data.redirect_url;
+    //     } else {
+    //         window.location.reload();
+    //     }
+    // }
+
     function handleResponse(data) {
         if (data.redirect_url) {
             window.location.href = data.redirect_url;
         } else {
-            window.location.reload();
+            resetGameState();  // Сбросить состояние игры
+            updateUI();        // Обновить UI
         }
+    }
+
+    function resetGameState() {
+        pumps = 0;
+        popped = false;
+        pointsEarned = 0;
+        previousEarned = 0;
+        pumpNumber = 0;
+        trialEnded = false;
+        trialPoints = 0;
+        balloon.style.backgroundColor = 'blue';
+        cashOutButton.disabled = false;
+        updateBalloonSize();  // Сбросить размер шарика
+    }
+
+    function updateUI() {
+        trialNumberDisplay.textContent = parseInt(trialNumberDisplay.textContent.split('/')[0]) + 1;
+        totalPointsDisplay.textContent = parseInt(totalPointsDisplay.textContent) + previousEarned;
+        lastBalloonDisplay.textContent = previousEarned.toFixed(2);
     }
 });
 
