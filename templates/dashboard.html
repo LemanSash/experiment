@@ -108,9 +108,22 @@
                     <h2><i class="fas fa-tasks"></i> Статус исследования</h2>
                     <div class="progress-status">
                         {% if has_questionnaire %}
-                            <div class="progress-item {% if not next_task %}completed{% endif %}">
+                            <!-- <div class="progress-item {% if not next_task %}completed{% endif %}">
                                 <i class="fas fa-check-circle"></i>
                                 <span>Анкета завершена</span>
+                            </div> -->
+                            <div class="progress-item {% if 'first_questionnaire' in completed_tasks %}completed{% endif %}">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Первая анкета</span>
+                            </div>
+                            <div class="progress-item {% if 'second_questionnaire' in completed_tasks %}completed{% endif %}">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Вторая анкета</span>
+                                {% if next_task == 'second_questionnaire' %}
+                                    <a href="{{ url_for('second_questionnaire') }}" class="btn-small">
+                                        Продолжить <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                {% endif %}
                             </div>
                             {% for task in sequence %}
                                 <div class="progress-item {% if task in completed_tasks %}completed{% endif %}">
@@ -151,7 +164,7 @@
                         <div class="stat-item">
                             <span class="stat-label">Прогресс</span>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: {{ (completed_tasks|length/4)*100 }}%"></div>
+                                <div class="progress-fill" style="width: {{ (completed_tasks|length/5)*100 }}%"></div>
                             </div>
                         </div>
                         <div class="stat-item">
