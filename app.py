@@ -403,7 +403,16 @@ def dashboard():
         WHERE user_id = %s
         LIMIT 1
     """, (user_id,))
-    has_questionnaire = cursor.fetchone() is not None
+    has_first_questionnaire = cursor.fetchone() is not None
+
+    # 3. Проверяем, заполнена ли вторая анкета
+    cursor.execute("""
+        SELECT 1
+        FROM risk_aversion_responses
+        WHERE user_id = %s
+        LIMIT 1
+    """, (user_id,))
+    has_second_questionnaire = cursor.fetchone() is not None
 
     # 3. Загружаем завершённые задания
     cursor.execute("""
@@ -427,11 +436,18 @@ def dashboard():
 
     # 5. Определяем следующее задание
     next_task = None
-    if has_questionnaire:
+    if has_first_questionnaire and has_second_questionnaire:
+        # Если обе анкеты завершены, выбираем игровое задание
         for task in sequence:
             if task not in completed_tasks:
                 next_task = task
                 break
+    elif has_first_questionnaire and not has_second_questionnaire:
+        # Вторая анкета ещё не заполнена
+        next_task = 'second_questionnaire'
+    else:
+        # Первая анкета ещё не заполнена
+        next_task = 'questionnaire'
 
     # 6. Результаты (если есть)
     results_dict = {}
@@ -441,7 +457,9 @@ def dashboard():
 
     return render_template(
         'dashboard.html',
-        has_questionnaire=has_questionnaire,
+        #has_questionnaire=has_questionnaire,
+        has_first_questionnaire=has_first_questionnaire,
+        has_second_questionnaire=has_second_questionnaire,
         next_task=next_task,
         completed_tasks=completed_tasks,
         sequence=sequence,
