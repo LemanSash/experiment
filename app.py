@@ -806,6 +806,7 @@ def task(task_name):
                 session['igt_trials'] = 150
                 session['igt_current'] = 0
                 session['igt_total_points'] = 2000
+                session['igt_decks'] = init_igt_decks()
         elif task_name in ['cct_hot', 'cct_cold']:
             cct_url = url_for('task', task_name=task_name)
             if not (request.referrer and request.referrer.endswith(cct_url)):
