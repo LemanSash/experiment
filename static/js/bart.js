@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // Initialize balloon
-    balloon.style.backgroundColor = balloonType;
+    balloon.style.backgroundColor = 'blue';
     cashOutButton.disabled = true;
 
     // Event listeners
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.querySelector('.balloon-container');
         const maxSize = container.clientHeight;
         const initialSize = 100;
-        const maxPresses = 128;
+        const maxPresses = 64;
         const increment = (maxSize - initialSize) / maxPresses;
         const newWidth = Math.min(initialSize + pumps * increment, maxSize);
         const newHeight = newWidth * 1.5;
@@ -149,7 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 trialNumber: parseInt(trialNumberDisplay.textContent.split('/')[0]),
-                balloonType: balloonType,
                 pumps,
                 popped,
                 pointsEarned: finalPoints,
