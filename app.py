@@ -1667,6 +1667,54 @@ def get_bart_metrics(user_id):
 #
 # 3) Метрики IGT
 #
+# def get_igt_metrics(user_id):
+#     conn = get_db()
+#     cursor = conn.cursor()
+
+#     # Сумма и среднее
+#     cursor.execute('''
+#         SELECT
+#             SUM(points_earned)  AS total_net,
+#             AVG(points_earned)  AS avg_net
+#         FROM igt_results
+#         WHERE user_id = %s
+#     ''', (user_id,))
+#     row = cursor.fetchone()
+#     total_net = row['total_net'] or 0
+#     avg_net   = row['avg_net']   or 0.0
+
+#     # Доля выгодных выборов (колоды C или D)
+#     cursor.execute('''
+#         SELECT COUNT(*) * 1.0 / (
+#             SELECT COUNT(*) FROM igt_results WHERE user_id = %s
+#         ) AS pct_good
+#         FROM igt_results
+#         WHERE user_id = %s AND deck IN ('C','D')
+#     ''', (user_id, user_id))
+#     pct_good = round(100 * (cursor.fetchone()[0] or 0.0), 1)
+
+#     # Процентиль по total_net
+#     cursor.execute('''
+#         SELECT SUM(points_earned) AS sum_net
+#         FROM igt_results
+#         GROUP BY user_id
+#     ''')
+#     all_nets = sorted([r['sum_net'] for r in cursor.fetchall()])
+#     if all_nets:
+#         rank = all_nets.index(total_net) + 1
+#         pct_net = round(100 * rank / len(all_nets), 1)
+#     else:
+#         pct_net = 0.0
+
+#     cursor.close()
+#     conn.close()
+#     return {
+#         'total_net': total_net,
+#         'avg_net': round(avg_net, 1),
+#         'pct_good': pct_good,
+#         'pct_net': pct_net
+#     }
+
 def get_igt_metrics(user_id):
     conn = get_db()
     cursor = conn.cursor()
@@ -1680,8 +1728,8 @@ def get_igt_metrics(user_id):
         WHERE user_id = %s
     ''', (user_id,))
     row = cursor.fetchone()
-    total_net = row['total_net'] or 0
-    avg_net   = row['avg_net']   or 0.0
+    total_net = row[0] or 0  # Доступ по индексу
+    avg_net   = row[1] or 0.0
 
     # Доля выгодных выборов (колоды C или D)
     cursor.execute('''
@@ -1699,7 +1747,7 @@ def get_igt_metrics(user_id):
         FROM igt_results
         GROUP BY user_id
     ''')
-    all_nets = sorted([r['sum_net'] for r in cursor.fetchall()])
+    all_nets = sorted([r[0] for r in cursor.fetchall()])  # Доступ по индексу
     if all_nets:
         rank = all_nets.index(total_net) + 1
         pct_net = round(100 * rank / len(all_nets), 1)
