@@ -1629,9 +1629,9 @@ def get_bart_metrics(user_id):
     rows = cursor.fetchall()
 
     # Средние показатели по всем trial'ам пользователя
-    avg_pumps = sum(row['avg_pumps_per_trial'] for row in rows) / len(rows) if rows else 0.0
-    explosion_rate = sum(row['explosion_rate'] for row in rows) / len(rows) if rows else 0.0
-    total_earn = sum(row['total_earn'] for row in rows) if rows else 0
+    avg_pumps = sum(row[0] for row in rows) / len(rows) if rows else 0.0  # Доступ по индексу
+    explosion_rate = sum(row[1] for row in rows) / len(rows) if rows else 0.0
+    total_earn = sum(row[2] for row in rows) if rows else 0
 
     # Групповые средние
     cursor.execute('''
@@ -1640,7 +1640,7 @@ def get_bart_metrics(user_id):
         GROUP BY trial_number
     ''')
     grp_rows = cursor.fetchall()
-    grp_avg_pumps = sum(row['avg_pumps_per_trial'] for row in grp_rows) / len(grp_rows) if grp_rows else 0.0
+    grp_avg_pumps = sum(row[0] for row in grp_rows) / len(grp_rows) if grp_rows else 0.0
 
     cursor.execute('SELECT AVG(CASE WHEN popped = TRUE THEN 1.0 ELSE 0 END) FROM bart_results')
     grp_explosion = cursor.fetchone()[0] or 0.0
@@ -1664,7 +1664,6 @@ def get_bart_metrics(user_id):
         'pct_earn': pct_earn,
         'pct_explosion': pct_explosion
     }
-
 #
 # 3) Метрики IGT
 #
