@@ -1353,6 +1353,9 @@ def save_bart():
         session['bart_total_points'] = total_points
         session['bart_current'] += 1
 
+    # Проверка, является ли это последним trial
+    is_final_trial = session['bart_current'] >= session.get('bart_trials', 50)
+
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
@@ -1370,6 +1373,14 @@ def save_bart():
     conn.commit()
     cursor.close()
     conn.close()
+
+    # Если это последний trial, пометь задание как выполненное
+    if is_final_trial:
+        mark_task_completed(user_id, 'bart')
+        if 'completed_tasks' not in session:
+            session['completed_tasks'] = []
+        if 'bart' not in session['completed_tasks']:
+            session['completed_tasks'].append('bart')
 
     return jsonify({'status': 'ok'})
 
