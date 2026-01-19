@@ -4,6 +4,7 @@ from itertools import permutations
 import psycopg2
 import psycopg2.extras
 import logging
+import bcrypt
 from logging.handlers import RotatingFileHandler
 from werkzeug.serving import run_simple
 from datetime import datetime, timedelta
@@ -291,7 +292,7 @@ def register():
         gender = request.form['gender']
         education = request.form['education']
         # Hash the password (use a library like bcrypt in production)
-        password_hash = password  # Replace with actual hashing
+        password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         conn = get_db()
         cursor = conn.cursor()
         try:
@@ -300,7 +301,7 @@ def register():
                 VALUES (%s, %s, %s, %s, %s, %s)
             """, (
                 request.form['username'],
-                request.form['password'],  # TODO: hash
+                password_hash,  # TODO: hash
                 request.form['email'], 
                 request.form['age'],
                 request.form['gender'],
@@ -337,7 +338,7 @@ def login():
             WHERE username = %s
         """, (username,))
         user = cursor.fetchone()
-        if user and user[1] == password: #here should be password verification
+        if user and bcrypt.checkpw(password.encode('utf-8'), user[1].encode('utf-8')):
             session['user_id'] = user[0]
             cursor.execute("""
                 SELECT task_name
