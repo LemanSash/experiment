@@ -1330,7 +1330,7 @@ def save_bart():
     user_id = session['user_id']
 
     trial_number = data['trialNumber']
-    pump_number = data['pumps']
+    pump_number = data['pumpNumber']
     break_point = data['breakPoint']
     reaction_time = data['reaction_time']
 

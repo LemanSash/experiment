@@ -228,7 +228,8 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 trialNumber: parseInt(trialNumberDisplay.textContent.split('/')[0]),
-                pumps,
+                pumpNumber,
+                breakPoint,
                 popped,
                 pointsEarned: finalPoints,
                 reaction_time: avgReactionTime
