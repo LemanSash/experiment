@@ -15,7 +15,8 @@ function disableGameControls(disabled) {
     const cashOutButton = document.getElementById('cash-out-button');
     pumpButton.disabled = disabled;
     // Only enable cash-out if not disabled AND pumps > 0
-    cashOutButton.disabled = disabled;
+    // cashOutButton.disabled = disabled;
+    cashOutButton.disabled = disabled || pumps === 0;  // Отключаем, если не было накачено
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -252,8 +253,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.redirect_url) {
             window.location.href = data.redirect_url;
         } else {
+            updateUI(); 
             resetGameState();  // Сбросить состояние игры
-            updateUI();        // Обновить UI
+                   // Обновить UI
         }
     }
 
