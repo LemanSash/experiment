@@ -70,6 +70,7 @@ def init_db():
             user_id SERIAL PRIMARY KEY,
             username TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
             age INTEGER,
             gender TEXT,
             education TEXT
@@ -157,7 +158,7 @@ def init_db():
             response_id SERIAL PRIMARY KEY,
             user_id INTEGER REFERENCES users(user_id),
             question_number INTEGER NOT NULL,
-            response TEXT NOT NULL
+            response INTEGER NOT NULL
         );
     ''')
 
