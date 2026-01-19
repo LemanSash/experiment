@@ -1774,7 +1774,7 @@ def get_cct_hot_metrics(user_id):
     # Пользовательские метрики (только experimental trials)
     cursor.execute('''
         SELECT
-            AVG(flipped_cards)    AS avg_flip,
+            AVG(flip_number)    AS avg_flip,
             AVG(points)           AS avg_pts
         FROM cct_hot_results
         WHERE user_id = %s AND trial_type = 'experimental'
@@ -1786,7 +1786,7 @@ def get_cct_hot_metrics(user_id):
     # Групповые средние
     cursor.execute('''
         SELECT
-            AVG(flipped_cards),
+            AVG(flip_number),
             AVG(points)
         FROM cct_hot_results
         WHERE trial_type = 'experimental'
