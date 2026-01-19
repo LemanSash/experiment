@@ -92,8 +92,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let fetching = false;
 
+    // function handlePump() {
+    //     if (fetching) return; // Заблокировать дополнительные запросы
+    //     fetching = true;
+
+    //     pumpNumber++;
+    //     pumps++;
+    //     const rt = Date.now() - reactionStartTime;
+    //     reactionStartTime = Date.now();
+    //     let popped = pumpNumber === breakPoint;
+    //     if (!popped) {
+    //         trialPoints = pumpNumber * 5;
+    //         updateBalloonSize();
+    //     } else {
+    //         trialPoints = 0;
+    //         trialEnded = true;
+    //     }
+
+    //     // Снимаем запрет с кнопки "Забрать", если это первый надув
+    //     if (pumps === 1) {
+    //         cashOutButton.disabled = false;
+    //     }
+
+    //     fetch('/save_bart', {
+    //         method: 'POST',
+    //         headers: {'Content-Type': 'application/json'},
+    //         body: JSON.stringify({
+    //             trialNumber: parseInt(trialNumberDisplay.textContent),
+    //             pumpNumber: pumpNumber,
+    //             breakPoint: breakPoint,
+    //             reaction_time: rt,
+    //             trialEnded: popped
+    //         })
+    //     }).then(() => {
+    //         fetching = false;
+    //     });
+
+    //     if (popped) {
+    //         balloon.style.backgroundColor = 'red';
+    //         setTimeout(() => window.location.reload(), 500);
+    //     }
+    // }
+
     function handlePump() {
-        if (fetching) return; // Заблокировать дополнительные запросы
+        if (fetching) return;
         fetching = true;
 
         pumpNumber++;
@@ -109,24 +151,36 @@ document.addEventListener('DOMContentLoaded', () => {
             trialEnded = true;
         }
 
-        // Снимаем запрет с кнопки "Забрать", если это первый надув
-        if (pumps === 1) {
-            cashOutButton.disabled = false;
+        // Проверка на конец игры
+        if (session['bart_current'] >= session.get('bart_trials', 50)) {
+            fetch('/save_bart', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    trialNumber: parseInt(trialNumberDisplay.textContent),
+                    pumpNumber: pumpNumber,
+                    breakPoint: breakPoint,
+                    reaction_time: rt,
+                    trialEnded: true
+                })
+            }).then(() => {
+                window.location.href = '{{ url_for('dashboard') }}';  // Перенаправляем на dashboard
+            });
+        } else {
+            fetch('/save_bart', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    trialNumber: parseInt(trialNumberDisplay.textContent),
+                    pumpNumber: pumpNumber,
+                    breakPoint: breakPoint,
+                    reaction_time: rt,
+                    trialEnded: popped
+                })
+            }).then(() => {
+                fetching = false;
+            });
         }
-
-        fetch('/save_bart', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                trialNumber: parseInt(trialNumberDisplay.textContent),
-                pumpNumber: pumpNumber,
-                breakPoint: breakPoint,
-                reaction_time: rt,
-                trialEnded: popped
-            })
-        }).then(() => {
-            fetching = false;
-        });
 
         if (popped) {
             balloon.style.backgroundColor = 'red';
@@ -282,6 +336,8 @@ document.addEventListener('DOMContentLoaded', () => {
         trialNumberDisplay.textContent = parseInt(trialNumberDisplay.textContent.split('/')[0]) + 1;
         totalPointsDisplay.textContent = parseInt(totalPointsDisplay.textContent) + previousEarned;
         lastBalloonDisplay.textContent = previousEarned.toFixed(2);
+        const progressBarFill = document.querySelector('.progress-fill');
+        progressBarFill.style.width = ((parseInt(trialNumberDisplay.textContent.split('/')[0]) / totalTrials) * 100) + '%';
     }
 });
 

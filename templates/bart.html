@@ -37,7 +37,7 @@
     <section class="section">
         <div class="container">
             <div class="progress-bar">
-                    <div class="progress-fill" style="width: {{ (trial_number/total_trials)*100 }}%"></div>
+                    <div class="progress-fill" style="width: calc(({{ trial_number }} / {{ total_trials }}) * 100%)"></div>
             </div>
             <div class="task-card">
                 <div class="task-info-grid">
