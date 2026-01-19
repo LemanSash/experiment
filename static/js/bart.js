@@ -109,6 +109,11 @@ document.addEventListener('DOMContentLoaded', () => {
             trialEnded = true;
         }
 
+        // Снимаем запрет с кнопки "Забрать", если это первый надув
+        if (pumps === 1) {
+            cashOutButton.disabled = false;
+        }
+
         fetch('/save_bart', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
