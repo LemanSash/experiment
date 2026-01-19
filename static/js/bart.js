@@ -1,4 +1,5 @@
 // bart.js
+let pumps = 0;
 function showInstructions() {
     document.getElementById('instructionModal').style.display = 'block';
     disableGameControls(true);
@@ -39,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const lastBalloonDisplay = document.getElementById('last-balloon');
 
     // Game state
-    let pumps = 0;
+    //let pumps = 0;
     let popped = false;
     let pointsEarned = 0;
     let previousEarned = 0;
