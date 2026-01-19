@@ -61,8 +61,8 @@ def init_db():
     conn.autocommit = False
     cursor = conn.cursor()
 
-    cursor.execute('DROP TABLE IF EXISTS questionnaire_responses CASCADE')
-    cursor.execute('DROP TABLE IF EXISTS users CASCADE')
+    # cursor.execute('DROP TABLE IF EXISTS questionnaire_responses CASCADE')
+    # cursor.execute('DROP TABLE IF EXISTS users CASCADE')
 
     #Create users table
     cursor.execute('''
