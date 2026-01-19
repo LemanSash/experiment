@@ -1766,8 +1766,46 @@ def get_igt_metrics(user_id):
 #
 # 4) Метрики для CCT-hot и CCT-cold
 #
+# def get_cct_hot_metrics(user_id):
+#     """Метрики для CCT-hot: flipped_cards и points"""
+#     conn = get_db()
+#     cursor = conn.cursor()
+
+#     # Пользовательские метрики (только experimental trials)
+#     cursor.execute('''
+#         SELECT
+#             AVG(flip_number)    AS avg_flip,
+#             AVG(points)           AS avg_pts
+#         FROM cct_hot_results
+#         WHERE user_id = %s AND trial_type = 'experimental'
+#     ''', (user_id,))
+#     row = cursor.fetchone()
+#     avg_flip = row['avg_flip'] or 0.0
+#     avg_pts  = row['avg_pts']  or 0.0
+
+#     # Групповые средние
+#     cursor.execute('''
+#         SELECT
+#             AVG(flip_number),
+#             AVG(points)
+#         FROM cct_hot_results
+#         WHERE trial_type = 'experimental'
+#     ''')
+#     grp = cursor.fetchone()
+#     grp_flip = grp[0] or 1.0
+#     grp_pts  = grp[1] or 1.0
+#     cursor.close()
+#     conn.close()
+
+#     return {
+#         'avg_flip': round(avg_flip,1),
+#         'avg_pts':  round(avg_pts,1),
+#         'pct_flip': round(100*(avg_flip/grp_flip - 1),1),
+#         'pct_pts':  round(100*(avg_pts/grp_pts   - 1),1)
+#     }
+
 def get_cct_hot_metrics(user_id):
-    """Метрики для CCT-hot: flipped_cards и points"""
+    """Метрики для CCT-hot: flip_number и points"""
     conn = get_db()
     cursor = conn.cursor()
 
@@ -1780,8 +1818,8 @@ def get_cct_hot_metrics(user_id):
         WHERE user_id = %s AND trial_type = 'experimental'
     ''', (user_id,))
     row = cursor.fetchone()
-    avg_flip = row['avg_flip'] or 0.0
-    avg_pts  = row['avg_pts']  or 0.0
+    avg_flip = row[0] or 0.0  # Доступ по индексу
+    avg_pts  = row[1] or 0.0
 
     # Групповые средние
     cursor.execute('''
