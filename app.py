@@ -254,7 +254,7 @@ def before_request():
         return
 
     # Разрешить пропуска проверок для маршрутов авторизации и регистрации
-    allowed_routes = ['login', 'register', 'logout', 'home']
+    allowed_routes = ['login', 'register', 'logout', 'home', 'terms', 'agreement']
 
     # Если текущий запрос не входит в разрешённые маршруты и пользователь не залогинен
     if request.endpoint not in allowed_routes and 'user_id' not in session:
