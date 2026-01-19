@@ -1843,6 +1843,43 @@ def get_cct_hot_metrics(user_id):
     }
 
 
+# def get_cct_cold_metrics(user_id):
+#     """Метрики для CCT-cold: num_cards и points_earned"""
+#     conn = get_db()
+#     cursor = conn.cursor()
+
+#     # Пользовательские метрики (всех trials)
+#     cursor.execute('''
+#         SELECT
+#             AVG(num_cards)        AS avg_num,
+#             AVG(points_earned)    AS avg_pts
+#         FROM cct_cold_results
+#         WHERE user_id = %s
+#     ''', (user_id,))
+#     row = cursor.fetchone()
+#     avg_num = row['avg_num'] or 0.0
+#     avg_pts = row['avg_pts'] or 0.0
+
+#     # Групповые средние
+#     cursor.execute('''
+#         SELECT
+#             AVG(num_cards),
+#             AVG(points_earned)
+#         FROM cct_cold_results
+#     ''')
+#     grp = cursor.fetchone()
+#     grp_num = grp[0] or 1.0
+#     grp_pts = grp[1] or 1.0
+#     cursor.close()
+#     conn.close()
+
+#     return {
+#         'avg_num': round(avg_num,1),
+#         'avg_pts': round(avg_pts,1),
+#         'pct_num': round(100*(avg_num/grp_num - 1),1),
+#         'pct_pts': round(100*(avg_pts/grp_pts - 1),1)
+#     }
+
 def get_cct_cold_metrics(user_id):
     """Метрики для CCT-cold: num_cards и points_earned"""
     conn = get_db()
@@ -1857,8 +1894,8 @@ def get_cct_cold_metrics(user_id):
         WHERE user_id = %s
     ''', (user_id,))
     row = cursor.fetchone()
-    avg_num = row['avg_num'] or 0.0
-    avg_pts = row['avg_pts'] or 0.0
+    avg_num = row[0] or 0.0  # Доступ по индексу
+    avg_pts = row[1] or 0.0
 
     # Групповые средние
     cursor.execute('''
