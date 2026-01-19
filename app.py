@@ -308,6 +308,7 @@ def register():
                 request.form['education']
             ))
             conn.commit()
+            return redirect(url_for('login'))
         except psycopg2.errors.UniqueViolation:
             conn.rollback()
             flash("Username already exists")
