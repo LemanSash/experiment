@@ -286,6 +286,7 @@ def register():
             return redirect(url_for('register'))
         username = request.form['username']
         password = request.form['password']
+        email = request.form['email']
         age = request.form['age']
         gender = request.form['gender']
         education = request.form['education']
@@ -295,11 +296,12 @@ def register():
         cursor = conn.cursor()
         try:
             cursor.execute("""
-                INSERT INTO users (username, password_hash, age, gender, education)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO users (username, password_hash, email, age, gender, education)
+                VALUES (%s, %s, %s, %s, %s, %s)
             """, (
                 request.form['username'],
                 request.form['password'],  # TODO: hash
+                request.form['email'], 
                 request.form['age'],
                 request.form['gender'],
                 request.form['education']
@@ -317,6 +319,10 @@ def register():
 @app.route('/terms')
 def terms():
     return render_template('terms.html')
+
+@app.route('/agreement')
+def agreement():
+    return render_template('agreement.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
