@@ -1570,28 +1570,81 @@ def get_questionnaire_results(user_id):
 #
 # 2) Метрики BART
 #
+# def get_bart_metrics(user_id):
+#     conn = get_db()
+#     cursor = conn.cursor()
+#     # Пользовательские
+#     cursor.execute('''
+#         SELECT
+#             AVG(pumps) AS avg_pumps,
+#             AVG(CASE WHEN popped = 1 THEN 1.0 ELSE 0 END) AS explosion_rate,
+#             SUM(points_earned) AS total_earn
+#         FROM bart_results
+#         WHERE user_id = %s
+#     ''', (user_id,))
+#     row = cursor.fetchone()
+#     avg_pumps = row['avg_pumps'] or 0.0
+#     explosion_rate = row['explosion_rate'] or 0.0
+#     total_earn = row['total_earn'] or 0
+
+#     # Групповые средние
+#     cursor.execute('SELECT AVG(pumps) FROM bart_results')
+#     grp_avg_pumps = cursor.fetchone()[0] or 0.0
+#     cursor.execute('SELECT AVG(CASE WHEN popped = 1 THEN 1.0 ELSE 0 END) FROM bart_results')
+#     grp_explosion = cursor.fetchone()[0] or 0.0
+#     cursor.execute('SELECT AVG(points_earned) FROM bart_results')
+#     grp_avg_earn = cursor.fetchone()[0] or 0.0
+
+#     cursor.close()
+#     conn.close()
+
+#     # Относительные отклонения от среднего (в %)
+#     pct_pumps = round(100 * (avg_pumps / grp_avg_pumps - 1), 1) if grp_avg_pumps else 0.0
+#     pct_earn = round(100 * (total_earn / grp_avg_earn - 1), 1)    if grp_avg_earn  else 0.0
+#     pct_explosion = round(100 * (explosion_rate / grp_explosion - 1), 1) if grp_explosion else 0.0
+
+#     return {
+#         'avg_pumps': round(avg_pumps, 1),
+#         'explosion_rate': round(100 * explosion_rate, 1),
+#         'total_earn': total_earn,
+#         'pct_pumps': pct_pumps,
+#         'pct_earn': pct_earn,
+#         'pct_explosion': pct_explosion
+#     }
+
 def get_bart_metrics(user_id):
     conn = get_db()
     cursor = conn.cursor()
-    # Пользовательские
+
+    # Индивидуальные показатели
     cursor.execute('''
         SELECT
-            AVG(pumps) AS avg_pumps,
-            AVG(CASE WHEN popped = 1 THEN 1.0 ELSE 0 END) AS explosion_rate,
+            AVG(SUM(pump_number)) OVER(PARTITION BY trial_number) AS avg_pumps_per_trial,
+            AVG(CASE WHEN popped = TRUE THEN 1.0 ELSE 0 END) AS explosion_rate,
             SUM(points_earned) AS total_earn
         FROM bart_results
         WHERE user_id = %s
+        GROUP BY trial_number
     ''', (user_id,))
-    row = cursor.fetchone()
-    avg_pumps = row['avg_pumps'] or 0.0
-    explosion_rate = row['explosion_rate'] or 0.0
-    total_earn = row['total_earn'] or 0
+    rows = cursor.fetchall()
+
+    # Средние показатели по всем trial'ам пользователя
+    avg_pumps = sum(row['avg_pumps_per_trial'] for row in rows) / len(rows) if rows else 0.0
+    explosion_rate = sum(row['explosion_rate'] for row in rows) / len(rows) if rows else 0.0
+    total_earn = sum(row['total_earn'] for row in rows) if rows else 0
 
     # Групповые средние
-    cursor.execute('SELECT AVG(pumps) FROM bart_results')
-    grp_avg_pumps = cursor.fetchone()[0] or 0.0
-    cursor.execute('SELECT AVG(CASE WHEN popped = 1 THEN 1.0 ELSE 0 END) FROM bart_results')
+    cursor.execute('''
+        SELECT AVG(SUM(pump_number)) OVER(PARTITION BY trial_number) AS avg_pumps_per_trial
+        FROM bart_results
+        GROUP BY trial_number
+    ''')
+    grp_rows = cursor.fetchall()
+    grp_avg_pumps = sum(row['avg_pumps_per_trial'] for row in grp_rows) / len(grp_rows) if grp_rows else 0.0
+
+    cursor.execute('SELECT AVG(CASE WHEN popped = TRUE THEN 1.0 ELSE 0 END) FROM bart_results')
     grp_explosion = cursor.fetchone()[0] or 0.0
+
     cursor.execute('SELECT AVG(points_earned) FROM bart_results')
     grp_avg_earn = cursor.fetchone()[0] or 0.0
 
@@ -1600,7 +1653,7 @@ def get_bart_metrics(user_id):
 
     # Относительные отклонения от среднего (в %)
     pct_pumps = round(100 * (avg_pumps / grp_avg_pumps - 1), 1) if grp_avg_pumps else 0.0
-    pct_earn = round(100 * (total_earn / grp_avg_earn - 1), 1)    if grp_avg_earn  else 0.0
+    pct_earn = round(100 * (total_earn / grp_avg_earn - 1), 1) if grp_avg_earn else 0.0
     pct_explosion = round(100 * (explosion_rate / grp_explosion - 1), 1) if grp_explosion else 0.0
 
     return {
