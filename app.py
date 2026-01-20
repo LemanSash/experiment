@@ -400,7 +400,7 @@ def send_reset_email(email, token):
     ''')
     
     msg['Subject'] = 'Восстановление пароля'
-    msg['From'] = 'leman.sash@yandex.ru'
+    msg['From'] = 'info@decision-making-research.ru'
     msg['To'] = email
     
     server = smtplib.SMTP_SSL('smtp.beget.com', 465)
