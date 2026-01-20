@@ -163,9 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     reaction_time: rt,
                     trialEnded: true
                 })
-            }).then(() => {
-                window.location.href = '{{ url_for('dashboard') }}';  // Перенаправляем на dashboard
-            });
+            })
         } else {
             fetch('/save_bart', {
                 method: 'POST',
