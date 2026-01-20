@@ -404,6 +404,7 @@ def send_reset_email(email, token):
     msg['To'] = email
     
     server = smtplib.SMTP_SSL('smtp.yandex.ru', 465)
+    server.starttls() 
     server.login(SMTP_USERNAME, SMTP_PASSWORD)
     server.send_message(msg)
     server.quit()
