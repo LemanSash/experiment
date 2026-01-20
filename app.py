@@ -15,8 +15,16 @@ from dotenv import load_dotenv
 import os
 
 app = Flask(__name__)
-# app.secret_key = APP_SECRET_KEY
-# SECRET_KEY = SMTP_SECRET_KEY
+
+load_dotenv()  # Загружает переменные окружения из файла .env
+
+SMTP_USERNAME = os.getenv('SMTP_USERNAME')
+SMTP_PASSWORD = os.getenv('SMTP_PASSWORD')
+APP_SECRET_KEY = os.getenv('APP_SECRET_KEY')
+SMTP_SECRET_KEY = os.getenv('SMTP_SECRET_KEY')
+
+app.secret_key = APP_SECRET_KEY
+SECRET_KEY = SMTP_SECRET_KEY
 
 app.config.update({
     'SESSION_COOKIE_SECURE': True,  # Безопасность сессий (SSL/TLS обязателен!)
@@ -43,15 +51,6 @@ def handle_exception(e):
     app.logger.exception(str(e))  # Это гарантирует сохранение полной трассировки стека
     return "Internal Server Error", 500
 
-load_dotenv()  # Загружает переменные окружения из файла .env
-
-SMTP_USERNAME = os.getenv('SMTP_USERNAME')
-SMTP_PASSWORD = os.getenv('SMTP_PASSWORD')
-APP_SECRET_KEY = os.getenv('APP_SECRET_KEY')
-SMTP_SECRET_KEY = os.getenv('SMTP_SECRET_KEY')
-
-app.secret_key = APP_SECRET_KEY
-SECRET_KEY = SMTP_SECRET_KEY
 
 # @app.before_request
 # def before_request():
