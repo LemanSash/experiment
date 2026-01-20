@@ -182,11 +182,11 @@ document.addEventListener('DOMContentLoaded', () => {
         //     });
         // }
 
-        if (popped) {
-            balloon.style.backgroundColor = 'red';
-            setTimeout(() => window.location.reload(), 500);
-        }
-    }
+    //     if (popped) {
+    //         balloon.style.backgroundColor = 'red';
+    //         setTimeout(() => window.location.reload(), 500);
+    //     }
+    // }
 
 
     function updateBalloonSize() {
