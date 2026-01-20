@@ -16,8 +16,8 @@ function disableGameControls(disabled) {
     const cashOutButton = document.getElementById('cash-out-button');
     pumpButton.disabled = disabled;
     // Only enable cash-out if not disabled AND pumps > 0
-    cashOutButton.disabled = disabled;
-    // cashOutButton.disabled = disabled || pumps === 0;  // Отключаем, если не было накачено
+    // cashOutButton.disabled = disabled;
+    cashOutButton.disabled = disabled || pumps === 0;  // Отключаем, если не было накачено
 }
 
 document.addEventListener('DOMContentLoaded', () => {
