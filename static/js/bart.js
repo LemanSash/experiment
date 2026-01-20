@@ -328,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
         trialEnded = false;
         trialPoints = 0;
         balloon.style.backgroundColor = 'blue';
-        cashOutButton.disabled = disabled;
+        cashOutButton.disabled = true;
         updateBalloonSize();  // Сбросить размер шарика
     }
 
