@@ -23,8 +23,10 @@
         <div class="container">
             <div class="questionnaire-card">
                 <div class="questionnaire-header">
-                    <h1><i class="fas fa-clipboard-list"></i> Оцените степень своей склонности к риску в различных ситуациях.</h1>
-                    <p class="lead">Оцените каждое утверждение по шкале от "Категорически не согласен" до "Абсолютно согласен".</p>
+                    <h1><i class="fas fa-clipboard-list"></i> Укажите, насколько вам свойственны указанные формы поведения</h1>
+                    <p class="lead">Отвечайте "Никогда", только если вы действительно никогда не занимались указанной формой поведения. 
+                        Если вы занимались какой-либо из форм поведения только 1-2 раза за всю жизнь, следует ответить "Редко".
+                    </p>
                 </div>
 
                 <form method="POST" class="questionnaire-form">
@@ -37,19 +39,23 @@
                         <div class="response-scale">
                             <label class="radio-option">
                                 <input type="radio" name="sq{{ i + 1 }}" value="1" required>
-                                <span class="radio-label">Категорически не согласен</span>
+                                <span class="radio-label">Никогда</span>
                             </label>
                             <label class="radio-option">
                                 <input type="radio" name="sq{{ i + 1 }}" value="2">
-                                <span class="radio-label">Скорее не согласен</span>
+                                <span class="radio-label">Редко</span>
                             </label>
                             <label class="radio-option">
                                 <input type="radio" name="sq{{ i + 1 }}" value="3">
-                                <span class="radio-label">Скорее согласен</span>
+                                <span class="radio-label">Иногда</span>
                             </label>
                             <label class="radio-option">
                                 <input type="radio" name="sq{{ i + 1 }}" value="4">
-                                <span class="radio-label">Абсолютно согласен</span>
+                                <span class="radio-label">Довольно часто</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="sq{{ i + 1 }}" value="4">
+                                <span class="radio-label">Очень часто</span>
                             </label>
                         </div>
                     </div>
