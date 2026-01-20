@@ -37,6 +37,57 @@
                     </div>
                 </div>
 
+                {% if task_name == 'igt' %}
+                    <form action="" method="post">
+                        <h2>Анкетирование</h2>
+                        <div>
+                            <label for="i1">Вопрос №1: Колоды различались между собой?</label>
+                            <select name="i1" id="i1" required>
+                                <option value="">Выберите...</option>
+                                <option value="yes">Да</option>
+                                <option value="no">Нет</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="i2">Вопрос №2: Если да, какие колоды показались вам более выгодными?</label>
+                            <ul>
+                                <li><input type="checkbox" name="i2[]" value="1" required>Колода 1</li>
+                                <li><input type="checkbox" name="i2[]" value="2" required>Колода 2</li>
+                                <li><input type="checkbox" name="i2[]" value="3" required>Колода 3</li>
+                                <li><input type="checkbox" name="i2[]" value="4" required>Колода 4</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <label for="i3">Вопрос №3: Сталкивались ли вы с этим заданием ранее?</label>
+                            <select name="i3" id="i3" required>
+                                <option value="">Выберите...</option>
+                                <option value="yes">Да</option>
+                                <option value="no">Нет</option>
+                            </select>
+                        </div>
+                        <button type="submit">Продолжить</button>
+                    </form>
+                {% endif %}
+
+                {% if task_name == 'bart' %}
+                    <form action="" method="post">
+                        <h2>Анкетирование</h2>
+                        <div>
+                            <label for="b1">Вопрос №1: Сталкивались ли вы с этим заданием ранее?</label>
+                            <select name="b1" id="b1" required>
+                                <option value="">Выберите...</option>
+                                <option value="yes">Да</option>
+                                <option value="no">Нет</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="b2">Вопрос №2: Как вы думаете, приблизительно какое количество накачек было оптимальным?</label>
+                            <input type="number" name="b2" id="b2" min="0" max="100" step="1" placeholder="Количество накачек..." required>
+                        </div>
+                        <button type="submit">Продолжить</button>
+                    </form>
+                {% endif %}
+
                 <p class="lead" style="font-size: 1.1rem; color: #64748b; margin-bottom: 2rem;">
                     Вы хотите продолжить или немного отдохнуть?
                 </p>

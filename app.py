@@ -225,6 +225,17 @@ def init_db():
         );
     ''')
 
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS tasks_questions (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(user_id),
+            task_name TEXT NOT NULL,
+            question TEXT NOT NULL,
+            answer TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    ''')
+
     # Populate sequences table
     methods = ["igt", "bart", "cct_hot", "cct_cold"]  # Use endpoint names
     all_sequences = list({p for p in permutations(methods)})  # Get unique permutations
@@ -1562,6 +1573,50 @@ def intermediate(task_name):
         total_money = cursor.fetchone()[0] or 0
         cursor.close()
         conn.close()
+
+    # Обрабатываем POST-запрос
+    if request.method == 'POST':
+        answers = dict(request.form)
+        user_id = session['user_id']
+
+        # Сохраняем ответы в базу данных
+        conn = get_db()
+        cursor = conn.cursor()
+
+        # Ответы на вопросы зависят от конкретного задания
+        if task_name == 'igt':
+            q1_answer = answers.get('i1')
+            q2_answers = ', '.join(answers.getlist('i2[]'))
+            q3_answer = answers.get('i3')
+
+            cursor.execute('''
+                INSERT INTO tasks_questions (user_id, task_name, question, answer)
+                VALUES (%s, %s, %s, %s)
+            ''', (user_id, task_name, 'i1', q1_answer))
+            cursor.execute('''
+                INSERT INTO tasks_questions (user_id, task_name, question, answer)
+                VALUES (%s, %s, %s, %s)
+            ''', (user_id, task_name, 'i2', q2_answers))
+            cursor.execute('''
+                INSERT INTO tasks_questions (user_id, task_name, question, answer)
+                VALUES (%s, %s, %s, %s)
+            ''', (user_id, task_name, 'i3', q3_answer))
+
+        elif task_name == 'bart':
+            q1_answer = answers.get('b1')
+            q2_answer = answers.get('b2')
+
+            cursor.execute('''
+                INSERT INTO tasks_questions (user_id, task_name, question, answer)
+                VALUES (%s, %s, %s, %s)
+            ''', (user_id, task_name, 'b1', q1_answer))
+            cursor.execute('''
+                INSERT INTO tasks_questions (user_id, task_name, question, answer)
+                VALUES (%s, %s, %s, %s)
+            ''', (user_id, task_name, 'b2', q2_answer))
+
+        conn.commit()
+        cursor.close()
 
     return render_template('intermediate.html',
                          task_name=task_name,
