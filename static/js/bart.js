@@ -336,8 +336,6 @@ document.addEventListener('DOMContentLoaded', () => {
         trialNumberDisplay.textContent = parseInt(trialNumberDisplay.textContent.split('/')[0]) + 1;
         totalPointsDisplay.textContent = parseInt(totalPointsDisplay.textContent) + previousEarned;
         lastBalloonDisplay.textContent = previousEarned.toFixed(2);
-        const progressBarFill = document.querySelector('.progress-fill');
-        progressBarFill.style.width = ((parseInt(trialNumberDisplay.textContent.split('/')[0]) / totalTrials) * 100) + '%';
     }
 });
 
