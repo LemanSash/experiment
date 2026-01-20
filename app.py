@@ -403,7 +403,7 @@ def send_reset_email(email, token):
     msg['From'] = 'leman.sash@yandex.ru'
     msg['To'] = email
     
-    server = smtplib.SMTP_SSL('smtp.yandex.ru', 587)
+    server = smtplib.SMTP_SSL('smtp.yandex.ru', 465)
     server.login(SMTP_USERNAME, SMTP_PASSWORD)
     server.send_message(msg)
     server.quit()
