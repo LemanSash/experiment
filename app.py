@@ -7,7 +7,7 @@ import logging
 import bcrypt
 from logging.handlers import RotatingFileHandler
 from werkzeug.serving import run_simple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import smtplib
 from email.message import EmailMessage
 import jwt
@@ -366,7 +366,7 @@ def login():
 def generate_reset_token(user_id):
     payload = {
         'user_id': user_id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Срок действия токена: 1 час
+        'exp': datetime.now(timezone.utc) + timedelta(hours=1)  # Срок действия токена: 1 час
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
     return token
