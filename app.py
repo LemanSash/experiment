@@ -22,6 +22,7 @@ SMTP_USERNAME = os.getenv('SMTP_USERNAME')
 SMTP_PASSWORD = os.getenv('SMTP_PASSWORD')
 APP_SECRET_KEY = os.getenv('APP_SECRET_KEY')
 SMTP_SECRET_KEY = os.getenv('SMTP_SECRET_KEY')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
 
 app.secret_key = APP_SECRET_KEY
 SECRET_KEY = SMTP_SECRET_KEY
@@ -65,7 +66,7 @@ def get_db():
     conn = psycopg2.connect(
         dbname="experiment_db",
         user="admin",
-        password="ng57&ik#2",
+        password=DB_PASSWORD,
         host="localhost",
         port=5432
     )
