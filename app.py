@@ -551,7 +551,17 @@ def dashboard():
         FROM user_progress
         WHERE user_id = %s
     """, (user_id,))
-    last_active = cursor.fetchone()[0] or "Нет активности"
+    
+    last_active_utc = cursor.fetchone()[0]
+    # Если данных нет, устанавливаем дефолтное значение
+    if last_active_utc is None:
+        last_active = "Нет активности"
+    else:
+        # Преобразование в московское время (+3 часа)
+        local_time = last_active_utc.replace(tzinfo=datetime.timezone.utc).astimezone(datetime.timezone(datetime.timedelta(hours=3)))
+
+    # Формируем требуемый формат: YYYY-MM-DD HH:MM
+    last_active = local_time.strftime('%Y-%m-%d %H:%M')
 
     cursor.close()
     conn.close()
