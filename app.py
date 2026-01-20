@@ -8,9 +8,13 @@ import bcrypt
 from logging.handlers import RotatingFileHandler
 from werkzeug.serving import run_simple
 from datetime import datetime, timedelta
+import smtplib
+from email.message import EmailMessage
+import jwt
 
 app = Flask(__name__)
 app.secret_key = '#'
+SECRET_KEY = 'your-secret-key'
 
 app.config.update({
     'SESSION_COOKIE_SECURE': True,  # Безопасность сессий (SSL/TLS обязателен!)
@@ -357,6 +361,92 @@ def login():
         cursor.close()
         conn.close()
     return render_template('login.html')
+
+def generate_reset_token(user_id):
+    payload = {
+        'user_id': user_id,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Срок действия токена: 1 час
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+    return token
+
+def verify_reset_token(token):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        return payload['user_id']
+    except jwt.ExpiredSignatureError:
+        return None  # Токен просрочен
+    except jwt.InvalidTokenError:
+        return None  # Недопустимый токен
+
+def send_reset_email(email, token):
+    msg = EmailMessage()
+    msg.set_content(f'''
+        Нажмите на следующую ссылку для сброса вашего пароля:
+        {url_for('reset_password', token=token, _external=True)}
+    ''')
+    
+    msg['Subject'] = 'Восстановление пароля'
+    msg['From'] = 'leman.sash@yandex.ru'
+    msg['To'] = email
+    
+    server = smtplib.SMTP_SSL('smtp.yandex.ru', 465)
+    server.login('leman.sash@yandex.ru', 'your-password')
+    server.send_message(msg)
+    server.quit()
+
+@app.route('/reset_password_request', methods=['GET', 'POST'])
+def reset_password_request():
+    if request.method == 'POST':
+        email = request.form['email']
+        
+        # Проверка существования пользователя с таким email
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT user_id FROM users WHERE email=%s", (email,))
+        user = cursor.fetchone()
+        
+        if user:
+            # Генерация уникального токена для сброса пароля
+            token = generate_reset_token(user[0])
+            
+            # Отправка письма с ссылкой на сброс пароля
+            send_reset_email(email, token)
+            
+            flash('На ваш адрес электронной почты отправлено письмо с инструкциями по восстановлению пароля.', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('Пользователь с таким электронным адресом не найден.', 'warning')
+    
+    return render_template('reset_password_request.html')
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    # Проверка валидности токена
+    user_id = verify_reset_token(token)
+    
+    if not user_id:
+        flash('Недопустимый или истекший токен.', 'warning')
+        return redirect(url_for('reset_password_request'))
+    
+    if request.method == 'POST':
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+        
+        if new_password != confirm_password:
+            flash('Пароли не совпадают.', 'warning')
+        else:
+            # Обновление пароля в базе данных
+            hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+            conn = get_db()
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET password_hash=%s WHERE user_id=%s", (hashed_password.decode('utf-8'), user_id))
+            conn.commit()
+            
+            flash('Ваш пароль успешно сброшен!', 'success')
+            return redirect(url_for('login'))
+    
+    return render_template('reset_password.html', token=token)
 
 @app.route('/dashboard')
 def dashboard():
