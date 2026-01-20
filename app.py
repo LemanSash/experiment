@@ -564,6 +564,7 @@ def dashboard():
     """, (user_id,))
     
     last_active_utc = cursor.fetchone()[0]
+    local_time = "Нет активности"
     # Если данных нет, устанавливаем дефолтное значение
     if last_active_utc is None:
         last_active = "Нет активности"
@@ -1024,9 +1025,9 @@ def task(task_name):
             session['bart_current'] = 0
         if 'bart_total_points' not in session:
             session['bart_total_points'] = 0
+        # при старте BART
         
         if 'bart_break_points' not in session:
-            # при старте BART
             points = list(range(1, 65))   # 1..64
             random.shuffle(points)
             session['bart_break_points'] = points[:50]  # ровно 50 trial
