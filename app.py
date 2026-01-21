@@ -80,7 +80,7 @@ def init_db():
 
     # cursor.execute('DROP TABLE IF EXISTS questionnaire_responses CASCADE')
     # cursor.execute('DROP TABLE IF EXISTS users CASCADE')
-
+    cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
     #Create users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
@@ -914,24 +914,24 @@ def task(task_name):
         # Например, для BART:
         if task_name == 'bart':
             bart_url = url_for('task', task_name='bart')
-            if not (request.referrer and request.referrer.endswith(bart_url)):
-                user_id = session.get('user_id')
-                if user_id:
-                    conn = get_db()
-                    cursor = conn.cursor()
+            #if not (request.referrer and request.referrer.endswith(bart_url)):
+            user_id = session.get('user_id')
+            if user_id:
+                conn = get_db()
+                cursor = conn.cursor()
                     # Удаляем все записи для IGT данного пользователя
-                    cursor.execute('DELETE FROM bart_results WHERE user_id = %s', (user_id,))
-                    conn.commit()
-                    cursor.close()
+                cursor.execute('DELETE FROM bart_results WHERE user_id = %s', (user_id,))
+                conn.commit()
+                cursor.close()
                 # Сброс переменных игры BART
-                session.pop('bart_current', None)
-                session.pop('bart_total_points', None)
-                session.pop('bart_trials', None)
-                session.pop(f'{task_name}_instructions_viewed', None)
+            session.pop('bart_current', None)
+            session.pop('bart_total_points', None)
+            session.pop('bart_trials', None)
+            session.pop(f'{task_name}_instructions_viewed', None)
                 # Инициализация заново
-                session['bart_trials'] = 50  # число раундов
-                session['bart_current'] = 0
-                session['bart_total_points'] = 0
+            session['bart_trials'] = 50  # число раундов
+            session['bart_current'] = 0
+            session['bart_total_points'] = 0
 
         elif task_name == 'igt':
             igt_url = url_for('task', task_name='igt')
