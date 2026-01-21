@@ -1576,7 +1576,18 @@ def intermediate(task_name):
         total_money = cursor.fetchone()[0] or 0
         cursor.close()
         conn.close()
-
+    # Проверка, проходили ли анкету ранее
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT COUNT(*)
+        FROM tasks_questions
+        WHERE user_id = %s AND task_name = %s
+    ''', (session['user_id'], task_name))
+    survey_exists = cursor.fetchone()[0] > 0
+    passed_survey = bool(survey_exists)
+    cursor.close()
+    conn.close()
     # Обрабатываем POST-запрос
     if request.method == 'POST':
         answers = dict(request.form)
@@ -1624,7 +1635,8 @@ def intermediate(task_name):
     return render_template('intermediate.html',
                          task_name=task_name,
                          next_task=next_task,
-                         total_money=total_money)
+                         total_money=total_money,
+                         passed_survey=passed_survey)
 
 def get_user_results(user_id):
     conn = get_db()

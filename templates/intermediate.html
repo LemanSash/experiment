@@ -38,7 +38,7 @@
                     </div>
                 </div>
 
-                {% if task_name == 'igt' %}
+                {% if task_name == 'igt' and not passed_survey %}
                     <form action="" method="post">
                         <h2>Анкетирование</h2>
                         <div>
@@ -70,7 +70,7 @@
                     </form>
                 {% endif %}
 
-                {% if task_name == 'bart' %}
+                {% if task_name == 'bart' and not passed_survey %}
                     <form action="" method="post">
                         <h2>Анкетирование</h2>
                         <div>
