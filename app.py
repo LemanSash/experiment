@@ -1714,6 +1714,53 @@ def test():
     return render_template("test.html")
 
 
+# def get_questionnaire_results(user_id):
+#     conn = get_db()
+#     cursor = conn.cursor()
+
+#     # Получаем все ответы
+#     cursor.execute('SELECT question_number, response FROM questionnaire_responses WHERE user_id = %s', (user_id,))
+#     responses = cursor.fetchall()
+
+#     # Вопросы, требующие обратного кодирования
+#     reverse_scored = {4, 5, 13, 14, 15, 16, 17, 19, 20, 21, 26}
+#     total_score = 0
+
+#     for row in responses:
+#         qnum, response = row['question_number'], row['response']
+#         if qnum in reverse_scored:
+#             response = 5 - response  # обратное кодирование
+#         total_score += response
+
+#     # Процентиль среди всех участников
+#     cursor.execute('SELECT user_id FROM questionnaire_responses GROUP BY user_id')
+#     all_user_ids = [row['user_id'] for row in cursor.fetchall()]
+
+#     scores = []
+#     for uid in all_user_ids:
+#         cursor.execute('SELECT question_number, response FROM questionnaire_responses WHERE user_id = %s', (uid,))
+#         user_responses = cursor.fetchall()
+#         user_score = 0
+#         for row in user_responses:
+#             qnum, response = row['question_number'], row['response']
+#             if qnum in reverse_scored:
+#                 response = 5 - response
+#             user_score += response
+#         scores.append(user_score)
+
+#     scores.sort()
+#     if scores:
+#         rank = scores.index(total_score) + 1
+#         percentile = round(100 * rank / len(scores), 1)
+#     else:
+#         percentile = 0.0
+#     cursor.close()
+#     conn.close()
+#     return {
+#         'total_score': total_score,
+#         'percentile': percentile
+#     }
+
 def get_questionnaire_results(user_id):
     conn = get_db()
     cursor = conn.cursor()
@@ -1727,14 +1774,14 @@ def get_questionnaire_results(user_id):
     total_score = 0
 
     for row in responses:
-        qnum, response = row['question_number'], row['response']
+        qnum, response = row[0], row[1]  # Доступ по индексам
         if qnum in reverse_scored:
-            response = 5 - response  # обратное кодирование
+            response = 5 - response  # Обратное кодирование
         total_score += response
 
     # Процентиль среди всех участников
     cursor.execute('SELECT user_id FROM questionnaire_responses GROUP BY user_id')
-    all_user_ids = [row['user_id'] for row in cursor.fetchall()]
+    all_user_ids = [row[0] for row in cursor.fetchall()]  # Доступ по индексам
 
     scores = []
     for uid in all_user_ids:
@@ -1742,7 +1789,7 @@ def get_questionnaire_results(user_id):
         user_responses = cursor.fetchall()
         user_score = 0
         for row in user_responses:
-            qnum, response = row['question_number'], row['response']
+            qnum, response = row[0], row[1]  # Доступ по индексам
             if qnum in reverse_scored:
                 response = 5 - response
             user_score += response
