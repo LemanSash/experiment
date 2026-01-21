@@ -1435,8 +1435,7 @@ def next_trial(task_name):
         # Increment trial counter
         session['bart_current'] = session.get('bart_current', 0) + 1
         session.modified = True
-        # explosion_point = session['bart_break_points'][session['bart_current']]
-        # session['bart_break_point'] = explosion_point
+
         # Check completion after increment
         if session['bart_current'] >= session.get('bart_trials', 0):
             if 'bart' not in session['completed_tasks']:
@@ -1476,7 +1475,8 @@ def save_bart():
 
     trial_number = data['trialNumber']
     pump_number = data['pumpNumber']
-    break_point = data['breakPoint']
+    #break_point = data['breakPoint']
+    break_point = session['bart_break_point']
     reaction_time = data['reaction_time']
 
     popped = pump_number == break_point
@@ -1497,8 +1497,6 @@ def save_bart():
             total_points += trial_points
         session['bart_total_points'] = total_points
         session['bart_current'] += 1
-    explosion_point = session['bart_break_points'][session['bart_current']]
-    session['bart_break_point'] = explosion_point
     # Проверка, является ли это последним trial
     is_final_trial = session['bart_current'] >= session.get('bart_trials', 50)
 
@@ -1530,7 +1528,8 @@ def save_bart():
 
     return jsonify({
         'status': 'ok', 
-        'redirect_url': url_for('intermediate', task_name='bart') if is_final_trial else None})
+        'redirect_url': url_for('intermediate', task_name='bart') if is_final_trial else None,
+        'new_break_point': session['bart_break_points'][session['bart_current']] if not is_final_trial else None})
 
 
 @app.route('/intermediate/<task_name>', methods=['GET', 'POST'])
