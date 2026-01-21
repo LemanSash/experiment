@@ -80,12 +80,12 @@ def init_db():
 
     # cursor.execute('DROP TABLE IF EXISTS questionnaire_responses CASCADE')
     # cursor.execute('DROP TABLE IF EXISTS users CASCADE')
-    # cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
-    # cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
-    # cursor.execute('TRUNCATE TABLE tasks_questions RESTART IDENTITY CASCADE')
-    # cursor.execute('TRUNCATE TABLE cct_hot_results RESTART IDENTITY CASCADE')
-    # cursor.execute('TRUNCATE TABLE cct_cold_results RESTART IDENTITY CASCADE')
-    # cursor.execute('TRUNCATE TABLE igt_results RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE tasks_questions RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE cct_hot_results RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE cct_cold_results RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE igt_results RESTART IDENTITY CASCADE')
     #Create users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
@@ -1633,6 +1633,7 @@ def intermediate(task_name):
 
         conn.commit()
         cursor.close()
+        return redirect(url_for('intermediate', task_name=task_name))
 
     return render_template('intermediate.html',
                          task_name=task_name,
