@@ -920,23 +920,24 @@ def task(task_name):
         if task_name == 'bart':
             bart_url = url_for('task', task_name='bart')
             #if not (request.referrer and request.referrer.endswith(bart_url)):
-            user_id = session.get('user_id')
-            if user_id:
-                conn = get_db()
-                cursor = conn.cursor()
-                    # Удаляем все записи для IGT данного пользователя
-                cursor.execute('DELETE FROM bart_results WHERE user_id = %s', (user_id,))
-                conn.commit()
-                cursor.close()
-                # Сброс переменных игры BART
-            session.pop('bart_current', None)
-            session.pop('bart_total_points', None)
-            session.pop('bart_trials', None)
-            session.pop(f'{task_name}_instructions_viewed', None)
-                # Инициализация заново
-            session['bart_trials'] = 50  # число раундов
-            session['bart_current'] = 0
-            session['bart_total_points'] = 0
+            if (request.referrer):
+                user_id = session.get('user_id')
+                if user_id:
+                    conn = get_db()
+                    cursor = conn.cursor()
+                        # Удаляем все записи для IGT данного пользователя
+                    cursor.execute('DELETE FROM bart_results WHERE user_id = %s', (user_id,))
+                    conn.commit()
+                    cursor.close()
+                    # Сброс переменных игры BART
+                session.pop('bart_current', None)
+                session.pop('bart_total_points', None)
+                session.pop('bart_trials', None)
+                session.pop(f'{task_name}_instructions_viewed', None)
+                    # Инициализация заново
+                session['bart_trials'] = 50  # число раундов
+                session['bart_current'] = 0
+                session['bart_total_points'] = 0
 
         elif task_name == 'igt':
             igt_url = url_for('task', task_name='igt')
@@ -1473,8 +1474,7 @@ def save_bart():
 
     trial_number = data['trialNumber']
     pump_number = data['pumpNumber']
-    #break_point = data['breakPoint']
-    break_point = session['bart_break_point']
+    break_point = data['breakPoint']
     reaction_time = data['reaction_time']
 
     popped = pump_number == break_point
