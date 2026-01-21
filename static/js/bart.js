@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (popped) {
             balloon.style.backgroundColor = 'red';
             //setTimeout(() => window.location.reload(), 500);
-            endTrial();
+            setTimeout(() => endTrial(), 500);
         }
     }
 
