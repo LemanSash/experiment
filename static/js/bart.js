@@ -129,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (popped) {
+            pumpButton.disabled = true;
             balloon.style.backgroundColor = 'red';
             //setTimeout(() => window.location.reload(), 500);
             setTimeout(() => endTrial(), 500);
@@ -285,6 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
         //const finalPoints = popped ? 0 : pumps * 5;
         const finalPoints = trialPoints;
         previousEarned = finalPoints;
+        pumpButton.disabled = false;
 
         fetch('/save_bart', {
             method: 'POST',
