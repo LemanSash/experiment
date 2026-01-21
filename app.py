@@ -80,9 +80,9 @@ def init_db():
 
     # cursor.execute('DROP TABLE IF EXISTS questionnaire_responses CASCADE')
     # cursor.execute('DROP TABLE IF EXISTS users CASCADE')
-    # cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
-    # cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
-    # cursor.execute('TRUNCATE TABLE tasks_questions RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE tasks_questions RESTART IDENTITY CASCADE')
     # cursor.execute('TRUNCATE TABLE cct_hot_results RESTART IDENTITY CASCADE')
     # cursor.execute('TRUNCATE TABLE cct_cold_results RESTART IDENTITY CASCADE')
     # cursor.execute('TRUNCATE TABLE igt_results RESTART IDENTITY CASCADE')
