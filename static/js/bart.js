@@ -282,7 +282,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const sum = reactionTimes.reduce((a, b) => a + b, 0);
         const avgReactionTime = reactionTimes.length ? Math.round(sum / reactionTimes.length) : 0;
         // Ensure we send 0 points if popped
-        const finalPoints = popped ? 0 : pumps * 5;
+        //const finalPoints = popped ? 0 : pumps * 5;
+        const finalPoints = trialPoints;
         previousEarned = finalPoints;
 
         fetch('/save_bart', {
