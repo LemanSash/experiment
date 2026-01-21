@@ -920,7 +920,8 @@ def task(task_name):
         if task_name == 'bart':
             bart_url = url_for('task', task_name='bart')
             #if not (request.referrer and request.referrer.endswith(bart_url)):
-            if (request.referrer):
+            #if (request.referrer):
+            if 'page_loaded_once' in session:
                 user_id = session.get('user_id')
                 if user_id:
                     conn = get_db()
@@ -938,6 +939,8 @@ def task(task_name):
                 session['bart_trials'] = 50  # число раундов
                 session['bart_current'] = 0
                 session['bart_total_points'] = 0
+            else:
+                session['page_loaded_once'] = True
 
         elif task_name == 'igt':
             igt_url = url_for('task', task_name='igt')
