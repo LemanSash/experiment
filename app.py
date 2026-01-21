@@ -80,8 +80,8 @@ def init_db():
 
     # cursor.execute('DROP TABLE IF EXISTS questionnaire_responses CASCADE')
     # cursor.execute('DROP TABLE IF EXISTS users CASCADE')
-    cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
-    cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
+    # cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
+    # cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
     #Create users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
