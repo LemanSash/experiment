@@ -1473,7 +1473,8 @@ def save_bart():
 
     trial_number = data['trialNumber']
     pump_number = data['pumpNumber']
-    break_point = data['breakPoint']
+    #break_point = data['breakPoint']
+    break_point = session['bart_break_point']
     reaction_time = data['reaction_time']
 
     popped = pump_number == break_point
