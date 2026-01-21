@@ -1435,8 +1435,8 @@ def next_trial(task_name):
         # Increment trial counter
         session['bart_current'] = session.get('bart_current', 0) + 1
         session.modified = True
-        explosion_point = session['bart_break_points'][session['bart_current']]
-        session['bart_break_point'] = explosion_point
+        # explosion_point = session['bart_break_points'][session['bart_current']]
+        # session['bart_break_point'] = explosion_point
         # Check completion after increment
         if session['bart_current'] >= session.get('bart_trials', 0):
             if 'bart' not in session['completed_tasks']:
@@ -1497,7 +1497,8 @@ def save_bart():
             total_points += trial_points
         session['bart_total_points'] = total_points
         session['bart_current'] += 1
-
+    explosion_point = session['bart_break_points'][session['bart_current']]
+    session['bart_break_point'] = explosion_point
     # Проверка, является ли это последним trial
     is_final_trial = session['bart_current'] >= session.get('bart_trials', 50)
 
