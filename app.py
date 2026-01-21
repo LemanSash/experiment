@@ -919,9 +919,9 @@ def task(task_name):
         # Например, для BART:
         if task_name == 'bart':
             bart_url = url_for('task', task_name='bart')
-            #if not (request.referrer and request.referrer.endswith(bart_url)):
+            if not (request.referrer and request.referrer.endswith(bart_url)):
             #if (request.referrer):
-            if 'page_loaded_once' in session:
+            #if 'page_loaded_once' in session:
                 user_id = session.get('user_id')
                 if user_id:
                     conn = get_db()
