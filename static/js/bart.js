@@ -131,8 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (popped) {
             pumpButton.disabled = true;
             balloon.style.backgroundColor = 'red';
-            //setTimeout(() => window.location.reload(), 500);
-            setTimeout(() => endTrial(), 500);
+            setTimeout(() => window.location.reload(), 500);
+            //setTimeout(() => endTrial(), 500);
         }
     }
 
