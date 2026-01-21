@@ -80,8 +80,8 @@ def init_db():
 
     # cursor.execute('DROP TABLE IF EXISTS questionnaire_responses CASCADE')
     # cursor.execute('DROP TABLE IF EXISTS users CASCADE')
-    # cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
-    # cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
     #Create users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
@@ -1588,46 +1588,44 @@ def intermediate(task_name):
     passed_survey = bool(survey_exists)
     cursor.close()
     conn.close()
+
     # Обрабатываем POST-запрос
     if request.method == 'POST':
-        answers = dict(request.form)
-        user_id = session['user_id']
-
         # Сохраняем ответы в базу данных
         conn = get_db()
         cursor = conn.cursor()
 
         # Ответы на вопросы зависят от конкретного задания
         if task_name == 'igt':
-            q1_answer = answers.get('i1')
-            q2_answers = ', '.join(answers.getlist('i2[]'))
-            q3_answer = answers.get('i3')
+            q1_answer = request.form.get('i1')
+            q2_answers = ', '.join(request.form.getlist('i2[]'))  # Используем request.form.getlist()
+            q3_answer = request.form.get('i3')
 
             cursor.execute('''
                 INSERT INTO tasks_questions (user_id, task_name, question, answer)
                 VALUES (%s, %s, %s, %s)
-            ''', (user_id, task_name, 'i1', q1_answer))
+            ''', (session['user_id'], task_name, 'i1', q1_answer))
             cursor.execute('''
                 INSERT INTO tasks_questions (user_id, task_name, question, answer)
                 VALUES (%s, %s, %s, %s)
-            ''', (user_id, task_name, 'i2', q2_answers))
+            ''', (session['user_id'], task_name, 'i2', q2_answers))
             cursor.execute('''
                 INSERT INTO tasks_questions (user_id, task_name, question, answer)
                 VALUES (%s, %s, %s, %s)
-            ''', (user_id, task_name, 'i3', q3_answer))
+            ''', (session['user_id'], task_name, 'i3', q3_answer))
 
         elif task_name == 'bart':
-            q1_answer = answers.get('b1')
-            q2_answer = answers.get('b2')
+            q1_answer = request.form.get('b1')
+            q2_answer = request.form.get('b2')
 
             cursor.execute('''
                 INSERT INTO tasks_questions (user_id, task_name, question, answer)
                 VALUES (%s, %s, %s, %s)
-            ''', (user_id, task_name, 'b1', q1_answer))
+            ''', (session['user_id'], task_name, 'b1', q1_answer))
             cursor.execute('''
                 INSERT INTO tasks_questions (user_id, task_name, question, answer)
                 VALUES (%s, %s, %s, %s)
-            ''', (user_id, task_name, 'b2', q2_answer))
+            ''', (session['user_id'], task_name, 'b2', q2_answer))
 
         conn.commit()
         cursor.close()
