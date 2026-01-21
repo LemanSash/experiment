@@ -939,8 +939,6 @@ def task(task_name):
                 session['bart_trials'] = 50  # число раундов
                 session['bart_current'] = 0
                 session['bart_total_points'] = 0
-            else:
-                session['page_loaded_once'] = True
 
         elif task_name == 'igt':
             igt_url = url_for('task', task_name='igt')
