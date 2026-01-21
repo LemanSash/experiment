@@ -41,6 +41,10 @@ body {
     z-index: 1000;
 }
 
+.inter {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
 .nav-container {
     display: flex;
     justify-content: space-between;
