@@ -80,8 +80,8 @@ def init_db():
 
     # cursor.execute('DROP TABLE IF EXISTS questionnaire_responses CASCADE')
     # cursor.execute('DROP TABLE IF EXISTS users CASCADE')
-    # cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
-    # cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
     #Create users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
@@ -1520,7 +1520,9 @@ def save_bart():
         if 'bart' not in session['completed_tasks']:
             session['completed_tasks'].append('bart')
 
-    return jsonify({'status': 'ok'})
+    return jsonify({
+        'status': 'ok', 
+        'redirect_url': url_for('intermediate', task_name='igt') if is_final_trial else None})
 
 
 @app.route('/intermediate/<task_name>')
