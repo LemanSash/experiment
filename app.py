@@ -568,7 +568,7 @@ def dashboard():
         last_active = "Нет активности"
     else:
         # Преобразование в московское время (+3 часа)
-        local_time = last_active_utc.replace(tzinfo=datetime.timezone.utc).astimezone(datetime.timezone(datetime.timedelta(hours=3)))
+        local_time = last_active_utc.replace(tzinfo=timezone.utc).astimezone(timezone(timedelta(hours=3)))
         # Формируем требуемый формат: YYYY-MM-DD HH:MM
         last_active = local_time.strftime('%Y-%m-%d %H:%M')
     
