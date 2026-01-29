@@ -241,6 +241,15 @@ def init_db():
         );
     ''')
 
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS rfq_responses (
+            response_id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(user_id),
+            question_number INTEGER NOT NULL,
+            response INTEGER NOT NULL
+        );
+    ''')
+
     # Populate sequences table
     methods = ["igt", "bart", "cct_hot", "cct_cold"]  # Use endpoint names
     all_sequences = list({p for p in permutations(methods)})  # Get unique permutations
@@ -552,6 +561,15 @@ def dashboard():
     """, (user_id,))
     has_second_questionnaire = cursor.fetchone() is not None
 
+    # 3. Проверяем, заполнена ли вторая анкета
+    cursor.execute("""
+        SELECT 1
+        FROM rfq_responses
+        WHERE user_id = %s
+        LIMIT 1
+    """, (user_id,))
+    has_third_questionnaire = cursor.fetchone() is not None
+
     # 3. Загружаем завершённые задания
     cursor.execute("""
         SELECT task_name
@@ -583,15 +601,17 @@ def dashboard():
 
     # 5. Определяем следующее задание
     next_task = None
-    if has_first_questionnaire and has_second_questionnaire:
+    if has_first_questionnaire and has_second_questionnaire and has_third_questionnaire:
         # Если обе анкеты завершены, выбираем игровое задание
         for task in sequence:
             if task not in completed_tasks:
                 next_task = task
                 break
-    elif has_first_questionnaire and not has_second_questionnaire:
+    elif has_first_questionnaire and not has_second_questionnaire and not has_third_questionnaire:
         # Вторая анкета ещё не заполнена
         next_task = 'second_questionnaire'
+    elif has_second_questionnaire and has_first_questionnaire and not has_third_questionnaire:
+        next_task = 'third_questionnaire'
     else:
         # Первая анкета ещё не заполнена
         next_task = 'questionnaire'
@@ -607,6 +627,7 @@ def dashboard():
         #has_questionnaire=has_questionnaire,
         has_first_questionnaire=has_first_questionnaire,
         has_second_questionnaire=has_second_questionnaire,
+        has_third_questionnaire=has_third_questionnaire,
         next_task=next_task,
         completed_tasks=completed_tasks,
         sequence=sequence,
@@ -740,9 +761,59 @@ def second_questionnaire():
         session['completed_tasks'].append('second_questionnaire')
 
         # Далее переходим к первому заданию эксперимента
-        return redirect(url_for('task', task_name=session['sequence'][0]))
+        # return redirect(url_for('task', task_name=session['sequence'][0]))
+        return redirect(url_for('third_questionnaire'))
 
     return render_template('second_questionnaire.html', second_questions=SECOND_QUESTIONS)
+
+@app.route('/third_questionnaire', methods=['GET', 'POST'])
+def third_questionnaire():
+    if 'sequence' not in session:
+        flash('Please start the experiment again.')
+        return redirect(url_for('dashboard'))
+
+    THIRD_QUESTIONS = [
+        "Обычно я добиваюсь того, чего хочу",
+        "Переходили ли вы в детстве границы дозволенного, делая то, что ваши родители вам запрещали?",
+        "Как часто завершение какого-либо дела вдохновляло вас на дальнейшее продолжение работы в этом направлении?",
+        "Как часто вы «играли на родительских нервах», когда были ребенком?",
+        "Слушались ли вы ваших родителей?",
+        "Как часто в детстве вы совершали поступки, которые ваши родители явно не одобряли?",
+        "Как часто вы преуспеваете в ваших начинаниях?",
+        "Я бываю неосторожен",
+        "Как часто при решении важной для вас задачи вам кажется, что вы справляетесь хуже, чем хотели бы?",
+        "Я чувствую, что двигаюсь к достижению успеха в своей жизни",
+        "В моей жизни мало хобби и увлечений, отвечающих моим интересам, заниматься которыми мне действительно хочется",
+    ]
+
+    if request.method == 'POST':
+        # Получаем идентификатор пользователя
+        user_id = session.get('user_id')
+        conn = get_db()
+        cursor = conn.cursor()
+
+        # Сохраняем ответы на вопросы второго опросника
+        for i in range(len(THIRD_QUESTIONS)):
+            question_key = f'sq{i + 1}'  # sq1, sq2 и т.д.
+            response = request.form.get(question_key)
+            if response:
+                # Сохраняем ответ в базу данных
+                cursor.execute("""
+                    INSERT INTO rfq_responses (user_id, question_number, response)
+                    VALUES (%s, %s, %s)
+                """, (user_id, i + 1, int(response)))  # Преобразование ответа в целое число
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        # Добавляем второй опросник в список завершённых заданий
+        session['completed_tasks'].append('third_questionnaire')
+
+        # Далее переходим к первому заданию эксперимента
+        return redirect(url_for('task', task_name=session['sequence'][0]))
+
+    return render_template('third_questionnaire.html', third_questions=THIRD_QUESTIONS)
 
 # Experimental design parameters
 FACTORS = {
