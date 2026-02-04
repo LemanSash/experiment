@@ -1695,7 +1695,7 @@ def results():
     cursor.close()
     conn.close()
     if completed == 0:
-        flash("Результаты появятся после завершения хотя бы одной игры.", "info")
+        flash("Результаты появятся после завершения всех игры.", "info")
         return redirect(url_for('dashboard'))
 
     # Считаем все метрики
@@ -1704,6 +1704,7 @@ def results():
     igt           = get_igt_metrics(user_id)
     cct_hot       = get_cct_hot_metrics(user_id)
     cct_cold      = get_cct_cold_metrics(user_id)
+    rfq           = get_rfq_results(user_id)
 
     return render_template(
         'results.html',
@@ -1711,7 +1712,8 @@ def results():
         bart=bart,
         igt=igt,
         cct_hot=cct_hot,
-        cct_cold=cct_cold
+        cct_cold=cct_cold,
+        rfq=rfq
     )
 
 @app.route('/test')
@@ -2161,6 +2163,72 @@ def get_cct_cold_metrics(user_id):
         'avg_pts': round(avg_pts,1),
         'pct_num': round(100*(avg_num/grp_num - 1),1),
         'pct_pts': round(100*(avg_pts/grp_pts - 1),1)
+    }
+
+def get_rfq_results(user_id):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # Получаем все ответы пользователя
+    cursor.execute('SELECT question_number, response FROM rfq_responses WHERE user_id = %s', (user_id,))
+    responses = cursor.fetchall()
+
+    # Создаем словарь ответов для быстрого доступа
+    answers = {}
+    for row in responses:
+        question_num, answer_value = row
+        answers[int(question_num)] = int(answer_value)
+
+    # Формула подсчета очков для обеих шкал
+    promotion_questions = [1, 3, 7, 9, 10, 11]
+    prevention_questions = [2, 4, 5, 6, 8]
+
+    def calculate_subscale_sum(questions, reverse=None):
+        """Подсчет суммы очков по списку вопросов"""
+        score = 0
+        for qn in questions:
+            value = answers[qn]
+            if reverse and qn in reverse:
+                value = 6 - value  # Инвертированное кодирование
+            score += value
+        return score
+
+    # Подсчет общего балла по обеим шкалам
+    raw_promotion_score = calculate_subscale_sum(promotion_questions, reverse={9, 11})
+    raw_prevention_score = calculate_subscale_sum(prevention_questions, reverse={2, 4, 6, 8})
+
+    # Получаем общий список всех участников
+    cursor.execute('SELECT DISTINCT user_id FROM rfq_responses')
+    all_users = [row[0] for row in cursor.fetchall()]
+
+    # Сбор статистики по каждому участнику
+    users_scores = {"promotion": [], "prevention": []}
+    for uid in all_users:
+        cursor.execute('SELECT question_number, response FROM rfq_responses WHERE user_id = %s', (uid,))
+        resp = cursor.fetchall()
+        answ = {qn: val for qn, val in resp}
+        promo_score = calculate_subscale_sum(promotion_questions, reverse={9, 11}, answers=answ)
+        prev_score = calculate_subscale_sum(prevention_questions, reverse={2, 4, 6, 8}, answers=answ)
+        users_scores["promotion"].append(promo_score)
+        users_scores["prevention"].append(prev_score)
+
+    # Рассчитываем процентили
+    users_scores["promotion"].sort()
+    users_scores["prevention"].sort()
+
+    promotion_rank = users_scores["promotion"].index(raw_promotion_score) + 1
+    prevention_rank = users_scores["prevention"].index(raw_prevention_score) + 1
+
+    promotion_percentile = round(100 * promotion_rank / len(users_scores["promotion"]), 1)
+    prevention_percentile = round(100 * prevention_rank / len(users_scores["prevention"]), 1)
+
+    cursor.close()
+    conn.close()
+    return {
+        'raw_promotion_score': raw_promotion_score,
+        'raw_prevention_score': raw_prevention_score,
+        'promotion_percentile': promotion_percentile,
+        'prevention_percentile': prevention_percentile
     }
 
 @app.route('/logout')
