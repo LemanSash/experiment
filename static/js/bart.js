@@ -197,15 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(handleResponse);
     }
 
-
-    // function handleResponse(data) {
-    //     if (data.redirect_url) {
-    //         window.location.href = data.redirect_url;
-    //     } else {
-    //         window.location.reload();
-    //     }
-    // }
-
     function handleResponse(data) {
         if (data.redirect_url) {
             window.location.href = data.redirect_url;

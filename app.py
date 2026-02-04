@@ -965,7 +965,7 @@ def task(task_name):
         'cct_hot': {
             'title': 'Инструкция к заданию',
             'content': '''Перед вами расположено 32 карты: какие-то из них "хорошие" и могут принести вам деньги, а какие-то "плохие", и
-            за их выбор предусмотрен штраф. Сверху у вас есть информация по текущему раскладу. Карты проигрыша - это количество "плохих" карт
+            за их выбор предусмотрен штраф. Справа у вас есть информация по текущему раскладу. Карты проигрыша - это количество "плохих" карт
             в раскладе. Награда за карту - это сумма, которую вы можете получить за выбор "хорошей" карты. Размер проигрыша - это штраф, который вы
             можете получить за выбор "плохой" карты (все остальные карты считаются хорошими). Вы можете выбрать столько карт, сколько посчитаете нужным. Как только вы закончите выбирать,
             нажмите на кнопку "Закончить попытку". Это позволит сохранить заработанные за текущую попытку деньги и перейти к новой попытке.
@@ -1104,7 +1104,7 @@ def task(task_name):
         # при старте BART
         
         if 'bart_break_points' not in session:
-            points = list(range(1, 65))   # 1..64
+            points = list(range(3, 65))   # 1..64
             random.shuffle(points)
             session['bart_break_points'] = points[:50]  # ровно 50 trial
 
@@ -1307,10 +1307,10 @@ def save_cct_cold():
         # Проверяем, есть ли плохие карты среди выбранных
         selected_cards = deck[:num_cards]
         loss_encountered = 1 in selected_cards
-
+        loss_cards_selected = selected_cards.count(1)
     # Рассчитываем очки
     if loss_encountered:
-        points_earned = -loss_amount
+        points_earned = -loss_amount*loss_cards_selected
     else:
         points_earned = num_cards * gain_amount
 
@@ -1422,75 +1422,6 @@ def save_igt():
         'redirect_url': url_for('intermediate', task_name='igt') if is_final_trial else None
     })
 
-# @app.route('/save_igt', methods=['POST'])
-# def save_igt():
-#     data = request.get_json()
-#     user_id = session.get('user_id')
-#     task_name = 'igt'
-
-#     #Initialize session variables
-#     session.setdefault('igt_trials', 150)
-#     session.setdefault('igt_current', 0)
-#     session.setdefault('igt_total_points', 2000)
-
-#     # Получить данные о колодах из сессии
-#     if 'igt_decks' not in session:
-#         session['igt_decks'] = init_igt_decks()
-
-#     # Initialize if missing
-#     if f'{task_name}_current' not in session:
-#         session[f'{task_name}_current'] = 0
-#     if f'{task_name}_trials' not in session:
-#         session[f'{task_name}_trials'] = generate_trials()
-
-
-#     # Данные о выбранной карте
-#     selected_deck = data['deck']
-#     payout = IGT_PAYOUTS[selected_deck]
-
-#     # Получаем текущий штраф из долговременного массива
-#     deck_state = session['igt_decks'][selected_deck]
-#     penalty = deck_state['penalties'][deck_state['index']]  # получаем штраф из большого массива
-#     points_earned = payout + penalty
-
-#     # Переходим к следующему элементу массива
-#     deck_state['index'] += 1
-
-#     # Обновляем счёт игрока
-#     session['igt_total_points'] += points_earned
-#     session['igt_current'] += 1
-#     session.modified = True
-
-#     # Сохраняем результат в базу данных
-#     conn = get_db()
-#     cursor = conn.cursor()
-#     cursor.execute('''
-#         INSERT INTO igt_results (user_id, trial_number, deck, payout, penalty, points_earned, reaction_time)
-#         VALUES (%s, %s, %s, %s, %s, %s, %s)
-#     ''', (user_id, session['igt_current'], selected_deck, payout, penalty, points_earned, data['reaction_time']))
-#     conn.commit()
-#     cursor.close()
-#     conn.close()
-
-#     # Проверка финальной попытки
-#     is_final_trial = session['igt_current'] >= session['igt_trials']
-
-#     if is_final_trial:
-#         mark_task_completed(user_id, 'igt')
-#         if 'completed_tasks' not in session:
-#             session['completed_tasks'] = []
-#         if 'igt' not in session['completed_tasks']:
-#             session['completed_tasks'].append('igt')
-
-#     return jsonify({
-#         'status': 'completed' if is_final_trial else 'success',
-#         'payout': payout,
-#         'penalty': penalty,
-#         'points_earned': points_earned,
-#         'new_total_points': session['igt_total_points'],
-#         'new_trial_number': session['igt_current'],
-#         'redirect_url': url_for('intermediate', task_name='igt') if is_final_trial else None
-#     })
 
 @app.route('/next_trial/<task_name>')
 def next_trial(task_name):
