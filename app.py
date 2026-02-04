@@ -1310,7 +1310,10 @@ def save_cct_cold():
         loss_cards_selected = selected_cards.count(1)
     # Рассчитываем очки
     if loss_encountered:
-        points_earned = -loss_amount*loss_cards_selected
+        if 32 - num_cards < loss_cards:
+            points_earned = -loss_amount*loss_cards_selected
+        else:
+            points_earned = -loss_amount
     else:
         points_earned = num_cards * gain_amount
 
