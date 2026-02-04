@@ -92,7 +92,7 @@
                 <!-- <p class="lead" style="font-size: 1.1rem; color: #64748b; margin-bottom: 2rem;">
                     Вы хотите продолжить или немного отдохнуть?
                 </p> -->
-                {% if passed_survey %}
+                {% if passed_survey or task_name='cct_hot' or task_name='cct_cold' %}
                 <div class="flex-col" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem;">
                     {% if next_task %}
                         <a href="{{ url_for('task', task_name=next_task) }}"
