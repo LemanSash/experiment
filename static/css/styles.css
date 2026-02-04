@@ -105,6 +105,7 @@ h1 {
 
 .prize {
     list-style-type: none;
+    padding-left: 0;
 }
 
 .cta-group {
