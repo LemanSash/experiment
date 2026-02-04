@@ -3,7 +3,7 @@ let pumps = 0;
 // Добавьте две глобальные переменные для отслеживания состояния
 let isMouseDown = false;
 let clickInProgress = false;
-
+const pumpButton = document.getElementById('pump-button');
 // Добавьте обработчики событий mousedown/mouseup
 pumpButton.addEventListener('mousedown', () => {
     isMouseDown = true;
