@@ -103,6 +103,10 @@ h1 {
     margin: 0 auto 2rem;
 }
 
+.prize {
+    list-style-type: none;
+}
+
 .cta-group {
     display: flex;
     gap: 1rem;
