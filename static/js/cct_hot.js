@@ -100,19 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             endTurnButton.disabled = false; // Enable when at least one card is flipped
             
-            fetch('/save_cct_hot', { //ДОБАВИЛА
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: "flip",
-                        trialNumber: trialNumber,
-                        flip_number: flipNumber,
-                        decision: 1,
-                        result: currentResult,
-                        current_points: points,
-                        reaction_time: rt
-                    })
-                });
             if (trialType === "experimental") {
                 // In experimental trials, do not assign any loss until safeThreshold+1
                 if (selectedCardsCount === safeThreshold + 1) {
@@ -137,19 +124,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 // (Assume you have code to preassign loss indices in this branch)
                 if (lossCardIndices.includes(index)) {
                     points = 0 - lossAmount;
-                    fetch('/save_cct_hot', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: "flip",
-                            trialNumber: trialNumber,
-                            flip_number: flipNumber,
-                            decision: 1,
-                            result: currentResult,
-                            current_points: points,
-                            reaction_time: rt
-                        })
-                    });
+                    // fetch('/save_cct_hot', {
+                    //     method: 'POST',
+                    //     headers: { 'Content-Type': 'application/json' },
+                    //     body: JSON.stringify({
+                    //         action: "flip",
+                    //         trialNumber: trialNumber,
+                    //         flip_number: flipNumber,
+                    //         decision: 1,
+                    //         result: currentResult,
+                    //         current_points: points,
+                    //         reaction_time: rt
+                    //     })
+                    // });
                     card.innerHTML = `<p style="color: red;">-${lossAmount}</p>`;
                     pointsDisplay.textContent = points;
                     cards.forEach(card => {
@@ -176,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
         trialFinished = true;
 
         const rt = Date.now() - reactionStartTime;
-        if (!trialFinished) {
             fetch('/save_cct_hot', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -197,7 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.href = '/next_trial/cct_hot';
                 }
             });
-        }
     }
 
 
