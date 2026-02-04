@@ -2194,8 +2194,8 @@ def get_rfq_results(user_id):
         return score
 
     # Подсчет общего балла по обеим шкалам
-    raw_promotion_score = calculate_subscale_sum(promotion_questions, reverse={9, 11})
-    raw_prevention_score = calculate_subscale_sum(prevention_questions, reverse={2, 4, 6, 8})
+    raw_promotion_score = calculate_subscale_sum(promotion_questions, answers, reverse={9, 11})
+    raw_prevention_score = calculate_subscale_sum(prevention_questions, answers, reverse={2, 4, 6, 8})
 
     # Получаем общий список всех участников
     cursor.execute('SELECT DISTINCT user_id FROM rfq_responses')
