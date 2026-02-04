@@ -99,7 +99,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentResult = isLoss ? "loss" : "win";
 
             endTurnButton.disabled = false; // Enable when at least one card is flipped
-
+            
+            fetch('/save_cct_hot', { //ДОБАВИЛА
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: "flip",
+                        trialNumber: trialNumber,
+                        flip_number: flipNumber,
+                        decision: 1,
+                        result: currentResult,
+                        current_points: points,
+                        reaction_time: rt
+                    })
+                });
             if (trialType === "experimental") {
                 // In experimental trials, do not assign any loss until safeThreshold+1
                 if (selectedCardsCount === safeThreshold + 1) {
@@ -163,27 +176,28 @@ document.addEventListener('DOMContentLoaded', () => {
         trialFinished = true;
 
         const rt = Date.now() - reactionStartTime;
-
-        fetch('/save_cct_hot', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: "stop",
-                trialNumber: trialNumber,
-                flip_number: flipNumber + 1,
-                decision: 0,
-                current_points: points,
-                reaction_time: rt
+        if (!trialFinished) {
+            fetch('/save_cct_hot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: "stop",
+                    trialNumber: trialNumber,
+                    flip_number: flipNumber + 1,
+                    decision: 0,
+                    current_points: points,
+                    reaction_time: rt
+                })
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.redirect_url) {
-                window.location.href = data.redirect_url;
-            } else {
-                window.location.href = '/next_trial/cct_hot';
-            }
-        });
+            .then(response => response.json())
+            .then(data => {
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    window.location.href = '/next_trial/cct_hot';
+                }
+            });
+        }
     }
 
 
