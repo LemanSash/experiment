@@ -128,6 +128,15 @@
                                     </a>
                                 {% endif %}
                             </div>
+                            <div class="progress-item {% if 'third_questionnaire' in completed_tasks %}completed{% endif %}">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Третья анкета</span>
+                                {% if next_task == 'third_questionnaire' %}
+                                    <a href="{{ url_for('third_questionnaire') }}" class="btn-small">
+                                        Продолжить <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
                             {% for task in sequence %}
                                 <div class="progress-item {% if task in completed_tasks %}completed{% endif %}">
                                     {% if task in completed_tasks %}
