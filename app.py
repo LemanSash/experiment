@@ -2062,7 +2062,7 @@ def get_cct_hot_metrics(user_id):
             AVG(flip_number)    AS avg_flip,
             AVG(points)           AS avg_pts
         FROM cct_hot_results
-        WHERE user_id = %s AND trial_type = 'experimental'
+        WHERE user_id = %s
     ''', (user_id,))
     row = cursor.fetchone()
     avg_flip = row[0] or 0.0  # Доступ по индексу
@@ -2074,7 +2074,6 @@ def get_cct_hot_metrics(user_id):
             AVG(flip_number),
             AVG(points)
         FROM cct_hot_results
-        WHERE trial_type = 'experimental'
     ''')
     grp = cursor.fetchone()
     grp_flip = grp[0] or 1.0
