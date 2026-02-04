@@ -108,6 +108,10 @@ h1 {
     padding-left: 0;
 }
 
+.cold_quest {
+    text-align: center;
+}
+
 .cta-group {
     display: flex;
     gap: 1rem;
