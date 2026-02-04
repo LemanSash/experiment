@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         card.style.pointerEvents = 'none';
                         card.classList.add('disabled');
                     });
-                    endTurn(); // Automatically end the trial.
+                    setTimeout(endTurn, 500); // Automatically end the trial.
                     return;
                 } else {
                     // Otherwise, add the gain normally.
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         card.style.pointerEvents = 'none';
                         card.classList.add('disabled');
                     });
-                    endTurn();
+                    setTimeout(endTurn, 500);
                     return;
                 } else {
                     points += gainAmount;
