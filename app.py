@@ -1663,7 +1663,12 @@ def get_user_results(user_id):
 
     # Пример для BART
     cursor.execute('SELECT total_points FROM bart_results WHERE user_id = %s ORDER BY result_id DESC LIMIT 1', (user_id,))
-    bart_total = cursor.fetchone()[0] or 0
+    # bart_total = cursor.fetchone()[0] or 0
+    result = cursor.fetchone()
+    if result is None:
+        bart_total = 0
+    else:
+        bart_total = result[0]
     results['Надуть шарик'] = bart_total
     total_earnings += bart_total
 
