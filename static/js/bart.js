@@ -1,5 +1,18 @@
 // bart.js
 let pumps = 0;
+// Добавьте две глобальные переменные для отслеживания состояния
+let isMouseDown = false;
+let clickInProgress = false;
+
+// Добавьте обработчики событий mousedown/mouseup
+pumpButton.addEventListener('mousedown', () => {
+    isMouseDown = true;
+});
+
+pumpButton.addEventListener('mouseup', () => {
+    isMouseDown = false;
+});
+
 function showInstructions() {
     document.getElementById('instructionModal').style.display = 'block';
     disableGameControls(true);
@@ -59,40 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
     pumpButton.addEventListener('click', handlePump);
     cashOutButton.addEventListener('click', handleCashOut);
 
-    // function handlePump() {
-    //     pumpNumber++;
-    //     const rt = Date.now() - reactionStartTime;
-    //     reactionStartTime = Date.now();
-    //     let popped = pumpNumber === breakPoint;
-    //     if (!popped) {
-    //         trialPoints = pumpNumber * 5;
-    //         updateBalloonSize();
-    //     } else {
-    //         trialPoints = 0;
-    //         trialEnded = true;
-    //     }
-
-    //     fetch('/save_bart', {
-    //         method: 'POST',
-    //         headers: {'Content-Type': 'application/json'},
-    //         body: JSON.stringify({
-    //             trialNumber: parseInt(trialNumberDisplay.textContent),
-    //             pumpNumber: pumpNumber,
-    //             breakPoint: breakPoint,
-    //             reaction_time: rt,
-    //             trialEnded: popped
-    //         })
-    //     });
-
-    //     if (popped) {
-    //         balloon.style.backgroundColor = 'red';
-    //         setTimeout(() => window.location.reload(), 500);
-    //     }
-    // }
-
     let fetching = false;
 
     function handlePump() {
+        if (isMouseDown || clickInProgress) return;
+        clickInProgress = true;
         if (fetching) return; // Заблокировать дополнительные запросы
         fetching = true;
 
@@ -126,6 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
             })
         }).then(() => {
             fetching = false;
+            clickInProgress = false;
         });
 
         if (popped) {
@@ -135,60 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
             //setTimeout(() => endTrial(), 500);
         }
     }
-
-    // function handlePump() {
-    //     if (fetching) return;
-    //     fetching = true;
-
-    //     pumpNumber++;
-    //     pumps++;
-    //     const rt = Date.now() - reactionStartTime;
-    //     reactionStartTime = Date.now();
-    //     let popped = pumpNumber === breakPoint;
-    //     if (!popped) {
-    //         trialPoints = pumpNumber * 5;
-    //         updateBalloonSize();
-    //     } else {
-    //         trialPoints = 0;
-    //         trialEnded = true;
-    //     }
-
-        // // Проверка на конец игры
-        // if (session['bart_current'] >= session.get('bart_trials', 50)) {
-        //     fetch('/save_bart', {
-        //         method: 'POST',
-        //         headers: {'Content-Type': 'application/json'},
-        //         body: JSON.stringify({
-        //             trialNumber: parseInt(trialNumberDisplay.textContent),
-        //             pumpNumber: pumpNumber,
-        //             breakPoint: breakPoint,
-        //             reaction_time: rt,
-        //             trialEnded: true
-        //         })
-        //     }).then(() => {
-        //         window.location.href = '{{ url_for('dashboard') }}';  // Перенаправляем на dashboard
-        //     });
-        // } else {
-        //     fetch('/save_bart', {
-        //         method: 'POST',
-        //         headers: {'Content-Type': 'application/json'},
-        //         body: JSON.stringify({
-        //             trialNumber: parseInt(trialNumberDisplay.textContent),
-        //             pumpNumber: pumpNumber,
-        //             breakPoint: breakPoint,
-        //             reaction_time: rt,
-        //             trialEnded: popped
-        //         })
-        //     }).then(() => {
-        //         fetching = false;
-        //     });
-        // }
-
-    //     if (popped) {
-    //         balloon.style.backgroundColor = 'red';
-    //         setTimeout(() => window.location.reload(), 500);
-    //     }
-    // }
 
 
     function updateBalloonSize() {
@@ -222,22 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // function handleCashOut() {
-    //     trialEnded = true;
-    //     fetch('/save_bart', {
-    //         method: 'POST',
-    //         headers: {'Content-Type': 'application/json'},
-    //         body: JSON.stringify({
-    //             trialNumber: parseInt(trialNumberDisplay.textContent),
-    //             pumpNumber: pumpNumber,
-    //             breakPoint: breakPoint,
-    //             reaction_time: Date.now() - reactionStartTime,
-    //             trialEnded: true
-    //         })
-    //     }).then(() => window.location.reload());
-
-    // }
-
     function handleCashOut() {
         trialEnded = true;
         fetch('/save_bart', {
@@ -254,29 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
             endTrial();  // Завершаем испытание
         });
     }
-
-    // function endTrial() {
-    //     // вычислим среднее время реакции
-    //     const sum = reactionTimes.reduce((a, b) => a + b, 0);
-    //     const avgReactionTime = reactionTimes.length ? Math.round(sum / reactionTimes.length) : 0;
-    //     // Ensure we send 0 points if popped
-    //     const finalPoints = popped ? 0 : pumps * 5;
-    //     previousEarned = finalPoints;
-
-    //     fetch('/save_bart', {
-    //         method: 'POST',
-    //         headers: {'Content-Type': 'application/json'},
-    //         body: JSON.stringify({
-    //             trialNumber: parseInt(trialNumberDisplay.textContent.split('/')[0]),
-    //             pumps,
-    //             popped,
-    //             pointsEarned: finalPoints,
-    //             reaction_time: avgReactionTime
-    //         }),
-    //     })
-    //     .then(response => response.json())
-    //     .then(handleResponse);
-    // }
 
     function endTrial() {
         // вычислим среднее время реакции
