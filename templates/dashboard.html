@@ -176,7 +176,8 @@
                         <div class="stat-item">
                             <span class="stat-label">Прогресс</span>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: calc({{ (completed_tasks|length/5)*100 }})%"></div>
+                                {% set progress_percentage = completed_tasks|length / 7 * 100 %}
+                                <div class="progress-fill" style="width: {{ progress_percentage }}%;"></div>
                             </div>
                         </div>
                         <div class="stat-item">
