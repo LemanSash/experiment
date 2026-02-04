@@ -1,3 +1,15 @@
 /database.db
 /export_data.py
 /.env
+/bart_results.csv
+/cct_cold_results.csv
+/cct_hot_results.csv
+/igt_results.csv
+/questionnaire_responses.csv
+/rfq_responses.csv
+/risk_aversion_responses.csv
+/sequences.csv
+/tasks_questions.csv
+/user_progress.csv
+/user_sequences.csv
+/users.csv

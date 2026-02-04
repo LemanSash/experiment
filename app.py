@@ -1178,7 +1178,7 @@ def task(task_name):
         gain_amount = current_trial['gain_amount']
         loss_amount = current_trial['loss_amount']
         trial_number = session[f'{task_name}_current'] + 1
-        trial_type = current_trial.get('trial_type', 'experimental')
+        trial_type = current_trial.get('trial_type', 'random_loss')
         total_trials = len(session[f'{task_name}_trials'])  # will be 63
 
         instruction_key = f'{task_name}_instructions_viewed'
@@ -1728,7 +1728,7 @@ def get_user_results(user_id):
     total_earnings += igt_total
 
     # Пример для BART
-    cursor.execute('SELECT SUM(points_earned) FROM bart_results WHERE user_id = %s', (user_id,))
+    cursor.execute('SELECT total_points FROM bart_results WHERE user_id = %s ORDER BY result_id DESC LIMIT 1', (user_id,))
     bart_total = cursor.fetchone()[0] or 0
     results['Надуть шарик'] = bart_total
     total_earnings += bart_total
