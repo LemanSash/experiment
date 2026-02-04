@@ -2183,7 +2183,7 @@ def get_rfq_results(user_id):
     promotion_questions = [1, 3, 7, 9, 10, 11]
     prevention_questions = [2, 4, 5, 6, 8]
 
-    def calculate_subscale_sum(questions, reverse=None):
+    def calculate_subscale_sum(questions, answers, reverse=None):
         """Подсчет суммы очков по списку вопросов"""
         score = 0
         for qn in questions:
