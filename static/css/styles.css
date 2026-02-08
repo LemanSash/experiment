@@ -1571,7 +1571,7 @@ input[type="radio"]:checked + .radio-label {
     }
 
     .cct-hot-page .info-item strong {
-        font-size: 0.95rem;
+        font-size: 1.2rem;
     }
 
     .cct-hot-page .cards-grid {
