@@ -1356,7 +1356,9 @@ def save_cct_cold():
 
     return jsonify({
         'status': 'completed' if is_final_trial else 'success',
-        'redirect_url': url_for('intermediate', task_name='cct_cold') if is_final_trial else None
+        'redirect_url': url_for('intermediate', task_name='cct_cold') if is_final_trial else None,
+        'bad_cards_selected': loss_cards_selected,  # Возвращаем количество плохих карт
+        'loss_encountered': loss_encountered  # Возврат флага, были ли потери
     })
 
 @app.route('/save_igt', methods=['POST'])

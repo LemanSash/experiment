@@ -142,19 +142,12 @@
             // Скрываем сообщение спустя 3 секунды
             setTimeout(() => {
                 feedbackDiv.style.display = 'none';
-            }, 1000); // Задержка в миллисекундах (3 сек.)
+            }, 3000); // Задержка в миллисекундах (3 сек.)
         }
 
 
         async function selectCards(numCards) {
             const reactionTime = Date.now() - reactionStartTime;
-            // Show feedback immediately
-            if (feedback_type === 'with_feedback') {
-                const feedback = document.getElementById('feedback');
-                const countSpan = document.getElementById('selected-cards-count');
-                countSpan.textContent = numCards;
-                feedback.style.display = 'block';
-            }
 
             // Disable all buttons
             document.querySelectorAll('.number-card').forEach(btn => {
@@ -174,6 +167,10 @@
                 });
 
                 const data = await response.json();
+                if(feedback_type === 'with_feedback') {
+                    // Покажем количество плохих карт и номер попытки
+                    showFeedbackMessage(numCards, data.bad_cards_selected);
+                }
                 if(data.redirect_url) {
                     window.location.href = data.redirect_url;
                 } else {
