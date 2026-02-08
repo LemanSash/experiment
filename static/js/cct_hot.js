@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (isLoss) {
                     // Карта оказалась проигрышной
-                    points -= lossAmount;
+                    points = 0 - lossAmount;
                     card.innerHTML = `<p style="color: red;">-${lossAmount}</p>`;
                     
                     // Запрашиваем сохранение результата и прекращаем игру
