@@ -1890,7 +1890,10 @@ def get_bart_metrics(user_id):
 
     # Получаем общее количество заработанных очков (берём последнее значение total_points)
     cursor.execute(
-        'SELECT total_points FROM bart_results WHERE user_id = %s ORDER BY result_id DESC LIMIT 1',
+        'SELECT total_points ' \
+        'FROM bart_results ' \
+        'WHERE user_id = %s ' \
+        'ORDER BY result_id DESC LIMIT 1',
         (user_id,)
     )
     total_earn_row = cursor.fetchone()  # Берём первое значение
