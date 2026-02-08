@@ -1693,8 +1693,8 @@ def get_user_results(user_id):
     # Пример для IGT
     cursor.execute('SELECT SUM(points_earned) FROM igt_results WHERE user_id = %s', (user_id,))
     igt_total = cursor.fetchone()[0] or 0
-    results['Выбор одной карты из четырёх'] = igt_total
-    total_earnings += igt_total
+    results['Выбор одной карты из четырёх'] = 2000 + igt_total
+    total_earnings += (2000 + igt_total)
 
     # Пример для BART
     cursor.execute('SELECT total_points FROM bart_results WHERE user_id = %s ORDER BY result_id DESC LIMIT 1', (user_id,))
@@ -1859,69 +1859,6 @@ def get_questionnaire_results(user_id):
     }
 
 
-# def get_bart_metrics(user_id):
-#     conn = get_db()
-#     cursor = conn.cursor()
-
-#     # Индивидуальные показатели
-#     cursor.execute('''
-#         SELECT
-#             AVG(SUM(pump_number)) OVER(PARTITION BY trial_number) AS avg_pumps_per_trial,
-#             AVG(CASE WHEN popped = TRUE THEN 1.0 ELSE 0 END) AS explosion_rate
-#         FROM bart_results
-#         WHERE user_id = %s
-#         GROUP BY trial_number
-#     ''', (user_id,))
-#     rows = cursor.fetchall()
-
-#     # Средние показатели по всем trial'ам пользователя
-#     avg_pumps = sum(row[0] for row in rows) / len(rows) if rows else 0.0  # Доступ по индексу
-#     explosion_rate = sum(row[1] for row in rows) / len(rows) if rows else 0.0
-
-#     # Получаем общее количество заработанных очков (берём последнее значение total_points)
-#     cursor.execute('''
-#         SELECT 
-#             total_points 
-#         FROM bart_results 
-#         WHERE user_id = %s 
-#         ORDER BY result_id DESC LIMIT 1
-#     ''', (user_id,))
-
-#     total_earn_row = cursor.fetchone()  # Берём первое значение
-#     total_earn = total_earn_row[0] if total_earn_row else 0
-
-#     # Групповые средние
-#     cursor.execute('''
-#         SELECT AVG(SUM(pump_number)) OVER(PARTITION BY trial_number) AS avg_pumps_per_trial
-#         FROM bart_results
-#         GROUP BY trial_number
-#     ''')
-#     grp_rows = cursor.fetchall()
-#     grp_avg_pumps = sum(row[0] for row in grp_rows) / len(grp_rows) if grp_rows else 0.0
-
-#     cursor.execute('SELECT AVG(CASE WHEN popped = TRUE THEN 1.0 ELSE 0 END) FROM bart_results')
-#     grp_explosion = cursor.fetchone()[0] or 0.0
-
-#     cursor.execute('SELECT AVG(points_earned) FROM bart_results')
-#     grp_avg_earn = cursor.fetchone()[0] or 0.0
-
-#     cursor.close()
-#     conn.close()
-
-#     # Относительные отклонения от среднего (в %)
-#     pct_pumps = round(100 * (avg_pumps / grp_avg_pumps - 1), 1) if grp_avg_pumps else 0.0
-#     pct_earn = round(100 * (total_earn / grp_avg_earn - 1), 1) if grp_avg_earn else 0.0
-#     pct_explosion = round(100 * (explosion_rate / grp_explosion - 1), 1) if grp_explosion else 0.0
-
-#     return {
-#         'avg_pumps': round(avg_pumps, 1),
-#         'explosion_rate': round(100 * explosion_rate, 1),
-#         'total_earn': total_earn,
-#         'pct_pumps': pct_pumps,
-#         'pct_earn': pct_earn,
-#         'pct_explosion': pct_explosion
-#     }
-
 def get_bart_metrics(user_id):
     conn = get_db()
     cursor = conn.cursor()
@@ -1999,56 +1936,6 @@ def get_bart_metrics(user_id):
         'pct_explosion': pct_explosion
     }
 
-#
-# 3) Метрики IGT
-#
-# def get_igt_metrics(user_id):
-#     conn = get_db()
-#     cursor = conn.cursor()
-
-#     # Сумма и среднее
-#     cursor.execute('''
-#         SELECT
-#             SUM(points_earned)  AS total_net,
-#             AVG(points_earned)  AS avg_net
-#         FROM igt_results
-#         WHERE user_id = %s
-#     ''', (user_id,))
-#     row = cursor.fetchone()
-#     total_net = row['total_net'] or 0
-#     avg_net   = row['avg_net']   or 0.0
-
-#     # Доля выгодных выборов (колоды C или D)
-#     cursor.execute('''
-#         SELECT COUNT(*) * 1.0 / (
-#             SELECT COUNT(*) FROM igt_results WHERE user_id = %s
-#         ) AS pct_good
-#         FROM igt_results
-#         WHERE user_id = %s AND deck IN ('C','D')
-#     ''', (user_id, user_id))
-#     pct_good = round(100 * (cursor.fetchone()[0] or 0.0), 1)
-
-#     # Процентиль по total_net
-#     cursor.execute('''
-#         SELECT SUM(points_earned) AS sum_net
-#         FROM igt_results
-#         GROUP BY user_id
-#     ''')
-#     all_nets = sorted([r['sum_net'] for r in cursor.fetchall()])
-#     if all_nets:
-#         rank = all_nets.index(total_net) + 1
-#         pct_net = round(100 * rank / len(all_nets), 1)
-#     else:
-#         pct_net = 0.0
-
-#     cursor.close()
-#     conn.close()
-#     return {
-#         'total_net': total_net,
-#         'avg_net': round(avg_net, 1),
-#         'pct_good': pct_good,
-#         'pct_net': pct_net
-#     }
 
 def get_igt_metrics(user_id):
     conn = get_db()
@@ -2092,7 +1979,7 @@ def get_igt_metrics(user_id):
     cursor.close()
     conn.close()
     return {
-        'total_net': total_net,
+        'total_net': 2000 + total_net,
         'avg_net': round(avg_net, 1),
         'pct_good': pct_good,
         'pct_net': pct_net
