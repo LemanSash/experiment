@@ -1878,7 +1878,6 @@ def get_bart_metrics(user_id):
         SELECT
             AVG(SUM(pump_number)) OVER(PARTITION BY trial_number) AS avg_pumps_per_trial,
             AVG(CASE WHEN popped = TRUE THEN 1.0 ELSE 0 END) AS explosion_rate,
-            SUM(points_earned) AS total_earn
         FROM bart_results
         WHERE user_id = %s
         GROUP BY trial_number
@@ -1888,7 +1887,14 @@ def get_bart_metrics(user_id):
     # Средние показатели по всем trial'ам пользователя
     avg_pumps = sum(row[0] for row in rows) / len(rows) if rows else 0.0  # Доступ по индексу
     explosion_rate = sum(row[1] for row in rows) / len(rows) if rows else 0.0
-    total_earn = sum(row[2] for row in rows) if rows else 0
+
+    # Получаем общее количество заработанных очков (берём последнее значение total_points)
+    cursor.execute(
+        'SELECT total_points FROM bart_results WHERE user_id = %s ORDER BY result_id DESC LIMIT 1',
+        (user_id,)
+    )
+    total_earn_row = cursor.fetchone()  # Берём первое значение
+    total_earn = total_earn_row[0] if total_earn_row else 0
 
     # Групповые средние
     cursor.execute('''
