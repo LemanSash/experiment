@@ -78,7 +78,7 @@ def init_db():
     conn.autocommit = False
     cursor = conn.cursor()
 
-    # cursor.execute('DROP TABLE IF EXISTS questionnaire_responses CASCADE')
+    cursor.execute('DROP TABLE IF EXISTS user_sequences CASCADE')
     # cursor.execute('DROP TABLE IF EXISTS users CASCADE')
     # cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
     # cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
@@ -202,7 +202,8 @@ def init_db():
             task1 TEXT,
             task2 TEXT,
             task3 TEXT,
-            task4 TEXT
+            task4 TEXT,
+            feedback_type TEXT
         );
     ''')
 
