@@ -272,7 +272,7 @@
     <div class="metrics-container">
       <!-- Риск-баллы -->
       <div class="metric-card risk-score">
-        <div class="metric-title">Риск-баллы</div>
+        <div class="metric-title">Среднее количество накачек за попыток</div>
         <div class="metric-value">{{ bart.avg_pumps|round(1) }}</div>
         <div class="metric-scale">
           <span class="low">низкий</span>
@@ -282,12 +282,12 @@
           <span class="high">высокий</span>
         </div>
         <div class="metric-note">
-          Вы на {{ bart.pct_pumps }}% {{ 'выше' if bart.pct_pumps>0 else 'ниже' }} среднего
+          Вы сделали на {{ bart.pct_pumps }}% {{ 'выше' if bart.pct_pumps>0 else 'ниже' }} накачек, чем другие
         </div>
       </div>
       <!-- Частота взрывов -->
       <div class="metric-card">
-        <div class="metric-title">Вероятность взрыва</div>
+        <div class="metric-title">Доля взорвавшихся шаров</div>
         <div class="metric-value">{{ bart.explosion_rate }}%</div>
         <div class="metric-note">
           Чем меньше – тем безопаснее вы играете
