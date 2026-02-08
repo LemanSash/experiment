@@ -1184,6 +1184,16 @@ def task(task_name):
 
         instruction_key = f'{task_name}_instructions_viewed'
         show_instructions = not session.get(instruction_key, False)
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT task1, task2, task3, task4, feedback_type
+            FROM user_sequences
+            WHERE user_id = %s
+        """, (user_id,))
+        seq_row = cursor.fetchone()
+        cursor.close()
+        conn.close()
 
         return render_template(
             valid_tasks[task_name],
@@ -1194,7 +1204,8 @@ def task(task_name):
             instruction_title=instructions[task_name]['title'],
             instruction_content=instructions[task_name]['content'],
             show_instructions=show_instructions,
-            trial_type=trial_type  # new parameter
+            trial_type=trial_type,
+            feedback_type=seq_row[-1]
         )
 
     # Render appropriate template for other tasks
