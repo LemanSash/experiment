@@ -138,6 +138,11 @@
                 Вы перевернули ${selectedCards} карт.<br/>
                 Среди них: ${badCardsSelected} плохих.
             `;
+
+            // Скрываем сообщение спустя 3 секунды
+            setTimeout(() => {
+                feedbackDiv.style.display = 'none';
+            }, 1000); // Задержка в миллисекундах (3 сек.)
         }
 
 
