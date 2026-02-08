@@ -1904,7 +1904,7 @@ def get_bart_metrics(user_id):
         )
         SELECT
             AVG(max_pumps_in_trial) AS avg_pumps_per_trial,
-            AVG(CASE WHEN exploded THEN 1.0 ELSE 0 END) AS explosion_rate
+            AVG(exploded::FLOAT) AS explosion_rate
         FROM TrialSummary
     ''', (user_id,))
     
@@ -1936,7 +1936,7 @@ def get_bart_metrics(user_id):
         )
         SELECT
             AVG(max_pumps_in_trial) AS avg_pumps_per_trial,
-            AVG(CASE WHEN exploded THEN 1.0 ELSE 0 END) AS explosion_rate
+            AVG(exploded::FLOAT) AS explosion_rate
         FROM GroupTrialSummary
     ''')
     grp_rows = cursor.fetchall()
