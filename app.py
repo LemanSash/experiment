@@ -1824,31 +1824,49 @@ def get_questionnaire_results(user_id):
     }
 
 
-#
-# 2) Метрики BART
-#
 # def get_bart_metrics(user_id):
 #     conn = get_db()
 #     cursor = conn.cursor()
-#     # Пользовательские
+
+#     # Индивидуальные показатели
 #     cursor.execute('''
 #         SELECT
-#             AVG(pumps) AS avg_pumps,
-#             AVG(CASE WHEN popped = 1 THEN 1.0 ELSE 0 END) AS explosion_rate,
-#             SUM(points_earned) AS total_earn
+#             AVG(SUM(pump_number)) OVER(PARTITION BY trial_number) AS avg_pumps_per_trial,
+#             AVG(CASE WHEN popped = TRUE THEN 1.0 ELSE 0 END) AS explosion_rate
 #         FROM bart_results
 #         WHERE user_id = %s
+#         GROUP BY trial_number
 #     ''', (user_id,))
-#     row = cursor.fetchone()
-#     avg_pumps = row['avg_pumps'] or 0.0
-#     explosion_rate = row['explosion_rate'] or 0.0
-#     total_earn = row['total_earn'] or 0
+#     rows = cursor.fetchall()
+
+#     # Средние показатели по всем trial'ам пользователя
+#     avg_pumps = sum(row[0] for row in rows) / len(rows) if rows else 0.0  # Доступ по индексу
+#     explosion_rate = sum(row[1] for row in rows) / len(rows) if rows else 0.0
+
+#     # Получаем общее количество заработанных очков (берём последнее значение total_points)
+#     cursor.execute('''
+#         SELECT 
+#             total_points 
+#         FROM bart_results 
+#         WHERE user_id = %s 
+#         ORDER BY result_id DESC LIMIT 1
+#     ''', (user_id,))
+
+#     total_earn_row = cursor.fetchone()  # Берём первое значение
+#     total_earn = total_earn_row[0] if total_earn_row else 0
 
 #     # Групповые средние
-#     cursor.execute('SELECT AVG(pumps) FROM bart_results')
-#     grp_avg_pumps = cursor.fetchone()[0] or 0.0
-#     cursor.execute('SELECT AVG(CASE WHEN popped = 1 THEN 1.0 ELSE 0 END) FROM bart_results')
+#     cursor.execute('''
+#         SELECT AVG(SUM(pump_number)) OVER(PARTITION BY trial_number) AS avg_pumps_per_trial
+#         FROM bart_results
+#         GROUP BY trial_number
+#     ''')
+#     grp_rows = cursor.fetchall()
+#     grp_avg_pumps = sum(row[0] for row in grp_rows) / len(grp_rows) if grp_rows else 0.0
+
+#     cursor.execute('SELECT AVG(CASE WHEN popped = TRUE THEN 1.0 ELSE 0 END) FROM bart_results')
 #     grp_explosion = cursor.fetchone()[0] or 0.0
+
 #     cursor.execute('SELECT AVG(points_earned) FROM bart_results')
 #     grp_avg_earn = cursor.fetchone()[0] or 0.0
 
@@ -1857,7 +1875,7 @@ def get_questionnaire_results(user_id):
 
 #     # Относительные отклонения от среднего (в %)
 #     pct_pumps = round(100 * (avg_pumps / grp_avg_pumps - 1), 1) if grp_avg_pumps else 0.0
-#     pct_earn = round(100 * (total_earn / grp_avg_earn - 1), 1)    if grp_avg_earn  else 0.0
+#     pct_earn = round(100 * (total_earn / grp_avg_earn - 1), 1) if grp_avg_earn else 0.0
 #     pct_explosion = round(100 * (explosion_rate / grp_explosion - 1), 1) if grp_explosion else 0.0
 
 #     return {
@@ -1875,62 +1893,77 @@ def get_bart_metrics(user_id):
 
     # Индивидуальные показатели
     cursor.execute('''
+        WITH TrialSummary AS (
+            SELECT
+                trial_number,
+                MAX(pump_number) AS max_pumps_in_trial,
+                MAX(popped) AS exploded
+            FROM bart_results
+            WHERE user_id = %s
+            GROUP BY trial_number
+        )
         SELECT
-            AVG(SUM(pump_number)) OVER(PARTITION BY trial_number) AS avg_pumps_per_trial,
-            AVG(CASE WHEN popped = TRUE THEN 1.0 ELSE 0 END) AS explosion_rate
-        FROM bart_results
-        WHERE user_id = %s
-        GROUP BY trial_number
+            AVG(max_pumps_in_trial) AS avg_pumps_per_trial,
+            AVG(CASE WHEN exploded THEN 1.0 ELSE 0 END) AS explosion_rate
+        FROM TrialSummary
     ''', (user_id,))
+    
     rows = cursor.fetchall()
 
-    # Средние показатели по всем trial'ам пользователя
-    avg_pumps = sum(row[0] for row in rows) / len(rows) if rows else 0.0  # Доступ по индексу
-    explosion_rate = sum(row[1] for row in rows) / len(rows) if rows else 0.0
+    # Обработка полученных данных
+    avg_pumps = rows[0][0] if rows else 0.0
+    explosion_rate = rows[0][1] if rows else 0.0
 
-    # Получаем общее количество заработанных очков (берём последнее значение total_points)
+    # Последний результат по очкам
     cursor.execute('''
-        SELECT 
-            total_points 
+        SELECT total_points 
         FROM bart_results 
         WHERE user_id = %s 
         ORDER BY result_id DESC LIMIT 1
     ''', (user_id,))
-
-    total_earn_row = cursor.fetchone()  # Берём первое значение
+    total_earn_row = cursor.fetchone()
     total_earn = total_earn_row[0] if total_earn_row else 0
 
     # Групповые средние
     cursor.execute('''
-        SELECT AVG(SUM(pump_number)) OVER(PARTITION BY trial_number) AS avg_pumps_per_trial
-        FROM bart_results
-        GROUP BY trial_number
+        WITH GroupTrialSummary AS (
+            SELECT
+                trial_number,
+                MAX(pump_number) AS max_pumps_in_trial,
+                MAX(popped) AS exploded
+            FROM bart_results
+            GROUP BY trial_number
+        )
+        SELECT
+            AVG(max_pumps_in_trial) AS avg_pumps_per_trial,
+            AVG(CASE WHEN exploded THEN 1.0 ELSE 0 END) AS explosion_rate
+        FROM GroupTrialSummary
     ''')
     grp_rows = cursor.fetchall()
-    grp_avg_pumps = sum(row[0] for row in grp_rows) / len(grp_rows) if grp_rows else 0.0
+    grp_avg_pumps = grp_rows[0][0] if grp_rows else 0.0
+    grp_explosion = grp_rows[0][1] if grp_rows else 0.0
 
-    cursor.execute('SELECT AVG(CASE WHEN popped = TRUE THEN 1.0 ELSE 0 END) FROM bart_results')
-    grp_explosion = cursor.fetchone()[0] or 0.0
-
-    cursor.execute('SELECT AVG(points_earned) FROM bart_results')
+    # Средняя прибыль по всей группе участников
+    cursor.execute('SELECT AVG(total_points) FROM bart_results')
     grp_avg_earn = cursor.fetchone()[0] or 0.0
 
     cursor.close()
     conn.close()
 
-    # Относительные отклонения от среднего (в %)
-    pct_pumps = round(100 * (avg_pumps / grp_avg_pumps - 1), 1) if grp_avg_pumps else 0.0
-    pct_earn = round(100 * (total_earn / grp_avg_earn - 1), 1) if grp_avg_earn else 0.0
-    pct_explosion = round(100 * (explosion_rate / grp_explosion - 1), 1) if grp_explosion else 0.0
+    # Рассчёт процентов относительно средней группы
+    pct_pumps = round(100 * (avg_pumps / grp_avg_pumps - 1), 1) if grp_avg_pumps > 0 else 0.0
+    pct_earn = round(100 * (total_earn / grp_avg_earn - 1), 1) if grp_avg_earn > 0 else 0.0
+    pct_explosion = round(100 * (explosion_rate / grp_explosion - 1), 1) if grp_explosion > 0 else 0.0
 
     return {
         'avg_pumps': round(avg_pumps, 1),
-        'explosion_rate': round(100 * explosion_rate, 1),
+        'explosion_rate': round(explosion_rate * 100, 1),
         'total_earn': total_earn,
         'pct_pumps': pct_pumps,
         'pct_earn': pct_earn,
         'pct_explosion': pct_explosion
     }
+
 #
 # 3) Метрики IGT
 #
