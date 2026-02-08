@@ -282,7 +282,7 @@
           <span class="high">высокий</span>
         </div>
         <div class="metric-note">
-          <!-- Вы сделали на {{ abs(bart.pct_pumps) }}% {{ 'больше' if bart.pct_pumps>0 else 'меньше' }} накачек, чем другие -->
+         
            Вы сделали на {% if bart.pct_pumps >= 0 %}{{ bart.pct_pumps }}{% else %}{{ -bart.pct_pumps }}{% endif %}% 
             {{ 'больше' if bart.pct_pumps>=0 else 'меньше' }} накачек, чем другие
         </div>
