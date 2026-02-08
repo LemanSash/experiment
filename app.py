@@ -525,11 +525,32 @@ def dashboard():
             conn.close()
             flash('Нет доступных последовательностей')
             return redirect(url_for('login'))
-        feedback = random.choice(['with_feedback', 'without_feedback'])
+        
+        # Определим тип фидбэка
+        cursor.execute("""
+            SELECT COUNT(*) FROM user_sequences WHERE feedback_type = 'with_feedback'
+        """)
+        with_feedback_count = cursor.fetchone()[0]
+
+        cursor.execute("""
+            SELECT COUNT(*) FROM user_sequences WHERE feedback_type = 'without_feedback'
+        """)
+        without_feedback_count = cursor.fetchone()[0]
+
+        # Балансируем типы фидбэка
+        if with_feedback_count > without_feedback_count:
+            feedback = 'without_feedback'
+        elif with_feedback_count <= without_feedback_count:
+            feedback = 'with_feedback'
+        else:
+            feedback = random.choice(['with_feedback', 'without_feedback'])
+
         cursor.execute("""
             INSERT INTO user_sequences (user_id, task1, task2, task3, task4, feedback_type)
             VALUES (%s, %s, %s, %s, %s, %s)
         """, (user_id, sequence[1], sequence[2], sequence[3], sequence[4], feedback))
+
+        conn.commit()
 
         cursor.execute("""
             UPDATE sequences
