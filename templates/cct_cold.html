@@ -52,12 +52,14 @@
                         <span>Попытка:</span>
                         <strong id="trial-number">{{ trial_number }}</strong>
                     </div>
+                    {% if feedback_type == 'with_feedback' %}
                     <div class="feedback-message" id="feedback" style="display: none;">
                         <i class="fas fa-sync fa-spin"></i>
                         <span>Вы перевернули </span>
                         <strong id="selected-cards-count">0</strong>
                         <span> карт...</span>
                     </div>
+                    {% endif %}
                 </div>
                 <p class="cold_quest">Сколько карт вы хотите перевернуть?</p>
                 <div class="number-selector">
@@ -124,14 +126,30 @@
             fetch('/mark_instructions_viewed/cct_cold', { method: 'POST' });
         }
 
+        let feedback_type = "{{ feedback_type }}"; // Предположим, передается через Flask-шаблонизатор
+
+        function showFeedbackMessage(selectedCards, badCardsSelected) {
+            if (feedback_type !== 'with_feedback') return;
+
+            const feedbackDiv = document.getElementById('feedback');
+            feedbackDiv.style.display = 'block';
+            feedbackDiv.innerHTML = `
+                <i class="fas fa-info-circle"></i>
+                Вы перевернули ${selectedCards} карт.<br/>
+                Среди них: ${badCardsSelected} плохих.
+            `;
+        }
+
 
         async function selectCards(numCards) {
             const reactionTime = Date.now() - reactionStartTime;
             // Show feedback immediately
-            const feedback = document.getElementById('feedback');
-            const countSpan = document.getElementById('selected-cards-count');
-            countSpan.textContent = numCards;
-            feedback.style.display = 'block';
+            if (feedback_type === 'with_feedback') {
+                const feedback = document.getElementById('feedback');
+                const countSpan = document.getElementById('selected-cards-count');
+                countSpan.textContent = numCards;
+                feedback.style.display = 'block';
+            }
 
             // Disable all buttons
             document.querySelectorAll('.number-card').forEach(btn => {

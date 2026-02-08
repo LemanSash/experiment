@@ -78,7 +78,7 @@ def init_db():
     conn.autocommit = False
     cursor = conn.cursor()
 
-    # cursor.execute('DROP TABLE IF EXISTS user_sequences CASCADE')
+    cursor.execute('DROP TABLE IF EXISTS user_sequences CASCADE')
     # cursor.execute('DROP TABLE IF EXISTS users CASCADE')
     # cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
     # cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
@@ -525,11 +525,11 @@ def dashboard():
             conn.close()
             flash('Нет доступных последовательностей')
             return redirect(url_for('login'))
-
+        feedback = random.choice(['with_feedback', 'without_feedback'])
         cursor.execute("""
-            INSERT INTO user_sequences (user_id, task1, task2, task3, task4)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (user_id, sequence[1], sequence[2], sequence[3], sequence[4]))
+            INSERT INTO user_sequences (user_id, task1, task2, task3, task4, feedback_type)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (user_id, sequence[1], sequence[2], sequence[3], sequence[4], feedback))
 
         cursor.execute("""
             UPDATE sequences
