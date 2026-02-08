@@ -81,109 +81,191 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    cards.forEach((card, index) => {
-    card.addEventListener('click', () => {
-        if (!card.classList.contains('flipped')) {
-            card.classList.add('flipped');
-            // Зафиксировать RT на эту карту
-            const rt = Date.now() - reactionStartTime;
-            reactionTimes.push(rt);
-            reactionStartTime = Date.now();
+//     cards.forEach((card, index) => {
+//     card.addEventListener('click', () => {
+//         if (!card.classList.contains('flipped')) {
+//             card.classList.add('flipped');
+//             // Зафиксировать RT на эту карту
+//             const rt = Date.now() - reactionStartTime;
+//             reactionTimes.push(rt);
+//             reactionStartTime = Date.now();
 
-            selectedCardsCount++;
-            flipNumber++;
-            const isLoss =
-                (trialType === "experimental" && selectedCardsCount === safeThreshold + 1) ||
-                (trialType === "random_loss" && lossCardIndices.includes(index));
+//             selectedCardsCount++;
+//             flipNumber++;
+//             const isLoss = lossCardIndices.includes(index);
+//                 // (trialType === "experimental" && selectedCardsCount === safeThreshold + 1) ||
+//                 // (trialType === "random_loss" && lossCardIndices.includes(index));
 
-            const currentResult = isLoss ? "loss" : "win";
+//             const currentResult = isLoss ? "loss" : "win";
 
-            endTurnButton.disabled = false; // Enable when at least one card is flipped
+//             endTurnButton.disabled = false; // Enable when at least one card is flipped
             
-            if (trialType === "experimental") {
-                // In experimental trials, do not assign any loss until safeThreshold+1
-                if (selectedCardsCount === safeThreshold + 1) {
-                    // For experimental trial, force loss on this card.
-                    // Set score as: (safeThreshold * gainAmount) - lossAmount
-                    points = 0 - lossAmount;
+//             // if (trialType === "experimental") {
+//             //     // In experimental trials, do not assign any loss until safeThreshold+1
+//             //     if (selectedCardsCount === safeThreshold + 1) {
+//             //         // For experimental trial, force loss on this card.
+//             //         // Set score as: (safeThreshold * gainAmount) - lossAmount
+//             //         points = 0 - lossAmount;
+//             //         card.innerHTML = `<p style="color: red;">-${lossAmount}</p>`;
+//             //         pointsDisplay.textContent = points;
+//             //         cards.forEach(card => {
+//             //             card.style.pointerEvents = 'none';
+//             //             card.classList.add('disabled');
+//             //         });
+//             //         setTimeout(endTurn, 500); // Automatically end the trial.
+//             //         return;
+//             //     } else {
+//             //         // Otherwise, add the gain normally.
+//             //         points += gainAmount;
+//             //         card.innerHTML = `<p style="color: green;">+${gainAmount}</p>`;
+//             //     }
+//             // if (trialType === "random_loss") {
+//                 // In random loss trials, use previous logic.
+//                 // (Assume you have code to preassign loss indices in this branch)
+//                 if (lossCardIndices.includes(index)) {
+//                     points = 0 - lossAmount;
+//                     fetch('/save_cct_hot', {
+//                         method: 'POST',
+//                         headers: { 'Content-Type': 'application/json' },
+//                         body: JSON.stringify({
+//                             action: "flip",
+//                             trialNumber: trialNumber,
+//                             flip_number: flipNumber,
+//                             decision: 1,
+//                             result: currentResult,
+//                             current_points: points,
+//                             reaction_time: rt
+//                         })
+//                     });
+//                     card.innerHTML = `<p style="color: red;">-${lossAmount}</p>`;
+//                     pointsDisplay.textContent = points;
+//                     cards.forEach(card => {
+//                         card.style.pointerEvents = 'none';
+//                         card.classList.add('disabled');
+//                     });
+//                     setTimeout(500);
+//                     return;
+//                 } else {
+//                     points += gainAmount;
+//                     card.innerHTML = `<p style="color: green;">+${gainAmount}</p>`;
+//                 }
+//             pointsDisplay.textContent = points;
+
+//         }
+//     });
+// });
+
+//     endTurnButton.addEventListener('click', endTurn);
+
+//     function endTurn() {
+//         if (trialFinished) return;
+//         trialFinished = true;
+
+//         const rt = Date.now() - reactionStartTime;
+//             fetch('/save_cct_hot', {
+//                 method: 'POST',
+//                 headers: { 'Content-Type': 'application/json' },
+//                 body: JSON.stringify({
+//                     action: "stop",
+//                     trialNumber: trialNumber,
+//                     flip_number: flipNumber + 1,
+//                     decision: 0,
+//                     current_points: points,
+//                     reaction_time: rt
+//                 })
+//             })
+//             .then(response => response.json())
+//             .then(data => {
+//                 if (data.redirect_url) {
+//                     window.location.href = data.redirect_url;
+//                 } else {
+//                     window.location.href = '/next_trial/cct_hot';
+//                 }
+//             });
+//     }
+
+    cards.forEach((card, index) => {
+        card.addEventListener('click', () => {
+            if (!card.classList.contains('flipped') && !trialFinished) {
+                card.classList.add('flipped');
+                const rt = Date.now() - reactionStartTime;
+                reactionTimes.push(rt);
+                reactionStartTime = Date.now();
+
+                selectedCardsCount++;
+                flipNumber++;
+
+                // Определяем является ли карта проигрышной
+                const isLoss = lossCardIndices.includes(index);
+                let currentResult = isLoss ? "loss" : "win";
+                endTurnButton.disabled = false;
+
+                if (isLoss) {
+                    // Карта оказалась проигрышной
+                    points -= lossAmount;
                     card.innerHTML = `<p style="color: red;">-${lossAmount}</p>`;
-                    pointsDisplay.textContent = points;
-                    cards.forEach(card => {
-                        card.style.pointerEvents = 'none';
-                        card.classList.add('disabled');
+                    
+                    // Запрашиваем сохранение результата и прекращаем игру
+                    fetch('/save_cct_hot', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            action: "flip",
+                            trialNumber: trialNumber,
+                            flip_number: flipNumber,
+                            decision: 1,
+                            result: currentResult,
+                            current_points: points,
+                            reaction_time: rt
+                        })
+                    }).then(() => {
+                        trialFinished = true;
+                        cards.forEach(c => {
+                            c.style.pointerEvents = 'none'; // Блокировка кликов на остальные карты
+                            c.classList.add('disabled'); // Добавляем класс disabled
+                        });
+                        
+                        // Перенаправляем на начало следующего раунда
+                        setTimeout(() => {
+                            window.location.href = '/next_trial/cct_hot';
+                        }, 500);
                     });
-                    setTimeout(endTurn, 500); // Automatically end the trial.
-                    return;
                 } else {
-                    // Otherwise, add the gain normally.
+                    // Карта оказалась выигрышной
                     points += gainAmount;
                     card.innerHTML = `<p style="color: green;">+${gainAmount}</p>`;
-                }
-            } else if (trialType === "random_loss") {
-                // In random loss trials, use previous logic.
-                // (Assume you have code to preassign loss indices in this branch)
-                if (lossCardIndices.includes(index)) {
-                    points = 0 - lossAmount;
-                    // fetch('/save_cct_hot', {
-                    //     method: 'POST',
-                    //     headers: { 'Content-Type': 'application/json' },
-                    //     body: JSON.stringify({
-                    //         action: "flip",
-                    //         trialNumber: trialNumber,
-                    //         flip_number: flipNumber,
-                    //         decision: 1,
-                    //         result: currentResult,
-                    //         current_points: points,
-                    //         reaction_time: rt
-                    //     })
-                    // });
-                    card.innerHTML = `<p style="color: red;">-${lossAmount}</p>`;
                     pointsDisplay.textContent = points;
-                    cards.forEach(card => {
-                        card.style.pointerEvents = 'none';
-                        card.classList.add('disabled');
-                    });
-                    setTimeout(endTurn, 500);
-                    return;
-                } else {
-                    points += gainAmount;
-                    card.innerHTML = `<p style="color: green;">+${gainAmount}</p>`;
+
+                    // Разблокируем кнопку End Turn
+                    endTurnButton.disabled = false;
                 }
             }
-            pointsDisplay.textContent = points;
-
-        }
+        });
     });
-});
 
-    endTurnButton.addEventListener('click', endTurn);
-
-    function endTurn() {
-        if (trialFinished) return;
-        trialFinished = true;
+    // Кнопка "End Turn"
+    endTurnButton.addEventListener('click', () => {
+        if (trialFinished || selectedCardsCount === 0) return;
 
         const rt = Date.now() - reactionStartTime;
-            fetch('/save_cct_hot', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: "stop",
-                    trialNumber: trialNumber,
-                    flip_number: flipNumber + 1,
-                    decision: 0,
-                    current_points: points,
-                    reaction_time: rt
-                })
+        fetch('/save_cct_hot', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                action: "stop",
+                trialNumber: trialNumber,
+                flip_number: flipNumber + 1,
+                decision: 0,
+                current_points: points,
+                reaction_time: rt
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.redirect_url) {
-                    window.location.href = data.redirect_url;
-                } else {
-                    window.location.href = '/next_trial/cct_hot';
-                }
-            });
-    }
+        }).then(() => {
+            trialFinished = true;
+            
+            // Переходим к следующему раунду
+            window.location.href = '/next_trial/cct_hot';
+        });
+    });
 
 
 
