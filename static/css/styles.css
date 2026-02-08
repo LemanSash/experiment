@@ -1558,7 +1558,7 @@ input[type="radio"]:checked + .radio-label {
     }
 
     .cct-hot-page .task-info-grid {
-        order: 2;
+        order: 1;
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 0.2rem;
@@ -1575,7 +1575,7 @@ input[type="radio"]:checked + .radio-label {
     }
 
     .cct-hot-page .cards-grid {
-        order: 1;
+        order: 2;
         grid-template-columns: repeat(8, 1fr);
         gap: 0.4rem;
         width: 100%;
