@@ -1897,7 +1897,7 @@ def get_bart_metrics(user_id):
             SELECT
                 trial_number,
                 MAX(pump_number) AS max_pumps_in_trial,
-                MAX(popped) AS exploded
+                MAX(CAST(popped AS INTEGER)) AS exploded
             FROM bart_results
             WHERE user_id = %s
             GROUP BY trial_number
@@ -1930,7 +1930,7 @@ def get_bart_metrics(user_id):
             SELECT
                 trial_number,
                 MAX(pump_number) AS max_pumps_in_trial,
-                MAX(popped) AS exploded
+                MAX(CAST(popped AS INTEGER)) AS exploded
             FROM bart_results
             GROUP BY trial_number
         )
