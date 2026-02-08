@@ -1190,7 +1190,7 @@ def task(task_name):
             SELECT task1, task2, task3, task4, feedback_type
             FROM user_sequences
             WHERE user_id = %s
-        """, (user_id,))
+        """, (session['user_id'],))
         seq_row = cursor.fetchone()
         cursor.close()
         conn.close()
