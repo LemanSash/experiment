@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify({
                 action: "stop",
                 trialNumber: trialNumber,
-                flip_number: flipNumber + 1,
+                flip_number: flipNumber,
                 decision: 0,
                 current_points: points,
                 reaction_time: rt
