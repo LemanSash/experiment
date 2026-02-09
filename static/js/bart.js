@@ -344,16 +344,7 @@ let pumps = 0;
 let isMouseDown = false;
 let clickInProgress = false;
 let fetching = false;
-let popped = false;
-let pointsEarned = 0;
-let previousEarned = 0;
-let pumpNumber = 0;
-let breakPoint = null; // Будет установлено сервером
-let trialEnded = false;
-let trialPoints = 0;
-let cashed = false;
-let reactionTimes = []; // Времена реакций игрока
-let reactionStartTime = Date.now(); // Начало времени реакции
+
 
 // Элементы страницы
 const balloon = document.getElementById('balloon');
@@ -430,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Инструкция появляется при первом заходе
     if (showInstructionsFlag) {
         showInstructions();
-        disableGameControls();
+        disableGameControls(true);
     }
 
     // Элементы игры
@@ -440,7 +431,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const trialNumberDisplay = document.getElementById('trial-number');
     const totalPointsDisplay = document.getElementById('total-points');
     const lastBalloonDisplay = document.getElementById('last-balloon');
-
+    let reactionTimes = []; // Времена реакций игрока
+    let reactionStartTime = Date.now(); // Начало времени реакции
     // State
     let popped = false;
     let pointsEarned = 0;
@@ -450,6 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let trialEnded = false;
     let trialPoints = 0;
     let cashed = false;
+    let fetching = false;
 
     // Обработчики событий
     pumpButton.addEventListener('click', handlePump);
@@ -483,7 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Включаем кнопку "Забрать", если была первая попытка
-        if (pumps === 1 && !cashed) {
+        if (pumps === 1 ) {
             cashOutButton.disabled = false;
         }
 
