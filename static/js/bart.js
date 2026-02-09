@@ -344,7 +344,16 @@ let pumps = 0;
 let isMouseDown = false;
 let clickInProgress = false;
 let fetching = false;
-
+let popped = false;
+let pointsEarned = 0;
+let previousEarned = 0; // Тут объявлена переменная previousEarned
+let pumpNumber = 0;
+let breakPoint = null; // Сервер установил эту точку при загрузке страницы
+let trialEnded = false;
+let trialPoints = 0;
+let cashed = false;
+let reactionTimes = []; // Времена реакций игрока
+let reactionStartTime = Date.now(); // Начало времени реакции
 
 // Элементы страницы
 const balloon = document.getElementById('balloon');
@@ -508,13 +517,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Завершение испытания (перезагрузка страницы)
     function endTrial() {
         window.location.reload(); // Полная перезагрузка страницы для нового испытания
-        updateUI();
-        resetGameState();
     }
 
     // Инициализация первого уровня
-    // updateUI();
-    // resetGameState();
+    resetGameState();
 });
 
 // Обновляем интерфейс
