@@ -62,8 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let trialEnded = false;
     let trialPoints = 0;
 
-
-
     // Initialize balloon
     balloon.style.backgroundColor = 'blue';
     cashOutButton.disabled = true;
@@ -98,26 +96,26 @@ document.addEventListener('DOMContentLoaded', () => {
             cashOutButton.disabled = false;
         }
 
-        fetch('/save_bart', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                trialNumber: parseInt(trialNumberDisplay.textContent),
-                pumpNumber: pumpNumber,
-                breakPoint: breakPoint,
-                reaction_time: rt,
-                trialEnded: popped
-            })
-        }).then(() => {
-            fetching = false;
-            clickInProgress = false;
-        });
+        // fetch('/save_bart', {
+        //     method: 'POST',
+        //     headers: {'Content-Type': 'application/json'},
+        //     body: JSON.stringify({
+        //         trialNumber: parseInt(trialNumberDisplay.textContent),
+        //         pumpNumber: pumpNumber,
+        //         breakPoint: breakPoint,
+        //         reaction_time: rt,
+        //         trialEnded: popped
+        //     })
+        // }).then(() => {
+        //     fetching = false;
+        //     clickInProgress = false;
+        // });
 
         if (popped) {
             pumpButton.disabled = true;
             balloon.style.backgroundColor = 'red';
-            setTimeout(() => window.location.reload(), 500);
-            //setTimeout(() => endTrial(), 500);
+            // setTimeout(() => window.location.reload(), 500);
+            setTimeout(() => endTrial(), 500);
         }
     }
 
@@ -194,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(response => response.json())
         .then(window.location.reload())
-        .then(handleResponse);
+        // .then(handleResponse);
     }
 
     function handleResponse(data) {
