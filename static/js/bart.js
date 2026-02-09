@@ -193,15 +193,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }),
         })
         .then(response => response.json())
-        //.then(window.location.reload())
-        .then(handleResponse);
+        .then(window.location.reload())
+        .then(setTimeout(() => handleResponse, 500));
+        // .then(handleResponse);
     }
 
     function handleResponse(data) {
         if (data.redirect_url) {
             window.location.href = data.redirect_url;
         } else {
-            setTimeout(() => window.location.reload(), 500);
+            
             updateUI(); 
             console.log(1);
             resetGameState();  // Сбросить состояние игры 
