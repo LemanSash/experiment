@@ -428,8 +428,9 @@ function updateBalloonSize() {
 // Основная логика игры
 document.addEventListener('DOMContentLoaded', () => {
     // Инструкция появляется при первом заходе
-    if (localStorage.getItem('showInstructions') !== 'false') {
+    if (showInstructionsFlag) {
         showInstructions();
+        disableGameControls();
     }
 
     // Элементы игры
