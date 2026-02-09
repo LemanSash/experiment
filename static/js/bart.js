@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateUI(); 
             console.log(1);
             resetGameState();  // Сбросить состояние игры
-                   // Обновить UI
+            window.location.reload()      // Обновить UI
         }
     }
 
