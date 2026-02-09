@@ -203,7 +203,8 @@ document.addEventListener('DOMContentLoaded', () => {
         previousEarned = finalPoints;
         pumpButton.disabled = false;
         window.location.reload();
-        handleResponse();
+        //handleResponse();
+        setTimeout(() => handleResponse, 500);
         cashed = false;
 
     //     if (cashed == false) {
