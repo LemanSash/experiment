@@ -507,6 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (data.status === 'ok') {
                 // получаем общие очки от сервера и обновляем UI
+                console.log(data.total_points);
                 totalPointsDisplay.textContent = data.total_points;
                 previousEarned = finalPoints;
                 endTrial();
