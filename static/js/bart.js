@@ -538,5 +538,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Инициализация первого уровня
+    updateUI();
     resetGameState();
 });
