@@ -535,9 +535,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Завершение испытания (перезагрузка страницы)
     function endTrial() {
         window.location.reload(); // Полная перезагрузка страницы для нового испытания
+        updateUI();
+        resetGameState();
     }
 
     // Инициализация первого уровня
-    updateUI();
+    // updateUI();
     // resetGameState();
 });
