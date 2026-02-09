@@ -202,12 +202,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.redirect_url) {
             window.location.href = data.redirect_url;
         } else {
-            window.location.reload()
-            setTimeout(() => updateUI, 500)
-            .then(resetGameState());
-            // updateUI(); 
+            updateUI(); 
             console.log(1);
-            // resetGameState();  // Сбросить состояние игры 
+            resetGameState();  // Сбросить состояние игры 
         }
     }
 
@@ -225,6 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateUI() {
+        window.location.reload();
         //trialNumberDisplay.textContent = parseInt(trialNumberDisplay.textContent.split('/')[0]) + 1;
         trialNumberDisplay.textContent = `${parseInt(trialNumberDisplay.textContent.split('/')[0]) + 1}/50`;
         totalPointsDisplay.textContent = parseInt(totalPointsDisplay.textContent) + previousEarned;
