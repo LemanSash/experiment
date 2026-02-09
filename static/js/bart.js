@@ -462,6 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             trialPoints = 0;
             trialEnded = true;
+            balloon.style.backgroundColor = 'red';
         }
 
         // Включаем кнопку "Забрать", если была первая попытка
