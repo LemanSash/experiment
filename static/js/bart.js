@@ -382,26 +382,6 @@ function disableGameControls(disabled) {
     cashOutButton.disabled = disabled || pumps === 0;
 }
 
-// Обновляем интерфейс
-function updateUI() {
-    trialNumberDisplay.textContent = `${parseInt(trialNumberDisplay.textContent.split('/')[0]) + 1}/50`;
-    totalPointsDisplay.textContent = parseInt(totalPointsDisplay.textContent) + previousEarned;
-    lastBalloonDisplay.textContent = previousEarned.toFixed(2);
-}
-
-// Готовим новый раунд
-function resetGameState() {
-    pumps = 0;
-    popped = false;
-    pointsEarned = 0;
-    previousEarned = 0;
-    pumpNumber = 0;
-    trialEnded = false;
-    trialPoints = 0;
-    balloon.style.backgroundColor = 'blue';
-    cashOutButton.disabled = true;
-    updateBalloonSize(); // Сброс размера шарика
-}
 
 // Плавно увеличиваем шарик
 function updateBalloonSize() {
@@ -536,3 +516,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // updateUI();
     // resetGameState();
 });
+
+// Обновляем интерфейс
+function updateUI() {
+    trialNumberDisplay.textContent = `${parseInt(trialNumberDisplay.textContent.split('/')[0]) + 1}/50`;
+    totalPointsDisplay.textContent = parseInt(totalPointsDisplay.textContent) + previousEarned;
+    lastBalloonDisplay.textContent = previousEarned.toFixed(2);
+}
+
+// Готовим новый раунд
+function resetGameState() {
+    pumps = 0;
+    popped = false;
+    pointsEarned = 0;
+    previousEarned = 0;
+    pumpNumber = 0;
+    trialEnded = false;
+    trialPoints = 0;
+    balloon.style.backgroundColor = 'blue';
+    cashOutButton.disabled = true;
+    updateBalloonSize(); // Сброс размера шарика
+}
