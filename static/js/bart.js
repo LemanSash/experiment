@@ -462,6 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             trialPoints = 0;
             trialEnded = true;
+            pumpButton.disabled = true;
             balloon.style.backgroundColor = 'red';
         }
 
@@ -556,5 +557,6 @@ function resetGameState() {
     trialPoints = 0;
     balloon.style.backgroundColor = 'blue';
     cashOutButton.disabled = true;
+    pumpButton.disabled = false;
     updateBalloonSize(); // Сброс размера шарика
 }
