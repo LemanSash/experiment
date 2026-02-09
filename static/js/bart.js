@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(response => response.json())
         .then(window.location.reload())
-        // .then(handleResponse);
+        .then(handleResponse);
     }
 
     function handleResponse(data) {
