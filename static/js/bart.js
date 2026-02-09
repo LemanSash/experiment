@@ -202,6 +202,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const finalPoints = trialPoints;
         previousEarned = finalPoints;
         pumpButton.disabled = false;
+        window.location.reload();
+        handleResponse();
+        cashed = false;
 
     //     if (cashed == false) {
     //         fetch('/save_bart', {
@@ -224,9 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     //         .then(window.location.reload())
     //         .then(handleResponse());
     // } else {
-        window.location.reload();
-        handleResponse();
-        cashed = false;
+        
     // }
     }
 
