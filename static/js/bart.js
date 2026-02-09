@@ -506,8 +506,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // Переход к следующему раунду после сохранения данных
-            updateUI();
-            resetGameState();
+            // updateUI();
+            // resetGameState();
             endTrial();
         } catch (err) {
             console.error(err); // Логируем ошибку
