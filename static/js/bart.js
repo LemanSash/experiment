@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listeners
     pumpButton.addEventListener('click', handlePump);
-    cashOutButton.addEventListener('click', handleCashOut);
+    cashOutButton.addEventListener('click', endTrial);
 
     let fetching = false;
 
@@ -152,22 +152,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function handleCashOut() {
-        trialEnded = true;
-        fetch('/save_bart', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                trialNumber: parseInt(trialNumberDisplay.textContent),
-                pumpNumber: pumpNumber,
-                breakPoint: breakPoint,
-                reaction_time: Date.now() - reactionStartTime,
-                trialEnded: true
-            })
-        }).then(() => {
-            endTrial();  // Завершаем испытание
-        });
-    }
+    // function handleCashOut() {
+    //     trialEnded = true;
+    //     fetch('/save_bart', {
+    //         method: 'POST',
+    //         headers: {'Content-Type': 'application/json'},
+    //         body: JSON.stringify({
+    //             trialNumber: parseInt(trialNumberDisplay.textContent),
+    //             pumpNumber: pumpNumber,
+    //             breakPoint: breakPoint,
+    //             reaction_time: Date.now() - reactionStartTime,
+    //             trialEnded: true
+    //         })
+    //     }).then(() => {
+    //         endTrial();  // Завершаем испытание
+    //     });
+    // }
 
     function endTrial() {
         // вычислим среднее время реакции
@@ -178,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const finalPoints = trialPoints;
         previousEarned = finalPoints;
         pumpButton.disabled = false;
+        trialEnded = true;
 
         fetch('/save_bart', {
             method: 'POST',
