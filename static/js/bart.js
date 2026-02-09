@@ -110,7 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
         //     fetching = false;
         //     clickInProgress = false;
         // });
-
+        fetching = false;
+        clickInProgress = false;
         if (popped) {
             pumpButton.disabled = true;
             balloon.style.backgroundColor = 'red';
