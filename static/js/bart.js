@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let breakPoint = explosionPoint;
     let trialEnded = false;
     let trialPoints = 0;
+    let cashed = false;
 
     // Initialize balloon
     balloon.style.backgroundColor = 'blue';
@@ -153,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleCashOut() {
+        cashed = true;
         trialEnded = true;
         fetch('/save_bart', {
             method: 'POST',
@@ -179,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
         previousEarned = finalPoints;
         pumpButton.disabled = false;
 
-        if (trialEnded == false) {
+        if (cashed == false) {
             fetch('/save_bart', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -202,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         window.location.reload();
         handleResponse();
-        trialEnded = false;
+        cashed = false;
     }
     }
 
