@@ -117,7 +117,21 @@ document.addEventListener('DOMContentLoaded', () => {
             pumpButton.disabled = true;
             balloon.style.backgroundColor = 'red';
             // setTimeout(() => window.location.reload(), 500);
-            setTimeout(() => endTrial(), 500);
+            fetch('/save_bart', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    trialNumber: parseInt(trialNumberDisplay.textContent.split('/')[0]),
+                    pumpNumber,
+                    breakPoint,
+                    popped,
+                    pointsEarned: finalPoints,
+                    reaction_time: avgReactionTime
+                }),
+            }).then(() => {
+            endTrial();  // Завершаем испытание
+        });
+            // setTimeout(() => endTrial(), 500);
         }
     }
 
@@ -181,31 +195,31 @@ document.addEventListener('DOMContentLoaded', () => {
         previousEarned = finalPoints;
         pumpButton.disabled = false;
 
-        if (cashed == false) {
-            fetch('/save_bart', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    trialNumber: parseInt(trialNumberDisplay.textContent.split('/')[0]),
-                    pumpNumber,
-                    breakPoint,
-                    popped,
-                    pointsEarned: finalPoints,
-                    reaction_time: avgReactionTime
-                }),
-            })
+    //     if (cashed == false) {
+    //         fetch('/save_bart', {
+    //             method: 'POST',
+    //             headers: {'Content-Type': 'application/json'},
+    //             body: JSON.stringify({
+    //                 trialNumber: parseInt(trialNumberDisplay.textContent.split('/')[0]),
+    //                 pumpNumber,
+    //                 breakPoint,
+    //                 popped,
+    //                 pointsEarned: finalPoints,
+    //                 reaction_time: avgReactionTime
+    //             }),
+    //         })
         
-            .then(response => response.json())
-            // .then(window.location.reload())
-            // // .then(setTimeout(() => handleResponse, 500));
-            // .then(handleResponse);
-            .then(window.location.reload())
-            .then(handleResponse());
-    } else {
+    //         .then(response => response.json())
+    //         // .then(window.location.reload())
+    //         // // .then(setTimeout(() => handleResponse, 500));
+    //         // .then(handleResponse);
+    //         .then(window.location.reload())
+    //         .then(handleResponse());
+    // } else {
         window.location.reload();
         handleResponse();
         cashed = false;
-    }
+    // }
     }
 
     function handleResponse(data) {
