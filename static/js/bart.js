@@ -492,7 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
         previousEarned = finalPoints;
 
         try {
-            await fetch('/save_bart', {
+            const response = await fetch('/save_bart', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
