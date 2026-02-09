@@ -196,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // .then(window.location.reload())
         // // .then(setTimeout(() => handleResponse, 500));
         // .then(handleResponse);
+        .then(window.location.reload())
         .then(data => {
           // Сначала ждём маленькую паузу перед началом дальнейшей обработки
           setTimeout(() => {
@@ -211,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateUI(); 
             console.log(1);
             resetGameState();  // Сбросить состояние игры 
-            window.location.reload();
+            
         }
     }
 
