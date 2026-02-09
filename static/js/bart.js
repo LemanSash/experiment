@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // // .then(setTimeout(() => handleResponse, 500));
             // .then(handleResponse);
             .then(window.location.reload())
-            .then(handleResponse);
+            .then(handleResponse());
     } else {
         window.location.reload();
         handleResponse();
