@@ -1558,6 +1558,10 @@ def save_bart():
     cursor.close()
     conn.close()
 
+    session['bart_current'] = trial_number
+    session['bart_total_points'] = total_points
+    session['bart_last_points'] = points_earned
+
     # Если это последний trial, пометь задание как выполненное
     if is_final_trial:
         mark_task_completed(user_id, 'bart')
