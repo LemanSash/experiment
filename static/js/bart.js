@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
         previousEarned = finalPoints;
         pumpButton.disabled = false;
 
-        if (!trialEnded) {
+        if (trialEnded == false) {
             fetch('/save_bart', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
