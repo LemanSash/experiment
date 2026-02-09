@@ -229,7 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateUI() {
-        window.location.reload();
         //trialNumberDisplay.textContent = parseInt(trialNumberDisplay.textContent.split('/')[0]) + 1;
         trialNumberDisplay.textContent = `${parseInt(trialNumberDisplay.textContent.split('/')[0]) + 1}/50`;
         totalPointsDisplay.textContent = parseInt(totalPointsDisplay.textContent) + previousEarned;
