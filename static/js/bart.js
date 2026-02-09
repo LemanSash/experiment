@@ -297,6 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateUI();      // Обновляем UI
             resetGameState(); // Подготавливаемся к новому раунду
             window.location.reload();
+            endTrial();
         } catch (err) {
             console.error(err); // Если произошла ошибка, выводим сообщение
         }
