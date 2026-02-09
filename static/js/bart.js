@@ -136,7 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     reaction_time: avgReactionTime
                 }),
             }).then(() => {
-            endTrial();  // Завершаем испытание
+                console.log("fetched");
+                endTrial();  // Завершаем испытание
         });
             // setTimeout(() => endTrial(), 500);
         }
@@ -234,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = data.redirect_url;
         } else {
             updateUI(); 
-            console.log(1);
+            console.log("handled");
             resetGameState();  // Сбросить состояние игры 
             
         }
