@@ -504,11 +504,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     reaction_time: avgReactionTime
                 })
             });
-
+            const data = await response.json();
+            if (data.status === 'ok') {
+                // получаем общие очки от сервера и обновляем UI
+                totalPointsDisplay.textContent = data.total_points;
+                previousEarned = finalPoints;
+                endTrial();
+            } else {
+                alert('Что-то пошло не так при сохранении.');
+            }
             // Переход к следующему раунду после сохранения данных
             // updateUI();
             // resetGameState();
-            endTrial();
+            // endTrial();
         } catch (err) {
             console.error(err); // Логируем ошибку
         }

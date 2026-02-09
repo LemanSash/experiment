@@ -1572,6 +1572,7 @@ def save_bart():
 
     return jsonify({
         'status': 'ok', 
+        'total_points': total_points,
         'redirect_url': url_for('intermediate', task_name='bart') if is_final_trial else None,
         'new_break_point': session['bart_break_points'][session['bart_current']] if not is_final_trial else None})
 
