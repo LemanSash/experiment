@@ -201,10 +201,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.redirect_url) {
             window.location.href = data.redirect_url;
         } else {
+            window.location.reload()
             updateUI(); 
             console.log(1);
-            resetGameState();  // Сбросить состояние игры
-            window.location.reload()      // Обновить UI
+            resetGameState();  // Сбросить состояние игры 
         }
     }
 
