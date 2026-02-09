@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listeners
     pumpButton.addEventListener('click', handlePump);
-    cashOutButton.addEventListener('click', endTrial);
+    cashOutButton.addEventListener('click', handleCashOut);
 
     let fetching = false;
 
@@ -152,22 +152,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // function handleCashOut() {
-    //     trialEnded = true;
-    //     fetch('/save_bart', {
-    //         method: 'POST',
-    //         headers: {'Content-Type': 'application/json'},
-    //         body: JSON.stringify({
-    //             trialNumber: parseInt(trialNumberDisplay.textContent),
-    //             pumpNumber: pumpNumber,
-    //             breakPoint: breakPoint,
-    //             reaction_time: Date.now() - reactionStartTime,
-    //             trialEnded: true
-    //         })
-    //     }).then(() => {
-    //         endTrial();  // Завершаем испытание
-    //     });
-    // }
+    function handleCashOut() {
+        trialEnded = true;
+        fetch('/save_bart', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                trialNumber: parseInt(trialNumberDisplay.textContent),
+                pumpNumber: pumpNumber,
+                breakPoint: breakPoint,
+                reaction_time: Date.now() - reactionStartTime,
+                trialEnded: true
+            })
+        }).then(() => {
+            endTrial();  // Завершаем испытание
+        });
+    }
 
     function endTrial() {
         // вычислим среднее время реакции
@@ -178,31 +178,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const finalPoints = trialPoints;
         previousEarned = finalPoints;
         pumpButton.disabled = false;
-        trialEnded = true;
 
-        fetch('/save_bart', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                trialNumber: parseInt(trialNumberDisplay.textContent.split('/')[0]),
-                pumpNumber,
-                breakPoint,
-                popped,
-                pointsEarned: finalPoints,
-                reaction_time: avgReactionTime
-            }),
-        })
-        .then(response => response.json())
-        // .then(window.location.reload())
-        // // .then(setTimeout(() => handleResponse, 500));
-        // .then(handleResponse);
-        .then(window.location.reload())
-        .then(data => {
-          // Сначала ждём маленькую паузу перед началом дальнейшей обработки
-          setTimeout(() => {
-              handleResponse(data);
-          }, 500); // Пауза в полсекунды
-      });
+        if (!trialEnded) {
+            fetch('/save_bart', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    trialNumber: parseInt(trialNumberDisplay.textContent.split('/')[0]),
+                    pumpNumber,
+                    breakPoint,
+                    popped,
+                    pointsEarned: finalPoints,
+                    reaction_time: avgReactionTime
+                }),
+            })
+        
+            .then(response => response.json())
+            // .then(window.location.reload())
+            // // .then(setTimeout(() => handleResponse, 500));
+            // .then(handleResponse);
+            .then(window.location.reload())
+            .then(handleResponse);
+    } else {
+        window.location.reload();
+        handleResponse();
+        trialEnded = false;
+    }
     }
 
     function handleResponse(data) {
