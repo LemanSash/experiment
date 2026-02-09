@@ -501,7 +501,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     breakPoint: breakPoint,
                     popped: popped,
                     pointsEarned: finalPoints,
-                    reaction_time: avgReactionTime
+                    reaction_time: avgReactionTime,
+                    trialEnded: trialEnded
                 })
             });
             const data = await response.json();
