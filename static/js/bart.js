@@ -202,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = data.redirect_url;
         } else {
             updateUI(); 
+            console.log(1);
             //resetGameState();  // Сбросить состояние игры
                    // Обновить UI
         }
