@@ -293,7 +293,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             // После успешной отправки переходим к следующему этапу
-            endTrial();
+            //endTrial();
+            updateUI();      // Обновляем UI
+            resetGameState(); // Подготавливаемся к новому раунду
+            window.location.reload();
         } catch (err) {
             console.error(err); // Если произошла ошибка, выводим сообщение
         }
