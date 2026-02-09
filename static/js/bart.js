@@ -194,8 +194,14 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(response => response.json())
         // .then(window.location.reload())
-        // .then(setTimeout(() => handleResponse, 500));
-        .then(handleResponse);
+        // // .then(setTimeout(() => handleResponse, 500));
+        // .then(handleResponse);
+        .then(data => {
+          // Сначала ждём маленькую паузу перед началом дальнейшей обработки
+          setTimeout(() => {
+              handleResponse(data);
+          }, 500); // Пауза в полсекунды
+      });
     }
 
     function handleResponse(data) {
@@ -205,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateUI(); 
             console.log(1);
             resetGameState();  // Сбросить состояние игры 
+            window.location.reload();
         }
     }
 
