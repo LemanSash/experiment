@@ -512,7 +512,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(data.total_points);
                 totalPointsDisplay.textContent = data.total_points;
                 previousEarned = finalPoints;
-                endTrial();
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    endTrial(); // Если перенаправления нет, перезагружаем игру
+                }
             } else {
                 alert('Что-то пошло не так при сохранении.');
             }
