@@ -1159,13 +1159,13 @@ input[type="radio"]:checked + .radio-label {
     margin: 0;
 }
 
-.balloon.blue {
+/* .balloon.blue {
     background-color: blue;
 }
 
 .balloon.red {
     background-color: red;
-}
+} */
 
 .bart-page .task-info-grid {
     grid-area: taskinfo;
