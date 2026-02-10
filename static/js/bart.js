@@ -464,6 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
             trialPoints = 0;
             trialEnded = true;
             pumpButton.disabled = true;
+            balloon.style.backgroundColor = '';
             balloon.style.backgroundColor = 'red';
             // balloon.classList.remove('blue'); // Удаляем предыдущий цвет
             // balloon.classList.add('red');
@@ -558,6 +559,7 @@ function resetGameState() {
     pumpNumber = 0;
     trialEnded = false;
     trialPoints = 0;
+    balloon.style.backgroundColor = '';
     balloon.style.backgroundColor = 'blue';
     // balloon.classList.remove('red'); // Убираем предыдущие цвета
     // balloon.classList.add('blue');
