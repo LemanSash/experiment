@@ -528,22 +528,22 @@ def dashboard():
         
         # Определим тип фидбэка
         cursor.execute("""
-            SELECT COUNT(*) FROM user_sequences WHERE feedback_type = 'with_feedback'
+            SELECT COUNT(*) FROM user_sequences WHERE feedback_type = 'first_feedback'
         """)
         with_feedback_count = cursor.fetchone()[0]
 
         cursor.execute("""
-            SELECT COUNT(*) FROM user_sequences WHERE feedback_type = 'without_feedback'
+            SELECT COUNT(*) FROM user_sequences WHERE feedback_type = 'last_feedback'
         """)
         without_feedback_count = cursor.fetchone()[0]
 
         # Балансируем типы фидбэка
         if with_feedback_count > without_feedback_count:
-            feedback = 'without_feedback'
+            feedback = 'last_feedback'
         elif with_feedback_count <= without_feedback_count:
-            feedback = 'with_feedback'
+            feedback = 'first_feedback'
         else:
-            feedback = random.choice(['with_feedback', 'without_feedback'])
+            feedback = random.choice(['first_feedback', 'last_feedback'])
 
         cursor.execute("""
             INSERT INTO user_sequences (user_id, task1, task2, task3, task4, feedback_type)
@@ -927,7 +927,8 @@ def generate_trials(task="cct_hot"):
         # Предположим, что умножение на 2 даёт 54 уникальных трейла (так было раньше)
         trials = trials * 4
         random.shuffle(trials)
-        return trials
+        result_trials = trials * 2
+        return result_trials
 
 
 def mark_task_completed(user_id, task_name):

@@ -12,24 +12,12 @@
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="logo">LA Research</a>
-            <!--<div class="nav-links">-->
-            <!--    <a href="{{ url_for('dashboard') }}" class="btn-outline">-->
-            <!--        <i class="fas fa-arrow-left"></i> Назад-->
-            <!--    </a>-->
-            <!--</div>-->
         </div>
     </nav>
 
     <section class="section">
         <div class="container">
             <div class="task-card">
-                <!--<div class="task-header">-->
-                <!--    <h1><i class="fas fa-snowflake"></i> Columbia Card Task (Cold)</h1>-->
-                <!--    <button onclick="showInstructions()" class="btn-icon">-->
-                <!--        <i class="fas fa-info-circle"></i> Инструкция-->
-                <!--    </button>-->
-                <!--</div>-->
-
 
                 <div class="task-info-grid">
                     <div class="info-item">
@@ -52,14 +40,14 @@
                         <span>Попытка:</span>
                         <strong id="trial-number">{{ trial_number }}</strong>
                     </div>
-                    {% if feedback_type == 'with_feedback' %}
+                    <!-- {% if feedback_type == 'with_feedback' %} -->
                     <div class="feedback-message" id="feedback" style="display: none;">
                         <i class="fas fa-sync fa-spin"></i>
                         <span>Вы перевернули </span>
                         <strong id="selected-cards-count">0</strong>
                         <span> карт...</span>
                     </div>
-                    {% endif %}
+                    <!-- {% endif %} -->
                 </div>
                 <p class="cold_quest">Сколько карт вы хотите перевернуть?</p>
                 <div class="number-selector">
@@ -127,6 +115,31 @@
         }
 
         let feedback_type = "{{ feedback_type }}"; // Предположим, передается через Flask-шаблонизатор
+        const trialNumber = parseInt(document.getElementById('trial-number').textContent.split('/')[0]);
+
+        // Новая функция для показа модального окна с уведомлением
+        function showNotificationModal(message) {
+            const notificationModal = document.createElement("div");
+            notificationModal.id = "notification-modal";
+            notificationModal.className = "modal";
+            notificationModal.innerHTML = `
+                <div class="modal-content">
+                    <h2>${message}</h2>
+                    <button onclick="hideNotificationModal()" class="btn-primary">
+                        <i class="fas fa-check"></i> Понял
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(notificationModal);
+        }
+
+        // Функция для закрытия уведомления
+        function hideNotificationModal() {
+            const notificationModal = document.getElementById("notification-modal");
+            if (notificationModal) {
+                notificationModal.parentNode.removeChild(notificationModal);
+            }
+        }
 
         function showFeedbackMessage(selectedCards, badCardsSelected) {
             if (feedback_type !== 'with_feedback') return;
@@ -167,9 +180,19 @@
                 });
 
                 const data = await response.json();
-                if(feedback_type === 'with_feedback') {
-                    // Покажем количество плохих карт и номер попытки
-                    showFeedbackMessage(numCards, data.bad_cards_selected);
+                // Проверяем значение feedback_type и current trial number
+                if (feedback_type === 'first_feedback') {
+                    if (trialNumber <= 48 && trialNumber > 0) {
+                        showFeedbackMessage(numCards, data.bad_cards_selected);
+                    } else if (trialNumber === 49) {
+                        showNotificationModal("Сейчас вы перестанете получать обратную связь после каждой попытки.");
+                    }
+                } else if (feedback_type === 'last_feedback') {
+                    if (trialNumber >= 49) {
+                        showFeedbackMessage(numCards, data.bad_cards_selected);
+                    } else if (trialNumber === 49) {
+                        showNotificationModal("Сейчас вы начнёте получать обратную связь после каждой попытки.");
+                    }
                 }
                 setTimeout(() => {
                     if(data.redirect_url) {
