@@ -40,14 +40,14 @@
                         <span>Попытка:</span>
                         <strong id="trial-number">{{ trial_number }}</strong>
                     </div>
-                    <!-- {% if feedback_type == 'with_feedback' %} -->
+                    {% if feedback_type == 'first_feedback' or feedback_type == 'last_feedback' %}
                     <div class="feedback-message" id="feedback" style="display: none;">
                         <i class="fas fa-sync fa-spin"></i>
                         <span>Вы перевернули </span>
                         <strong id="selected-cards-count">0</strong>
                         <span> карт...</span>
                     </div>
-                    <!-- {% endif %} -->
+                    {% endif %}
                 </div>
                 <p class="cold_quest">Сколько карт вы хотите перевернуть?</p>
                 <div class="number-selector">
@@ -142,7 +142,6 @@
         }
 
         function showFeedbackMessage(selectedCards, badCardsSelected) {
-
             const feedbackDiv = document.getElementById('feedback');
             feedbackDiv.style.display = 'block';
             feedbackDiv.innerHTML = `
@@ -202,10 +201,10 @@
                     }, 1000);
             } catch (error) {
                 console.error('Error:', error);
-                feedback.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Ошибка соединения. Пожалуйста, подождите...`;
+                feedbackDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Ошибка соединения. Пожалуйста, подождите...`;
                 // Re-enable buttons after 2 seconds
                 setTimeout(() => {
-                    feedback.style.display = 'none';
+                    feedbackDiv.style.display = 'none';
                     document.querySelectorAll('.number-card').forEach(btn => {
                         btn.style.pointerEvents = 'auto';
                         btn.classList.remove('disabled');
