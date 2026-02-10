@@ -49,6 +49,11 @@
                     </div>
                     {% endif %}
                 </div>
+                {% if trial_number >= 49 and feedback_type == 'first_feedback' %}
+                    <p class="cold_quest">В данной попытке вы не будете получать обратную связь</p>
+                {% elseif trial_number >= 49 and feedback_type == 'last_feedback' %}
+                    <p class="cold_quest">В данной попытке вы получите обратную связь</p>
+                {% endif %}
                 <p class="cold_quest">Сколько карт вы хотите перевернуть?</p>
                 <div class="number-selector">
                     {% for i in range(0, 33) %}
@@ -87,7 +92,7 @@
     </div>
 
     <div id="notification-modal">
-        
+
     </div>
 
     <script>
@@ -121,11 +126,11 @@
         let feedback_type = "{{ feedback_type }}"; // Предположим, передается через Flask-шаблонизатор
         const trialNumber = parseInt(document.getElementById('trial-number').textContent.split('/')[0]);
 
-        if (feedback_type === 'first_feedback' & trialNumber == 49) {
-            showNotificationModal("Сейчас вы перестанете получать обратную связь после каждой попытки.");
-        } else if (feedback_type === 'last_feedback' & trialNumber == 49) {
-            showNotificationModal("Сейчас вы начнёте получать обратную связь после каждой попытки.");
-        }
+//        if (feedback_type === 'first_feedback' & trialNumber == 49) {
+ //           showNotificationModal("Сейчас вы перестанете получать обратную связь после каждой попытки.");
+ //       } else if (feedback_type === 'last_feedback' & trialNumber == 49) {
+ //           showNotificationModal("Сейчас вы начнёте получать обратную связь после каждой попытки.");
+//        }
 
         // Новая функция для показа модального окна с уведомлением
         function showNotificationModal(message) {
