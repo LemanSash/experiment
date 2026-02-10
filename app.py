@@ -1342,6 +1342,9 @@ def save_cct_cold():
         selected_cards = deck[:num_cards]
         loss_encountered = 1 in selected_cards
         loss_cards_selected = selected_cards.count(1)
+    elif num_cards == 0:
+        loss_encountered = 0
+        loss_cards_selected = 0
     # Рассчитываем очки
     if loss_encountered:
         if 32 - num_cards < loss_cards:
