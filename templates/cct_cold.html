@@ -51,7 +51,8 @@
                 </div>
                 {% if trial_number >= 49 and feedback_type == 'first_feedback' %}
                     <p class="cold_quest">В данной попытке вы не будете получать обратную связь</p>
-                {% else if trial_number >= 49 and feedback_type == 'last_feedback' %}
+                {% endif %}
+                {% if trial_number >= 49 and feedback_type == 'last_feedback' %}
                     <p class="cold_quest">В данной попытке вы получите обратную связь</p>
                 {% endif %}
                 <p class="cold_quest">Сколько карт вы хотите перевернуть?</p>
