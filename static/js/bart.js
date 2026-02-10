@@ -438,6 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cashOutButton.addEventListener('click', handleCashOut);
 
     // Первоначальная инициализация
+    balloon.style.backgroundColor = '';
     balloon.style.backgroundColor = 'blue';
     // balloon.classList.add('blue');
     cashOutButton.disabled = true;
