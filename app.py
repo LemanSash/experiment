@@ -1343,7 +1343,7 @@ def save_cct_cold():
         loss_encountered = 1 in selected_cards
         loss_cards_selected = selected_cards.count(1)
     elif num_cards == 0:
-        loss_encountered = 0
+        loss_encountered = False
         loss_cards_selected = 0
     # Рассчитываем очки
     if loss_encountered:
