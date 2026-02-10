@@ -438,7 +438,8 @@ document.addEventListener('DOMContentLoaded', () => {
     cashOutButton.addEventListener('click', handleCashOut);
 
     // Первоначальная инициализация
-    balloon.style.backgroundColor = 'blue';
+    //balloon.style.backgroundColor = 'blue';
+    balloon.classList.add('blue');
     cashOutButton.disabled = true;
 
     // Обработчик нажатия "надуть"
@@ -463,7 +464,9 @@ document.addEventListener('DOMContentLoaded', () => {
             trialPoints = 0;
             trialEnded = true;
             pumpButton.disabled = true;
-            balloon.style.backgroundColor = 'red';
+            //balloon.style.backgroundColor = 'red';
+            balloon.classList.remove('blue'); // Удаляем предыдущий цвет
+            balloon.classList.add('red');
         }
 
         // Включаем кнопку "Забрать", если была первая попытка
@@ -555,7 +558,9 @@ function resetGameState() {
     pumpNumber = 0;
     trialEnded = false;
     trialPoints = 0;
-    balloon.style.backgroundColor = 'blue';
+    //balloon.style.backgroundColor = 'blue';
+    balloon.classList.remove('red'); // Убираем предыдущие цвета
+    balloon.classList.add('blue');
     cashOutButton.disabled = true;
     pumpButton.disabled = false;
     updateBalloonSize(); // Сброс размера шарика
