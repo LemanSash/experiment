@@ -399,6 +399,10 @@ h1 {
         /*grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));*/
         grid-template-columns: repeat(1, 1fr);
     }
+
+    .benefit-item {
+        border: 0;
+    }
 }
 
 .progress-card, .stats-card {
