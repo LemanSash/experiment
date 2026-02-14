@@ -24,7 +24,7 @@
                 {% if completed_tasks and completed_tasks|length >= 4 %}
                     <a href="{{ url_for('results') }}" class="btn-primary">Мои результаты</a>
                 {% endif %}
-                <a href="{{ url_for('logout') }}" class="btn-outline">
+                <a href="{{ url_for('logout') }}" class="btn-outline logout">
                     <i class="fas fa-sign-out-alt"></i> Выйти
                 </a>
             </div>
