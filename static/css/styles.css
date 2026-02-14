@@ -148,12 +148,12 @@ h1 {
 
 
 .btn-outline {
-    border: 2px solid var(--dark);
-    color: var(--dark);
+    border: 2px solid var(--light);
+    color: var(--light);
 }
 
 .btn-outline:hover {
-    background: var(--light);
+    background: var(--dark);
 }
 
 .section {
