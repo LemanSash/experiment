@@ -170,7 +170,7 @@ h1 {
 
 .logout {
     border: 2px solid var(--secondary);
-    color: var(--dark);
+    color: var(--secondary);
     padding: 0.75rem 1.5rem;
     border-radius: 6px;
     font-weight: 600;
