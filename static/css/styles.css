@@ -159,7 +159,8 @@ h1 {
 .btn-outline:hover {
     /* background: var(--dark); */
     border: 2px solid var(--dark);
-    color: var(--dark);
+    /* color: var(--dark); */
+    transform: translateY(-2px);
 }
 
 /* .section {
@@ -253,7 +254,7 @@ h1 {
     display: inline-flex;
     align-items: center;
     gap: 1rem;
-    padding: 1.2rem 2.5rem;
+    padding: 0.5rem 1rem;
     font-size: 1.1rem;
     border-radius: 4px;
     /* background: rgba(255,255,255,0.15); */
