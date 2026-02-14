@@ -150,22 +150,6 @@ h1 {
     transition: transform 0.2s;
 }
 
-.logout {
-    border: 2px solid var(--secondary);
-    color: var(--dark);
-    padding: 0.75rem 1.5rem;
-    border-radius: 6px;
-    font-weight: 600;
-    /* transition: transform 0.2s; */
-}
-
-.logout:hover {
-    /* background: var(--dark); */
-    border: 2px solid var(--dark);
-    /* color: var(--dark); */
-    transform: translateY(-2px);
-}
-
 .btn-primary:hover {
     transform: translateY(-2px);
     border: 2px solid var(--primary);
@@ -178,6 +162,22 @@ h1 {
 }
 
 .btn-outline:hover {
+    /* background: var(--dark); */
+    border: 2px solid var(--dark);
+    /* color: var(--dark); */
+    transform: translateY(-2px);
+}
+
+.logout {
+    border: 2px solid var(--secondary);
+    color: var(--dark);
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    /* transition: transform 0.2s; */
+}
+
+.logout:hover {
     /* background: var(--dark); */
     border: 2px solid var(--dark);
     /* color: var(--dark); */
