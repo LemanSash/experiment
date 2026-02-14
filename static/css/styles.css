@@ -394,6 +394,11 @@ h1 {
     .progress-grid {
         grid-template-columns: 1fr;
     }
+
+    .benefits-grid {
+        /*grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));*/
+        grid-template-columns: repeat(1, 1fr);
+    }
 }
 
 .progress-card, .stats-card {
