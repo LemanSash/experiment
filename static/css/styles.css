@@ -255,16 +255,18 @@ h1 {
     gap: 1rem;
     padding: 1.2rem 2.5rem;
     font-size: 1.1rem;
-    border-radius: 50px;
-    background: rgba(255,255,255,0.15);
-    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    /* background: rgba(255,255,255,0.15); */
+    border: 2px solid var(--light);
     transition: all 0.3s ease;
     margin-top: 1.5rem;
+    color: var(--light);
 }
 
 .btn-gradient:hover {
-    background: rgba(255,255,255,0.25);
+    /* background: rgba(255,255,255,0.25); */
     transform: translateY(-2px);
+    border: 2px solid var(--dark);
 }
 
 .contact-card {
