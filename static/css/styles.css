@@ -368,6 +368,14 @@ h1 {
     padding: 1rem;
     margin-top: 1rem;
     font-size: 1.1rem;
+    background-color: var(--primary);
+    border-color: var(--light);
+    color: var(--light);
+}
+
+.btn-block:hover {
+    transform: translateY(-2px);
+    
 }
 
 .auth-footer {
