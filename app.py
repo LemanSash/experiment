@@ -351,9 +351,9 @@ def register():
             
             cursor.execute("""
                 INSERT INTO users (password_hash, email, age, gender, education)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s)
             """, (
-                password_hash,  # TODO: hash
+                password_hash,
                 email, 
                 age,
                 gender,
