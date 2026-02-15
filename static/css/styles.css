@@ -198,6 +198,10 @@ h1 {
     padding: 3rem 10rem;
 } */
 
+.dashboard-section {
+    margin: 1rem;
+}
+
 .flashes {
     list-style: none;
     padding: 0;
