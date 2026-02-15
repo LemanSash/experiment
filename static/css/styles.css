@@ -52,6 +52,7 @@ body {
 
 .inter {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    padding: 0.5rem 1rem;
 }
 
 .nav-container {
