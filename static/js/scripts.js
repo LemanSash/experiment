@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const navLinks = document.getElementById('nav-links');
 
             if (burger && navLinks) {
-                console.log('i found them');
                 burger.addEventListener('click', () => {
                     console.log('you clicked');
                     navLinks.classList.toggle('show');
