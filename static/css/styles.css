@@ -142,8 +142,8 @@ h1 {
 }
 
 .btn-primary .btn-outline {
-    background: white;
-    color: var(--primary);
+    background: var(--primary);
+    color: var(--light);
     padding: 0.75rem 1.5rem;
     border-radius: 6px;
     font-weight: 600;
