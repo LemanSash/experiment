@@ -783,7 +783,7 @@ input[type="radio"]:checked + .radio-label {
 .modal-footer {
     padding-top: 1rem;
     margin-top: auto; /* Pushes footer to bottom */
-    text-align: right;
+    text-align: center;
 }
 
 .modal-body p {
