@@ -162,6 +162,7 @@ h1 {
 .btn-primary:hover {
     transform: translateY(-2px);
     border: 2px solid var(--primary);
+    background: var(--primary);
 }
 
 
