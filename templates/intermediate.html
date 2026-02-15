@@ -96,13 +96,13 @@
                 <div class="flex-col" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem;">
                     {% if next_task %}
                         <a href="{{ url_for('task', task_name=next_task) }}"
-                           class="btn-primary"
+                           class="btn-primary btn-next"
                            style="justify-content: center;">
                             <i class="fas fa-forward"></i> Следующее задание
                         </a>
                     {% else %}
                         <a href="{{ url_for('dashboard') }}"
-                           class="btn-primary"
+                           class="btn-primary btn-next"
                            style="justify-content: center;">
                             <i class="fas fa-check-circle"></i> Закончить эксперимент
                         </a>
