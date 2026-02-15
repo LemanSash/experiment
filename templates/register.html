@@ -9,15 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-          <ul class="flashes">
-              {% for category, message in messages %}
-                  <li class="flash {{ category }}">{{ message }}</li>
-              {% endfor %}
-          </ul>
-      {% endif %}
-    {% endwith %}
     <nav class="navbar">
             <div class="nav-container">
                 <a href="/" class="logo">LA Research</a>
@@ -40,13 +31,16 @@
             <div class="auth-card">
                 <h1>Создать профиль</h1>
                 <p class="lead">Присоединяйся к нашему исследованию и сделай свой вклад в науку</p>
-
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <ul class="flashes">
+                            {% for category, message in messages %}
+                                <li class="flash {{ category }}">{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endwith %}
                 <form method="POST" class="auth-form">
-                    <!-- <div class="form-group">
-                        <label for="username">Логин</label>
-                        <input type="text" id="username" name="username" required>
-                    </div> -->
-
                     <div class="form-group">
                         <label for="email">Email</label>  <!-- Добавляем поле email -->
                         <input type="email" id="email" name="email" required>
