@@ -178,6 +178,20 @@ h1 {
     transform: translateY(-2px);
 }
 
+.btn-pause {
+    background: var(--secondary);
+    color: var(--light);
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.btn-pause:hover {
+    transform: translateY(-2px);
+    border: 2px solid var(--secondary);
+    background: var(--secondary);
+}
+
 .btn-form {
     background: var(--primary);
     color: white;
