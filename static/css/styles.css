@@ -175,6 +175,7 @@ h1 {
     border-radius: 6px;
     font-weight: 600;
     transition: transform 0.1s;
+    border: var(--primary);
 }
 
 .logout {
