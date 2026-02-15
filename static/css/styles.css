@@ -213,8 +213,8 @@ h1 {
 
 .btn-next:hover {
     transform: translateY(-2px);
-    border: 2px solid var(--secondary);
-    background: var(--secondary);
+    border: 2px solid var(--primary);
+    background: var(--primary);
 }
 
 .instruction-button {
