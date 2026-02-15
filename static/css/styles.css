@@ -211,6 +211,12 @@ h1 {
     font-weight: 600;
 }
 
+.btn-next:hover {
+    transform: translateY(-2px);
+    border: 2px solid var(--secondary);
+    background: var(--secondary);
+}
+
 .instruction-button {
     background: var(--primary);
     color: var(--light);
