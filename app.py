@@ -299,7 +299,6 @@ def before_request():
 
     # Если текущий запрос не входит в разрешённые маршруты и пользователь не залогинен
     if request.endpoint not in allowed_routes and 'user_id' not in session:
-        flash('Session lost. Please log in again.')
         return redirect(url_for('login'))
 
 def get_device_type():
