@@ -13,8 +13,18 @@ from email.message import EmailMessage
 import jwt
 from dotenv import load_dotenv
 import os
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 app = Flask(__name__)
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["2000 per day", "1000 per hour", "120 per minute"],
+    storage_uri="memory://",
+)
+
 
 load_dotenv()  # Загружает переменные окружения из файла .env
 
@@ -23,6 +33,7 @@ SMTP_PASSWORD = os.getenv('SMTP_PASSWORD')
 APP_SECRET_KEY = os.getenv('APP_SECRET_KEY')
 SMTP_SECRET_KEY = os.getenv('SMTP_SECRET_KEY')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
+LOGGING_DIRECTORY = os.getenv('LOGGING_DIRECTORY')
 
 app.secret_key = APP_SECRET_KEY
 SECRET_KEY = SMTP_SECRET_KEY
@@ -33,15 +44,17 @@ app.config.update({
     'PERMANENT_SESSION_LIFETIME': timedelta(hours=1)  # Сессия заканчивается при закрытии браузера
 })
 
-
+LOGGING_PATH = '/var/www/experiment/logs/flask_app.log'
+if LOGGING_DIRECTORY is not None:
+    LOGGING_PATH = LOGGING_DIRECTORY + '/flask_app.log'
 # Если используешь Gunicorn, интегрируй его логгер
 if __name__ != "__main__":
     g_logger = logging.getLogger("gunicorn.error")
-    handler = RotatingFileHandler('/var/www/experiment/logs/flask_app.log', maxBytes=10000, backupCount=1)
+    handler = RotatingFileHandler(LOGGING_PATH, maxBytes=10000, backupCount=1)
     g_logger.addHandler(handler)
     g_logger.setLevel(logging.INFO)
 else:
-    handler = RotatingFileHandler('/var/www/experiment/logs/flask_app.log', maxBytes=10000, backupCount=1)
+    handler = RotatingFileHandler(LOGGING_PATH, maxBytes=10000, backupCount=1)
     logger = logging.getLogger('werkzeug')
     logger.setLevel(logging.INFO)
     logger.addHandler(handler)
@@ -2228,4 +2241,3 @@ def logout():
 
 if __name__ == '__main__':
     app.run(debug=True)
-

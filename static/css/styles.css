@@ -168,6 +168,15 @@ h1 {
     transform: translateY(-2px);
 }
 
+.btn-form {
+    background: var(--primary);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: transform 0.1s;
+}
+
 .logout {
     border: 2px solid var(--secondary);
     color: var(--secondary);
@@ -1102,15 +1111,15 @@ input[type="radio"]:checked + .radio-label {
     }
 
     .cct-cold-page .number-selector {
-        grid-template-columns: repeat(8, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 0.2rem;
         padding: 0.3rem;
         margin: 0.5rem 0;
     }
 
     .number-card {
-        padding: 0.4rem;
-        font-size: 0.8rem;
+        padding: 0.7rem 0.4rem;
+        font-size: 1rem;
         min-height: 32px;
         display: flex;
         align-items: center;
@@ -1829,7 +1838,7 @@ input[type="radio"]:checked + .radio-label {
         flex-direction: column;
         width: 100%;
         background: white;
-        padding: 1rem;
+        padding: 1rem 0;
         position: absolute;
         top: 100%;
         left: 0;
