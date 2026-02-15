@@ -1,6 +1,9 @@
 /database.db
 /export_data.py
 /.env
+.venv/
+venv/
+env/
 /bart_results.csv
 /cct_cold_results.csv
 /cct_hot_results.csv
@@ -13,3 +16,5 @@
 /user_progress.csv
 /user_sequences.csv
 /users.csv
+*.log
+__pycache__/
