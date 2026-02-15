@@ -389,7 +389,7 @@ def login():
         cursor.execute("""
             SELECT user_id, password_hash
             FROM users
-            WHERE username = %s
+            WHERE email = %s
         """, (email,))
         user = cursor.fetchone()
         if user and bcrypt.checkpw(password.encode('utf-8'), user[1].encode('utf-8')):
