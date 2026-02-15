@@ -452,6 +452,17 @@ h1 {
 
 }
 
+.inter-button {
+    width: 100%;
+    padding: 1rem;
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    background-color: var(--primary);
+    border-color: var(--light);
+    color: var(--light);
+    border-radius: 4px;
+}
+
 .auth-footer {
     margin-top: 2rem;
     text-align: center;
