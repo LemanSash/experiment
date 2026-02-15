@@ -197,6 +197,12 @@ h1 {
     padding: 3rem 10rem;
 } */
 
+.flashes {
+    list-style: none;
+    padding: 0;
+    color: var(--secondary);
+}
+
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
