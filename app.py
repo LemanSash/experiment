@@ -92,7 +92,7 @@ def init_db():
     cursor = conn.cursor()
 
     # cursor.execute('DROP TABLE IF EXISTS user_sequences CASCADE')
-    # cursor.execute('DROP TABLE IF EXISTS users CASCADE')
+    cursor.execute('DROP TABLE IF EXISTS users CASCADE')
     # cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
     # cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
     # cursor.execute('TRUNCATE TABLE tasks_questions RESTART IDENTITY CASCADE')
@@ -103,7 +103,6 @@ def init_db():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             user_id SERIAL PRIMARY KEY,
-            username TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
             age INTEGER,
@@ -172,21 +171,6 @@ def init_db():
             reaction_time INTEGER
         );
     ''')
-
-    # cursor.execute('''
-    #     CREATE TABLE IF NOT EXISTS bart_results (
-    #         result_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    #         user_id INTEGER NOT NULL,
-    #         trial_number INTEGER NOT NULL,
-    #         pump_number INTEGER NOT NULL,
-    #         break_point INTEGER NOT NULL,
-    #         popped BOOLEAN NOT NULL,
-    #         points_earned INTEGER NOT NULL,
-    #         total_points INTEGER NOT NULL,
-    #         reaction_time INTEGER NOT NULL
-    #     )
-    #     '''
-    # )
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS questionnaire_responses (
@@ -341,33 +325,47 @@ def register():
         if not request.form.get('agree_terms'):
             flash('Необходимо принять условия участия', 'danger')
             return redirect(url_for('register'))
-        username = request.form['username']
+        # username = request.form['username']
         password = request.form['password']
+        confirm_password = request.form['confirm_password']
         email = request.form['email']
         age = request.form['age']
         gender = request.form['gender']
         education = request.form['education']
+
+        # Проверка совпадения паролей
+        if password != confirm_password:
+            flash('Пароли не совпадают.', 'danger')
+            return redirect(url_for('register'))
         # Hash the password (use a library like bcrypt in production)
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         conn = get_db()
         cursor = conn.cursor()
         try:
+            # Проверка существования пользователя с таким же email
+            cursor.execute("SELECT * FROM users WHERE email=%s", (email,))
+            existing_user = cursor.fetchone()
+            
+            if existing_user:
+                flash('Пользователь с указанным адресом электронной почты уже существует.', 'danger')
+                return redirect(url_for('register'))
+            
             cursor.execute("""
-                INSERT INTO users (username, password_hash, email, age, gender, education)
+                INSERT INTO users (password_hash, email, age, gender, education)
                 VALUES (%s, %s, %s, %s, %s, %s)
             """, (
-                request.form['username'],
                 password_hash,  # TODO: hash
-                request.form['email'], 
-                request.form['age'],
-                request.form['gender'],
-                request.form['education']
+                email, 
+                age,
+                gender,
+                education
             ))
             conn.commit()
+            flash('Аккаунт успешно зарегистрирован!', 'success')
             return redirect(url_for('login'))
         except psycopg2.errors.UniqueViolation:
             conn.rollback()
-            flash("Username already exists")
+            flash(f'Ошибка при создании аккаунта: {str(e)}', 'danger')
         finally:
             cursor.close()
             conn.close()
@@ -385,7 +383,7 @@ def agreement():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
         conn = get_db()
         cursor = conn.cursor()
@@ -393,7 +391,7 @@ def login():
             SELECT user_id, password_hash
             FROM users
             WHERE username = %s
-        """, (username,))
+        """, (email,))
         user = cursor.fetchone()
         if user and bcrypt.checkpw(password.encode('utf-8'), user[1].encode('utf-8')):
             session['user_id'] = user[0]
@@ -406,10 +404,10 @@ def login():
             session['completed_tasks'] = completed_tasks
             cursor.close()
             conn.close()
-            flash('Login successfull!')
+            flash('Вход выполнен успешно!', 'success')
             return redirect(url_for('dashboard'))
         else:
-            flash('Invalid username of password.')
+            flash('Неверный адрес электронной почты или пароль.', 'danger')
         cursor.close()
         conn.close()
     return render_template('login.html')
