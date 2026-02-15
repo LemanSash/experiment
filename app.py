@@ -92,7 +92,7 @@ def init_db():
     cursor = conn.cursor()
 
     # cursor.execute('DROP TABLE IF EXISTS user_sequences CASCADE')
-    cursor.execute('DROP TABLE IF EXISTS users CASCADE')
+    # cursor.execute('DROP TABLE IF EXISTS users CASCADE')
     # cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
     # cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
     # cursor.execute('TRUNCATE TABLE tasks_questions RESTART IDENTITY CASCADE')
