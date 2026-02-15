@@ -310,7 +310,7 @@ def before_request():
         return
 
     # Разрешить пропуска проверок для маршрутов авторизации и регистрации
-    allowed_routes = ['login', 'register', 'logout', 'home', 'terms', 'agreement', 'reset_password_request',
+    allowed_routes = ['login', 'register', 'logout', 'index', 'terms', 'agreement', 'reset_password_request',
                       'reset_password']
 
     # Если текущий запрос не входит в разрешённые маршруты и пользователь не залогинен
