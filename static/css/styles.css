@@ -187,6 +187,10 @@ h1 {
     border: var(--primary);
 }
 
+.intermediate-section {
+    margin-top: 2rem;
+}
+
 .logout {
     border: 2px solid var(--secondary);
     color: var(--secondary);
