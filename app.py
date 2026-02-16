@@ -81,7 +81,8 @@ def init_db():
     conn = get_db()
     conn.autocommit = False
     cursor = conn.cursor()
-
+    cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
     #Create users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
@@ -1587,8 +1588,25 @@ def save_bart():
     
     data = request.get_json()
     
-    # Получаем explosion point из сессии (не из запроса!)
+    # Получаем explosion point из сессии
     break_point = session.get('bart_break_point')
+    trial_number = data['trialNumber']
+    pump_number = data['pumpNumber']
+    reaction_time = data['reaction_time']
+    popped = data.get('popped', False)
+    points_earned = data.get('pointsEarned', 0)
+    
+    # Получаем текущий total_points из сессии
+    total_points = session.get('bart_total_points', 0)
+    
+    # Обновляем общий счет, если попытка завершена и шарик не лопнул
+    if data.get('trialEnded', False) and not popped:
+        total_points += points_earned
+        session['bart_total_points'] = total_points
+    
+    # Увеличиваем счетчик попыток, если попытка завершена
+    if data.get('trialEnded', False):
+        session['bart_current'] = session.get('bart_current', 0) + 1
     
     # Сохраняем результаты в БД
     conn = get_db()
@@ -1596,58 +1614,62 @@ def save_bart():
     
     cursor.execute('''
         INSERT INTO bart_results 
-        (user_id, trial_number, pump_number, break_point, popped, points_earned, reaction_time)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        (user_id, trial_number, pump_number, break_point, popped, points_earned, total_points, reaction_time)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     ''', (
         user_id,
-        data['trialNumber'],
-        data['pumpNumber'],
+        trial_number,
+        pump_number,
         break_point,
-        data['popped'],
-        data['pointsEarned'],
-        data['reaction_time']
+        popped,
+        points_earned,
+        total_points,
+        reaction_time
     ))
     
-    # Обновляем общий счет
-    if not data['popped'] and data['pointsEarned'] > 0:
-        session['bart_total_points'] = session.get('bart_total_points', 0) + data['pointsEarned']
-    
-    # Увеличиваем счетчик попыток
-    session['bart_current'] = session.get('bart_current', 0) + 1
-    
     conn.commit()
+    
+    # Проверяем, завершены ли все попытки
+    is_final_trial = session.get('bart_current', 0) >= session.get('bart_trials', 50)
+    
+    if is_final_trial:
+        # Отмечаем задание как завершенное
+        mark_task_completed(user_id, 'bart')
+        if 'completed_tasks' not in session:
+            session['completed_tasks'] = []
+        if 'bart' not in session['completed_tasks']:
+            session['completed_tasks'].append('bart')
+        
+        # Получаем следующий break point для следующего задания (если нужно)
+        next_break_point = None
+    else:
+        # Получаем следующий break point для следующей попытки
+        current_trial = session.get('bart_current', 0)
+        break_points = session.get('bart_break_points', [])
+        if current_trial < len(break_points):
+            next_break_point = break_points[current_trial]
+            session['bart_break_point'] = next_break_point
+        else:
+            next_break_point = None
+    
     cursor.close()
     conn.close()
     
-    # Проверяем, завершены ли все попытки
-    if session['bart_current'] >= session.get('bart_trials', 50):
-        # Отмечаем задание как завершенное
-        if 'completed_tasks' not in session:
-            session['completed_tasks'] = []
-        session['completed_tasks'].append('bart')
-        session.modified = True
-        
-        # Перенаправляем на следующее задание
-        sequence = session.get('sequence', [])
-        try:
-            current_idx = sequence.index('bart')
-            next_task = sequence[current_idx + 1]
-            return jsonify({
-                'status': 'ok', 
-                'total_points': session['bart_total_points'],
-                'redirect_url': url_for('task', task_name=next_task)
-            })
-        except (ValueError, IndexError):
-            return jsonify({
-                'status': 'ok', 
-                'total_points': session['bart_total_points'],
-                'redirect_url': url_for('dashboard')
-            })
+    # Сохраняем последние заработанные очки в сессию
+    session['bart_last_points'] = points_earned
     
-    return jsonify({
-        'status': 'ok', 
-        'total_points': session['bart_total_points']
-    })
+    # Формируем ответ
+    response_data = {
+        'status': 'ok',
+        'total_points': total_points,
+        'new_break_point': next_break_point if not is_final_trial else None
+    }
+    
+    # Если это последняя попытка - отправляем redirect_url на intermediate
+    if is_final_trial:
+        response_data['redirect_url'] = url_for('intermediate', task_name='bart')
+    
+    return jsonify(response_data)
 
 @app.route('/intermediate/<task_name>', methods=['GET', 'POST'])
 def intermediate(task_name):

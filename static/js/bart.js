@@ -932,7 +932,111 @@ function updateBalloonSize() {
     balloon.style.height = `${newHeight}px`;
 }
 
-// Обработчик нажатия "надуть"
+// // Обработчик нажатия "надуть"
+// async function handlePump() {
+//     if (isMouseDown || clickInProgress || fetching || trialEnded) return;
+    
+//     clickInProgress = true;
+//     fetching = true;
+
+//     pumpNumber++;
+//     pumps++;
+    
+//     const rt = Date.now() - reactionStartTime;
+//     reactionStartTime = Date.now();
+//     reactionTimes.push(rt);
+    
+//     // Проверяем, не лопнул ли шарик
+//     popped = pumpNumber >= breakPoint;
+
+//     if (!popped) {
+//         trialPoints = pumpNumber * 5;
+//         updateBalloonSize();
+//     } else {
+//         trialPoints = 0;
+//         trialEnded = true;
+//         pumpButton.disabled = true;
+//         balloon.style.backgroundColor = 'red';
+//     }
+
+//     // Включаем кнопку "Забрать" после первого нажатия
+//     if (pumps === 1) {
+//         cashOutButton.disabled = false;
+//     }
+
+//     fetching = false;
+//     clickInProgress = false;
+
+//     if (popped) {
+//         await saveDataAndEndTrial();
+//     }
+// }
+
+// // Обработчик нажатия "забрать"
+// async function handleCashOut() {
+//     if (fetching || trialEnded) return;
+    
+//     cashed = true;
+//     trialEnded = true;
+//     await saveDataAndEndTrial();
+// }
+
+// // Сохранение данных и завершение попытки
+// async function saveDataAndEndTrial() {
+//     const sum = reactionTimes.reduce((a, b) => a + b, 0);
+//     const avgReactionTime = reactionTimes.length ? Math.round(sum / reactionTimes.length) : 0;
+//     const finalPoints = trialPoints;
+//     previousEarned = finalPoints;
+
+//     try {
+//         const response = await fetch('/save_bart', {
+//             method: 'POST',
+//             headers: {'Content-Type': 'application/json'},
+//             body: JSON.stringify({
+//                 trialNumber: parseInt(trialNumberDisplay.textContent.split('/')[0]),
+//                 pumpNumber: pumpNumber,
+//                 popped: popped,
+//                 pointsEarned: finalPoints,
+//                 reaction_time: avgReactionTime
+//                 // breakPoint не отправляем на сервер, так как он уже есть в сессии
+//             })
+//         });
+        
+//         const data = await response.json();
+        
+//         if (data.status === 'ok') {
+//             // Обновляем отображение очков
+//             if (data.total_points !== undefined) {
+//                 totalPointsDisplay.textContent = data.total_points;
+//             }
+            
+//             // Обновляем последний заработок
+//             lastBalloonDisplay.textContent = finalPoints.toFixed(2);
+            
+//             if (data.redirect_url) {
+//                 // Если это последняя попытка - перенаправляем
+//                 window.location.href = data.redirect_url;
+//             } else {
+//                 // Иначе перезагружаем для следующей попытки
+//                 setTimeout(() => {
+//                     window.location.reload();
+//                 }, 500);
+//             }
+//         } else {
+//             console.error('Server error:', data);
+//             // Разблокируем кнопки в случае ошибки
+//             pumpButton.disabled = false;
+//             cashOutButton.disabled = pumps === 0;
+//         }
+//     } catch (err) {
+//         console.error('Network error:', err);
+//         // Разблокируем кнопки в случае ошибки сети
+//         pumpButton.disabled = false;
+//         cashOutButton.disabled = pumps === 0;
+//     }
+// }
+
+// В функции handlePump:
 async function handlePump() {
     if (isMouseDown || clickInProgress || fetching || trialEnded) return;
     
@@ -948,6 +1052,7 @@ async function handlePump() {
     
     // Проверяем, не лопнул ли шарик
     popped = pumpNumber >= breakPoint;
+    let trialEndedNow = false;
 
     if (!popped) {
         trialPoints = pumpNumber * 5;
@@ -955,6 +1060,7 @@ async function handlePump() {
     } else {
         trialPoints = 0;
         trialEnded = true;
+        trialEndedNow = true;
         pumpButton.disabled = true;
         balloon.style.backgroundColor = 'red';
     }
@@ -968,21 +1074,21 @@ async function handlePump() {
     clickInProgress = false;
 
     if (popped) {
-        await saveDataAndEndTrial();
+        await saveDataAndEndTrial(true); // Передаем true, так как попытка завершена (взрыв)
     }
 }
 
-// Обработчик нажатия "забрать"
+// В функции handleCashOut:
 async function handleCashOut() {
     if (fetching || trialEnded) return;
     
     cashed = true;
     trialEnded = true;
-    await saveDataAndEndTrial();
+    await saveDataAndEndTrial(true); // Передаем true, так как попытка завершена (забрали)
 }
 
-// Сохранение данных и завершение попытки
-async function saveDataAndEndTrial() {
+// Обновленная функция saveDataAndEndTrial:
+async function saveDataAndEndTrial(trialEnded = true) {
     const sum = reactionTimes.reduce((a, b) => a + b, 0);
     const avgReactionTime = reactionTimes.length ? Math.round(sum / reactionTimes.length) : 0;
     const finalPoints = trialPoints;
@@ -997,8 +1103,8 @@ async function saveDataAndEndTrial() {
                 pumpNumber: pumpNumber,
                 popped: popped,
                 pointsEarned: finalPoints,
-                reaction_time: avgReactionTime
-                // breakPoint не отправляем на сервер, так как он уже есть в сессии
+                reaction_time: avgReactionTime,
+                trialEnded: trialEnded  // Важно! Отправляем флаг завершения попытки
             })
         });
         
@@ -1014,7 +1120,7 @@ async function saveDataAndEndTrial() {
             lastBalloonDisplay.textContent = finalPoints.toFixed(2);
             
             if (data.redirect_url) {
-                // Если это последняя попытка - перенаправляем
+                // Если это последняя попытка - перенаправляем на intermediate
                 window.location.href = data.redirect_url;
             } else {
                 // Иначе перезагружаем для следующей попытки
