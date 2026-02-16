@@ -38,6 +38,79 @@
                 <p class="lead">Ваш прогресс в исследовании</p>
             </div>
 
+            <!-- Административная панель (только для admin@mail.ru) -->
+        {% if user_email == 'lobashova.al@yandex.ru' %}
+            <div class="admin-panel">
+                <h2><i class="fas fa-cog"></i> Панель администратора</h2>
+                <div class="admin-stats-grid">
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="admin-stat-content">
+                            <span class="admin-stat-label">Всего пользователей</span>
+                            <span class="admin-stat-value">{{ admin_stats.total_users }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="admin-stat-content">
+                            <span class="admin-stat-label">Завершили все игры</span>
+                            <span class="admin-stat-value">{{ admin_stats.completed_all }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="admin-stat-content">
+                            <span class="admin-stat-label">Процент завершения</span>
+                            <span class="admin-stat-value">
+                                {% if admin_stats.total_users > 0 %}
+                                    {{ (admin_stats.completed_all / admin_stats.total_users * 100)|round(1) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Детальная статистика по играм -->
+                <div class="admin-details">
+                    <h3>Статистика по играм</h3>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Игра</th>
+                                <th>Прошли</th>
+                                <th>Процент</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for game, count in admin_stats.game_stats.items() %}
+                            <tr>
+                                <td>{{ task_names[game] if game in task_names else game }}</td>
+                                <td>{{ count }}</td>
+                                <td>
+                                    {% if admin_stats.total_users > 0 %}
+                                        {{ (count / admin_stats.total_users * 100)|round(1) }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
             <div class="container">
                 {% if completed_tasks|length >= 4 %}
                 <div class="completion-screen">

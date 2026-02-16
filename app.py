@@ -470,6 +470,11 @@ def dashboard():
     user_id = session.get('user_id')
     if not user_id:
         return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT email FROM users WHERE user_id = %s", (user_id,))
+    user_email = cursor.fetchone()[0]
 
     task_names = {
         'igt': 'Выбор одной карты из четырёх',
@@ -622,6 +627,42 @@ def dashboard():
     if completed_tasks:
         results_dict, total = get_user_results(user_id)
 
+    # Статистика для админа
+    admin_stats = {}
+    if user_email == 'lobashova.al@yandex.ru':
+        # Общее количество пользователей
+        cursor.execute("SELECT COUNT(*) FROM users")
+        admin_stats['total_users'] = cursor.fetchone()[0]
+        
+        # Количество пользователей, прошедших все игры
+        cursor.execute("""
+            SELECT COUNT(DISTINCT u.user_id)
+            FROM users u
+            WHERE NOT EXISTS (
+                SELECT task_name 
+                FROM (VALUES ('igt'), ('bart'), ('cct_hot'), ('cct_cold')) AS required(task_name)
+                WHERE NOT EXISTS (
+                    SELECT 1 
+                    FROM user_progress up 
+                    WHERE up.user_id = u.user_id 
+                    AND up.task_name = required.task_name
+                )
+            )
+        """)
+        admin_stats['completed_all'] = cursor.fetchone()[0]
+        
+        # Статистика по каждой игре
+        game_stats = {}
+        for game in ['igt', 'bart', 'cct_hot', 'cct_cold']:
+            cursor.execute("""
+                SELECT COUNT(DISTINCT user_id)
+                FROM user_progress
+                WHERE task_name = %s
+            """, (game,))
+            game_stats[game] = cursor.fetchone()[0]
+        
+        admin_stats['game_stats'] = game_stats
+
     return render_template(
         'dashboard.html',
         #has_questionnaire=has_questionnaire,
@@ -634,7 +675,9 @@ def dashboard():
         last_active=last_active,
         task_names=task_names,
         results=results_dict,
-        total=total
+        total=total,
+        user_email=user_email,
+        admin_stats=admin_stats,
     )
 
 
