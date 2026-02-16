@@ -600,33 +600,6 @@ def dashboard():
         # Формируем требуемый формат: YYYY-MM-DD HH:MM
         last_active = local_time.strftime('%Y-%m-%d %H:%M')
     
-
-    cursor.close()
-    conn.close()
-
-    # 5. Определяем следующее задание
-    next_task = None
-    if has_first_questionnaire and has_second_questionnaire and has_third_questionnaire:
-        # Если обе анкеты завершены, выбираем игровое задание
-        for task in sequence:
-            if task not in completed_tasks:
-                next_task = task
-                break
-    elif has_first_questionnaire and not has_second_questionnaire and not has_third_questionnaire:
-        # Вторая анкета ещё не заполнена
-        next_task = 'second_questionnaire'
-    elif has_second_questionnaire and has_first_questionnaire and not has_third_questionnaire:
-        next_task = 'third_questionnaire'
-    else:
-        # Первая анкета ещё не заполнена
-        next_task = 'questionnaire'
-
-    # 6. Результаты (если есть)
-    results_dict = {}
-    total = 0
-    if completed_tasks:
-        results_dict, total = get_user_results(user_id)
-
     # Статистика для админа
     admin_stats = {}
     if user_email == 'lobashova.al@yandex.ru':
@@ -662,6 +635,33 @@ def dashboard():
             game_stats[game] = cursor.fetchone()[0]
         
         admin_stats['game_stats'] = game_stats
+        
+    cursor.close()
+    conn.close()
+
+    # 5. Определяем следующее задание
+    next_task = None
+    if has_first_questionnaire and has_second_questionnaire and has_third_questionnaire:
+        # Если обе анкеты завершены, выбираем игровое задание
+        for task in sequence:
+            if task not in completed_tasks:
+                next_task = task
+                break
+    elif has_first_questionnaire and not has_second_questionnaire and not has_third_questionnaire:
+        # Вторая анкета ещё не заполнена
+        next_task = 'second_questionnaire'
+    elif has_second_questionnaire and has_first_questionnaire and not has_third_questionnaire:
+        next_task = 'third_questionnaire'
+    else:
+        # Первая анкета ещё не заполнена
+        next_task = 'questionnaire'
+
+    # 6. Результаты (если есть)
+    results_dict = {}
+    total = 0
+    if completed_tasks:
+        results_dict, total = get_user_results(user_id)
+
 
     return render_template(
         'dashboard.html',
