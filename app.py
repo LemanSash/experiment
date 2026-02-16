@@ -81,8 +81,8 @@ def init_db():
     conn = get_db()
     conn.autocommit = False
     cursor = conn.cursor()
-    cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
-    cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
+    # cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
+    # cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
     #Create users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
