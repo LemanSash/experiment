@@ -52,7 +52,7 @@
                     <div class="info-item">
                         <i class="fas fa-chart-line"></i>
                         <span>Прошлый шар:</span>
-                        <strong>₽<span id="last-balloon">{{ "0.00" if not points_earned else points_earned }}</span></strong>
+                        <strong>₽<span id="last-balloon">{{ "0.00" if not points_earned else "{:.2f}".format(points_earned) }}</span></strong>
                     </div>
                 </div>
 
