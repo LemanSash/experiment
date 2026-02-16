@@ -8,7 +8,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="cct-cold-page">
+<body class="cct-cold-page" 
+      data-feedback-type="{{ feedback_type }}"
+      data-show-instructions="{{ 'true' if show_instructions else 'false' }}">
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="logo">LA Research</a>
@@ -59,7 +61,7 @@
                 <p class="cold_quest">Сколько карт вы хотите перевернуть?</p>
                 <div class="number-selector">
                     {% for i in range(0, 33) %}
-                    <button class="number-card" onclick="selectCards({{ i }})">
+                    <button class="number-card">
                         {{ i }}
                     </button>
                     {% endfor %}
@@ -68,12 +70,10 @@
                 <div class="cards-grid">
                     {% for i in range(32) %}
                     <div class="cct-card">
-                        <!--<span>?</span>-->
                         <img src="{{ url_for('static', filename='images/card_back.png') }}" alt="Card">
                     </div>
                     {% endfor %}
                 </div>
-
 
             </div>
         </div>
@@ -87,134 +87,13 @@
                 {{ instruction_content|safe }}
                 <p class="instruction-attention">Внимание! Не покидайте страницу во время прохождения игры, иначе ваши результаты обнулятся и игру нужно будет проходить заново.</p>
             </div>
-            <button onclick="closeInstructions()" class="btn-primary instruction-button">
+            <button class="btn-primary instruction-button" onclick="closeInstructions()">
                 <i class="fas fa-check"></i> Понятно
             </button>
         </div>
     </div>
 
-    <script>
-        let reactionStartTime;
-        document.addEventListener('DOMContentLoaded', () => {
-
-            reactionStartTime = Date.now();
-            {% if show_instructions %}
-                showInstructions();
-                document.querySelectorAll('.number-card, .cct-card').forEach(el => {
-                    el.style.pointerEvents = 'none';
-                });
-            {% endif %}
-        });
-
-        function showInstructions() {
-            document.getElementById('instruction-modal').style.display = 'block';
-            document.querySelectorAll('.number-card, .cct-card').forEach(el => {
-                el.style.pointerEvents = 'none';
-            });
-        }
-
-        function closeInstructions() {
-            document.getElementById('instruction-modal').style.display = 'none';
-            document.querySelectorAll('.number-card, .cct-card').forEach(el => {
-                el.style.pointerEvents = 'auto';
-            });
-            fetch('/mark_instructions_viewed/cct_cold', { method: 'POST' });
-        }
-
-        let feedback_type = "{{ feedback_type }}"; // Предположим, передается через Flask-шаблонизатор
-        const trialNumber = parseInt(document.getElementById('trial-number').textContent.split('/')[0]);
-
-        // Новая функция для показа модального окна с уведомлением
-        function showNotificationModal(message) {
-            const notificationModal = document.createElement("div");
-            notificationModal.id = "notification-modal";
-            notificationModal.className = "modal";
-            notificationModal.innerHTML = `
-                <div class="modal-content">
-                    <h2>${message}</h2>
-                    <button onclick="hideNotificationModal()" class="btn-primary">
-                        <i class="fas fa-check"></i> Понял
-                    </button>
-                </div>
-            `;
-            document.body.appendChild(notificationModal);
-        }
-
-        // Функция для закрытия уведомления
-        function hideNotificationModal() {
-            const notificationModal = document.getElementById("notification-modal");
-            if (notificationModal) {
-                notificationModal.parentNode.removeChild(notificationModal);
-            }
-        }
-
-        function showFeedbackMessage(selectedCards, badCardsSelected) {
-            const feedbackDiv = document.getElementById('feedback');
-            feedbackDiv.style.display = 'block';
-            feedbackDiv.innerHTML = `
-                <i class="fas fa-info-circle"></i>
-                Вы перевернули ${selectedCards} карт.<br/>
-                Среди них: ${badCardsSelected} плохих.
-            `;
-
-            // Скрываем сообщение спустя 3 секунды
-            setTimeout(() => {
-                feedbackDiv.style.display = 'none';
-            }, 1000); // Задержка в миллисекундах (3 сек.)
-        }
-
-
-        async function selectCards(numCards) {
-            const reactionTime = Date.now() - reactionStartTime;
-
-            // Disable all buttons
-            document.querySelectorAll('.number-card').forEach(btn => {
-                btn.style.pointerEvents = 'none';
-                btn.classList.add('disabled');
-            });
-
-            try {
-                const response = await fetch('/save_cct_cold', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        trialNumber: parseInt(document.getElementById('trial-number').textContent.split('/')[0]),
-                        numCards: numCards,
-                        reaction_time: reactionTime
-                    })
-                });
-
-                const data = await response.json();
-                // Проверяем значение feedback_type и current trial number
-                if (feedback_type === 'first_feedback') {
-                    if (trialNumber <= 48 && trialNumber > 0) {
-                        showFeedbackMessage(numCards, data.bad_cards_selected);
-                    } 
-                } else if (feedback_type === 'last_feedback') {
-                    if (trialNumber >= 49) {
-                        showFeedbackMessage(numCards, data.bad_cards_selected);
-                    }
-                }
-                setTimeout(() => {
-                    if(data.redirect_url) {
-                        window.location.href = data.redirect_url;
-                    } else {
-                        window.location.href = '/next_trial/cct_cold';
-                    }
-                    }, 1000);
-            } catch (error) {
-                console.error('Error:', error);
-                feedbackDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Ошибка соединения. Пожалуйста, подождите...`;
-                // Re-enable buttons after 2 seconds
-                setTimeout(() => {
-                    feedbackDiv.style.display = 'none';
-                    document.querySelectorAll('.number-card').forEach(btn => {
-                        btn.style.pointerEvents = 'auto';
-                        btn.classList.remove('disabled');
-                    });
-                }, 2000);
-            }
-        }
-    </script>
+    <!-- Подключаем внешний JS-файл -->
+    <script src="{{ url_for('static', filename='js/cct_cold.js') }}"></script>
 </body>
 </html>
