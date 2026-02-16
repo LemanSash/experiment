@@ -65,15 +65,6 @@ def handle_exception(e):
     app.logger.exception(str(e))  # Это гарантирует сохранение полной трассировки стека
     return "Internal Server Error", 500
 
-
-# @app.before_request
-# def before_request():
-#     # Разрешите пропуск проверок для маршрутов авторизации и регистрации
-#     allowed_routes = ['login', 'register', 'logout', 'home']
-#     if request.endpoint not in allowed_routes and 'user_id' not in session:
-#         flash('Session lost. Please log in again.')
-#         return redirect(url_for('login'))
-
 # Helper function to get database connection
 def get_db():
     conn = psycopg2.connect(
@@ -90,20 +81,6 @@ def init_db():
     conn = get_db()
     conn.autocommit = False
     cursor = conn.cursor()
-
-    cursor.execute('DROP TABLE IF EXISTS user_sequences CASCADE')
-    cursor.execute('DROP TABLE IF EXISTS users CASCADE')
-    cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
-    cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
-    cursor.execute('TRUNCATE TABLE tasks_questions RESTART IDENTITY CASCADE')
-    cursor.execute('TRUNCATE TABLE cct_hot_results RESTART IDENTITY CASCADE')
-    cursor.execute('TRUNCATE TABLE cct_cold_results RESTART IDENTITY CASCADE')
-    cursor.execute('TRUNCATE TABLE igt_results RESTART IDENTITY CASCADE')
-    cursor.execute('TRUNCATE TABLE questionnaire_responses RESTART IDENTITY CASCADE')
-
-    cursor.execute('TRUNCATE TABLE sequences RESTART IDENTITY CASCADE')
-    cursor.execute('TRUNCATE TABLE risk_aversion_responses RESTART IDENTITY CASCADE')
-    cursor.execute('TRUNCATE TABLE rfq_responses RESTART IDENTITY CASCADE')
 
     #Create users table
     cursor.execute('''
@@ -263,26 +240,11 @@ def init_db():
             VALUES (%s, %s, %s, %s)
             ON CONFLICT (task1, task2, task3, task4) DO NOTHING
         """, seq)
-        # with conn.transaction(isolation_level='serializable'):
-        #     cursor.execute("""
-        #         INSERT INTO sequences (task1, task2, task3, task4)
-        #         VALUES (%s, %s, %s, %s)
-        #         ON CONFLICT (task1, task2, task3, task4) DO NOTHING
-        #     """, seq)
 
     conn.commit()
     conn.close()
 
 init_db()
-
-# @app.before_request
-# def check_session():
-#     if 'user_id' not in session:
-#         session['user_id'] = None
-#     if 'completed_tasks' not in session:
-#         session['completed_tasks'] = []
-#     if 'sequence' not in session:
-#         session['sequence'] = []
 
 @app.before_request
 def check_session():
@@ -886,27 +848,6 @@ def init_igt_decks():
         }
     return decks
 
-# # Генерируем длинные блоки штрафов для каждой колоды (всего 150 выборов)
-# IGT_PENALTY_SCHEMES = {
-#     'A': ([0]*75 + [-250]*75),  # 50% штрафов (-250)
-#     'B': ([0]*120 + [-625]*30),  # 20% штрафов (-625)
-#     'C': ([0]*75 + [-50]*75),    # 50% штрафов (-50)
-#     'D': ([0]*120 + [-125]*30)   # 20% штрафов (-125)
-# }
-
-# # Перемешиваем наказания, чтобы распределение стало равномерным
-# for deck in IGT_PENALTY_SCHEMES.values():
-#     random.shuffle(deck)
-
-# def init_igt_decks():
-#     decks = {}
-#     for deck, penalties in IGT_PENALTY_SCHEMES.items():
-#         decks[deck] = {
-#             'penalties': penalties,
-#             'index': 0
-#         }
-#     return decks
-
 
 def generate_trials(task="cct_hot"):
     if task == "cct_hot":
@@ -1031,8 +972,6 @@ def task(task_name):
         if task_name == 'bart':
             bart_url = url_for('task', task_name='bart')
             if not (request.referrer and request.referrer.endswith(bart_url)):
-            #if (request.referrer):
-            #if 'page_loaded_once' in session:
                 user_id = session.get('user_id')
                 if user_id:
                     conn = get_db()
@@ -1790,53 +1729,6 @@ def test():
     return render_template("test.html")
 
 
-# def get_questionnaire_results(user_id):
-#     conn = get_db()
-#     cursor = conn.cursor()
-
-#     # Получаем все ответы
-#     cursor.execute('SELECT question_number, response FROM questionnaire_responses WHERE user_id = %s', (user_id,))
-#     responses = cursor.fetchall()
-
-#     # Вопросы, требующие обратного кодирования
-#     reverse_scored = {4, 5, 13, 14, 15, 16, 17, 19, 20, 21, 26}
-#     total_score = 0
-
-#     for row in responses:
-#         qnum, response = row['question_number'], row['response']
-#         if qnum in reverse_scored:
-#             response = 5 - response  # обратное кодирование
-#         total_score += response
-
-#     # Процентиль среди всех участников
-#     cursor.execute('SELECT user_id FROM questionnaire_responses GROUP BY user_id')
-#     all_user_ids = [row['user_id'] for row in cursor.fetchall()]
-
-#     scores = []
-#     for uid in all_user_ids:
-#         cursor.execute('SELECT question_number, response FROM questionnaire_responses WHERE user_id = %s', (uid,))
-#         user_responses = cursor.fetchall()
-#         user_score = 0
-#         for row in user_responses:
-#             qnum, response = row['question_number'], row['response']
-#             if qnum in reverse_scored:
-#                 response = 5 - response
-#             user_score += response
-#         scores.append(user_score)
-
-#     scores.sort()
-#     if scores:
-#         rank = scores.index(total_score) + 1
-#         percentile = round(100 * rank / len(scores), 1)
-#     else:
-#         percentile = 0.0
-#     cursor.close()
-#     conn.close()
-#     return {
-#         'total_score': total_score,
-#         'percentile': percentile
-#     }
-
 def get_questionnaire_results(user_id):
     conn = get_db()
     cursor = conn.cursor()
@@ -2011,46 +1903,6 @@ def get_igt_metrics(user_id):
         'pct_net': pct_net
     }
 
-#
-# 4) Метрики для CCT-hot и CCT-cold
-#
-# def get_cct_hot_metrics(user_id):
-#     """Метрики для CCT-hot: flipped_cards и points"""
-#     conn = get_db()
-#     cursor = conn.cursor()
-
-#     # Пользовательские метрики (только experimental trials)
-#     cursor.execute('''
-#         SELECT
-#             AVG(flip_number)    AS avg_flip,
-#             AVG(points)           AS avg_pts
-#         FROM cct_hot_results
-#         WHERE user_id = %s AND trial_type = 'experimental'
-#     ''', (user_id,))
-#     row = cursor.fetchone()
-#     avg_flip = row['avg_flip'] or 0.0
-#     avg_pts  = row['avg_pts']  or 0.0
-
-#     # Групповые средние
-#     cursor.execute('''
-#         SELECT
-#             AVG(flip_number),
-#             AVG(points)
-#         FROM cct_hot_results
-#         WHERE trial_type = 'experimental'
-#     ''')
-#     grp = cursor.fetchone()
-#     grp_flip = grp[0] or 1.0
-#     grp_pts  = grp[1] or 1.0
-#     cursor.close()
-#     conn.close()
-
-#     return {
-#         'avg_flip': round(avg_flip,1),
-#         'avg_pts':  round(avg_pts,1),
-#         'pct_flip': round(100*(avg_flip/grp_flip - 1),1),
-#         'pct_pts':  round(100*(avg_pts/grp_pts   - 1),1)
-#     }
 
 def get_cct_hot_metrics(user_id):
     """Метрики для CCT-hot: flip_number и points"""
@@ -2089,43 +1941,6 @@ def get_cct_hot_metrics(user_id):
         'pct_pts':  round(100*(avg_pts/grp_pts   - 1),1)
     }
 
-
-# def get_cct_cold_metrics(user_id):
-#     """Метрики для CCT-cold: num_cards и points_earned"""
-#     conn = get_db()
-#     cursor = conn.cursor()
-
-#     # Пользовательские метрики (всех trials)
-#     cursor.execute('''
-#         SELECT
-#             AVG(num_cards)        AS avg_num,
-#             AVG(points_earned)    AS avg_pts
-#         FROM cct_cold_results
-#         WHERE user_id = %s
-#     ''', (user_id,))
-#     row = cursor.fetchone()
-#     avg_num = row['avg_num'] or 0.0
-#     avg_pts = row['avg_pts'] or 0.0
-
-#     # Групповые средние
-#     cursor.execute('''
-#         SELECT
-#             AVG(num_cards),
-#             AVG(points_earned)
-#         FROM cct_cold_results
-#     ''')
-#     grp = cursor.fetchone()
-#     grp_num = grp[0] or 1.0
-#     grp_pts = grp[1] or 1.0
-#     cursor.close()
-#     conn.close()
-
-#     return {
-#         'avg_num': round(avg_num,1),
-#         'avg_pts': round(avg_pts,1),
-#         'pct_num': round(100*(avg_num/grp_num - 1),1),
-#         'pct_pts': round(100*(avg_pts/grp_pts - 1),1)
-#     }
 
 def get_cct_cold_metrics(user_id):
     """Метрики для CCT-cold: num_cards и points_earned"""
