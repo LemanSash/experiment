@@ -87,7 +87,7 @@
                 {{ instruction_content|safe }}
                 <p class="instruction-attention">Внимание! Не покидайте страницу во время прохождения игры, иначе ваши результаты обнулятся и игру нужно будет проходить заново.</p>
             </div>
-            <button onclick="closeInstructions()" class="btn-primary">
+            <button onclick="closeInstructions()" class="btn-primary instruction-button">
                 <i class="fas fa-check"></i> Понятно
             </button>
         </div>
@@ -123,12 +123,6 @@
 
         let feedback_type = "{{ feedback_type }}"; // Предположим, передается через Flask-шаблонизатор
         const trialNumber = parseInt(document.getElementById('trial-number').textContent.split('/')[0]);
-
-//        if (feedback_type === 'first_feedback' & trialNumber == 49) {
- //           showNotificationModal("Сейчас вы перестанете получать обратную связь после каждой попытки.");
- //       } else if (feedback_type === 'last_feedback' & trialNumber == 49) {
- //           showNotificationModal("Сейчас вы начнёте получать обратную связь после каждой попытки.");
-//        }
 
         // Новая функция для показа модального окна с уведомлением
         function showNotificationModal(message) {
