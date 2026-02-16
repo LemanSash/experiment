@@ -635,7 +635,7 @@ def dashboard():
             game_stats[game] = cursor.fetchone()[0]
         
         admin_stats['game_stats'] = game_stats
-        
+
     cursor.close()
     conn.close()
 
@@ -1511,74 +1511,143 @@ def next_trial(task_name):
 
     return redirect(url_for('dashboard'))
 
+# @app.route('/save_bart', methods=['POST'])
+# def save_bart():
+#     data = request.get_json()
+#     user_id = session['user_id']
+
+#     trial_number = data['trialNumber']
+#     pump_number = data['pumpNumber']
+#     #break_point = data['breakPoint']
+#     break_point = session['bart_break_point']
+#     reaction_time = data['reaction_time']
+
+#     popped = pump_number == break_point
+
+#     # points внутри trial
+#     if popped:
+#         points_earned = 0
+#         trial_points = 0
+#     else:
+#         trial_points = pump_number * 5
+#         points_earned = trial_points
+
+#     # total_points обновляется ТОЛЬКО после завершения trial
+#     total_points = session.get('bart_total_points', 0)
+
+#     if data.get('trialEnded', False):
+#         if not popped:
+#             total_points += trial_points
+#         session['bart_total_points'] = total_points
+#         session['bart_current'] += 1
+#     # Проверка, является ли это последним trial
+#     is_final_trial = session['bart_current'] >= session.get('bart_trials', 50)
+
+#     conn = get_db()
+#     cursor = conn.cursor()
+#     cursor.execute('''
+#         INSERT INTO bart_results (
+#             user_id, trial_number, pump_number,
+#             break_point, popped,
+#             points_earned, total_points, reaction_time
+#         )
+#         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+#     ''', (
+#         user_id, trial_number, pump_number,
+#         break_point, popped,
+#         points_earned, total_points, reaction_time
+#     ))
+#     conn.commit()
+#     cursor.close()
+#     conn.close()
+
+#     session['bart_current'] = trial_number
+#     session['bart_total_points'] = total_points
+#     session['bart_last_points'] = points_earned
+
+#     # Если это последний trial, пометь задание как выполненное
+#     if is_final_trial:
+#         mark_task_completed(user_id, 'bart')
+#         if 'completed_tasks' not in session:
+#             session['completed_tasks'] = []
+#         if 'bart' not in session['completed_tasks']:
+#             session['completed_tasks'].append('bart')
+
+#     return jsonify({
+#         'status': 'ok', 
+#         'total_points': total_points,
+#         'redirect_url': url_for('intermediate', task_name='bart') if is_final_trial else None,
+#         'new_break_point': session['bart_break_points'][session['bart_current']] if not is_final_trial else None})
+
 @app.route('/save_bart', methods=['POST'])
 def save_bart():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
     data = request.get_json()
-    user_id = session['user_id']
-
-    trial_number = data['trialNumber']
-    pump_number = data['pumpNumber']
-    #break_point = data['breakPoint']
-    break_point = session['bart_break_point']
-    reaction_time = data['reaction_time']
-
-    popped = pump_number == break_point
-
-    # points внутри trial
-    if popped:
-        points_earned = 0
-        trial_points = 0
-    else:
-        trial_points = pump_number * 5
-        points_earned = trial_points
-
-    # total_points обновляется ТОЛЬКО после завершения trial
-    total_points = session.get('bart_total_points', 0)
-
-    if data.get('trialEnded', False):
-        if not popped:
-            total_points += trial_points
-        session['bart_total_points'] = total_points
-        session['bart_current'] += 1
-    # Проверка, является ли это последним trial
-    is_final_trial = session['bart_current'] >= session.get('bart_trials', 50)
-
+    
+    # Получаем explosion point из сессии (не из запроса!)
+    break_point = session.get('bart_break_point')
+    
+    # Сохраняем результаты в БД
     conn = get_db()
     cursor = conn.cursor()
+    
     cursor.execute('''
-        INSERT INTO bart_results (
-            user_id, trial_number, pump_number,
-            break_point, popped,
-            points_earned, total_points, reaction_time
-        )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO bart_results 
+        (user_id, trial_number, pump_number, break_point, popped, points_earned, reaction_time)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     ''', (
-        user_id, trial_number, pump_number,
-        break_point, popped,
-        points_earned, total_points, reaction_time
+        user_id,
+        data['trialNumber'],
+        data['pumpNumber'],
+        break_point,
+        data['popped'],
+        data['pointsEarned'],
+        data['reaction_time']
     ))
+    
+    # Обновляем общий счет
+    if not data['popped'] and data['pointsEarned'] > 0:
+        session['bart_total_points'] = session.get('bart_total_points', 0) + data['pointsEarned']
+    
+    # Увеличиваем счетчик попыток
+    session['bart_current'] = session.get('bart_current', 0) + 1
+    
     conn.commit()
     cursor.close()
     conn.close()
-
-    session['bart_current'] = trial_number
-    session['bart_total_points'] = total_points
-    session['bart_last_points'] = points_earned
-
-    # Если это последний trial, пометь задание как выполненное
-    if is_final_trial:
-        mark_task_completed(user_id, 'bart')
+    
+    # Проверяем, завершены ли все попытки
+    if session['bart_current'] >= session.get('bart_trials', 50):
+        # Отмечаем задание как завершенное
         if 'completed_tasks' not in session:
             session['completed_tasks'] = []
-        if 'bart' not in session['completed_tasks']:
-            session['completed_tasks'].append('bart')
-
+        session['completed_tasks'].append('bart')
+        session.modified = True
+        
+        # Перенаправляем на следующее задание
+        sequence = session.get('sequence', [])
+        try:
+            current_idx = sequence.index('bart')
+            next_task = sequence[current_idx + 1]
+            return jsonify({
+                'status': 'ok', 
+                'total_points': session['bart_total_points'],
+                'redirect_url': url_for('task', task_name=next_task)
+            })
+        except (ValueError, IndexError):
+            return jsonify({
+                'status': 'ok', 
+                'total_points': session['bart_total_points'],
+                'redirect_url': url_for('dashboard')
+            })
+    
     return jsonify({
         'status': 'ok', 
-        'total_points': total_points,
-        'redirect_url': url_for('intermediate', task_name='bart') if is_final_trial else None,
-        'new_break_point': session['bart_break_points'][session['bart_current']] if not is_final_trial else None})
-
+        'total_points': session['bart_total_points']
+    })
 
 @app.route('/intermediate/<task_name>', methods=['GET', 'POST'])
 def intermediate(task_name):
@@ -2087,6 +2156,20 @@ def get_rfq_results(user_id):
         'promotion_percentile': promotion_percentile,
         'prevention_percentile': prevention_percentile
     }
+
+@app.route('/get_bart_explosion_point')
+def get_bart_explosion_point():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    # Получаем explosion point из сессии
+    explosion_point = session.get('bart_break_point')
+    
+    if explosion_point is None:
+        return jsonify({'error': 'No explosion point found'}), 404
+    
+    return jsonify({'explosionPoint': explosion_point})
 
 @app.route('/logout')
 def logout():

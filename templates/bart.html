@@ -28,9 +28,7 @@
         }
     </style>
 </head>
-<body class="bart-page" 
-      data-explosion-point="{{ explosion_point }}"
-      data-show-instructions="{{ 'true' if show_instructions else 'false' }}">
+<body class="bart-page">
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="logo">LA Research</a>
@@ -90,6 +88,11 @@
         </div>
     </div>
 
+    <!-- Минимальная информация для JS - только флаг инструкций -->
+    <script>
+        window.showInstructionsFlag = {{ 'true' if show_instructions else 'false' }};
+    </script>
+    
     <!-- Подключаем внешний JS файл -->
     <script src="{{ url_for('static', filename='js/bart.js') }}"></script>
 </body>
