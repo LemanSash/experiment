@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="igt-page">
+<body class="igt-page" 
+      data-show-instructions="{{ 'true' if show_instructions else 'false' }}">
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="logo">LA Research</a>
@@ -18,10 +19,6 @@
     <section class="section">
         <div class="container">
             <div class="task-card">
-                <!-- <div class="progress-bar">
-                    <div class="progress-fill" style="width: {{ (current_trial/total_trials)*150 }}%"></div>
-                </div> -->
-
                 <div class="task-progress">
                     <div class="progress-task-item">
                         <span>Попытка: </span>
@@ -46,7 +43,6 @@
                     <div class="deck-card" onclick="selectDeck('D')">
                         <div class="deck-label">D</div>
                     </div>
-                    <!-- Repeat for decks B, C, D with appropriate stats -->
                 </div>
             </div>
         </div>
@@ -91,114 +87,7 @@
         </div>
     </div>
 
-    <script>
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const decks = document.querySelectorAll('.deck-card');
-            decks.forEach(deck => {
-                deck.style.pointerEvents = 'none';
-                deck.classList.add('disabled');
-            });
-            {% if show_instructions %}
-                showInstructions();
-            {% else %}
-                // Если инструкции не нужны - разблокируем после полной загрузки
-                window.onload = () => {
-                    decks.forEach(deck => {
-                        deck.style.pointerEvents = 'auto';
-                        deck.classList.remove('disabled');
-                    });
-                };
-            {% endif %}
-            reactionStartTime = Date.now();
-
-            document.addEventListener('keydown', function(event) {
-                if (event.code === "Space") {
-
-                    const modal = document.getElementById("feedback-modal");
-                    // Используем getComputedStyle вместо modal.style.display
-                    if (document.getElementById('feedback-modal').style.display === 'block') {
-                        console.log(1);
-                        event.preventDefault();
-                        closeFeedback();
-                    }
-                }
-            });
-        });
-
-        function closeInstructions() {
-            document.getElementById('instruction-modal').style.display = 'none';
-            // Enable game interactions
-            document.querySelectorAll('.deck-card').forEach(deck => {
-                deck.style.pointerEvents = 'auto';
-                deck.classList.remove('disabled');
-            });
-            // Mark instructions as viewed
-            fetch('/mark_instructions_viewed/igt', {
-                method: 'POST'
-            });
-        }
-
-        function showInstructions() {
-            document.getElementById('instruction-modal').style.display = 'block';
-            // Optionally disable game interactions again
-            document.querySelectorAll('.deck-card').forEach(deck => {
-                deck.style.pointerEvents = 'none';
-            });
-        }
-
-
-
-        let trialNumber = parseInt(document.getElementById('trial-number').textContent);
-        let reactionStartTime;
-
-        function selectDeck(deck) {
-            const reactionTime = Date.now() - reactionStartTime;
-            // Get initial trial number from server-side template
-            const trialNumberElement = document.getElementById('trial-number');
-            trialNumber = parseInt(trialNumberElement.textContent.split('/')[0]);
-
-            // Prepare data for server
-            const requestData = {
-                trialNumber: trialNumber,
-            };
-
-            // Send results to the server
-            fetch('/save_igt', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ deck: deck, reaction_time: reactionTime })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Update feedback content
-                document.getElementById('feedback-payout').textContent = data.payout;
-                document.getElementById('feedback-penalty').textContent = data.penalty;
-                document.getElementById('feedback-total').textContent = data.points_earned;
-
-                // Show feedback overlay
-                document.getElementById('feedback-modal').style.display = 'block';
-            });
-        }
-        function closeFeedback() {
-            // Hide feedback overlay
-            document.getElementById('feedback-modal').style.display = 'none';
-            const decks = document.querySelectorAll('.deck-card');
-            decks.forEach(deck => {
-                deck.style.pointerEvents = 'none';
-                deck.classList.add('disabled');
-            });
-
-            // Automatically proceed to next trial or completion
-            fetch('/next_trial/igt')
-                .then(response => {
-                    if (response.redirected) {
-                        window.location.href = response.url;
-                    }
-                });
-        }
-
-
-    </script>
+    <!-- Подключаем внешний JS-файл -->
+    <script src="{{ url_for('static', filename='js/igt.js') }}"></script>
 </body>
 </html>
