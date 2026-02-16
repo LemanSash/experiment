@@ -91,14 +91,20 @@ def init_db():
     conn.autocommit = False
     cursor = conn.cursor()
 
-    # cursor.execute('DROP TABLE IF EXISTS user_sequences CASCADE')
-    # cursor.execute('DROP TABLE IF EXISTS users CASCADE')
-    # cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
-    # cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
-    # cursor.execute('TRUNCATE TABLE tasks_questions RESTART IDENTITY CASCADE')
-    # cursor.execute('TRUNCATE TABLE cct_hot_results RESTART IDENTITY CASCADE')
-    # cursor.execute('TRUNCATE TABLE cct_cold_results RESTART IDENTITY CASCADE')
-    # cursor.execute('TRUNCATE TABLE igt_results RESTART IDENTITY CASCADE')
+    cursor.execute('DROP TABLE IF EXISTS user_sequences CASCADE')
+    cursor.execute('DROP TABLE IF EXISTS users CASCADE')
+    cursor.execute('TRUNCATE TABLE bart_results RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE user_progress RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE tasks_questions RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE cct_hot_results RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE cct_cold_results RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE igt_results RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE questionnaire_responses RESTART IDENTITY CASCADE')
+
+    cursor.execute('TRUNCATE TABLE sequences RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE risk_aversion_responses RESTART IDENTITY CASCADE')
+    cursor.execute('TRUNCATE TABLE rfq_responses RESTART IDENTITY CASCADE')
+
     #Create users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
